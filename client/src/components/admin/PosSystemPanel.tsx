@@ -29,13 +29,18 @@ export function PosSystemPanel() {
     queryKey: ['/api/admin/pos/register/status'],
   });
 
-  const { data: sampleSale } = useQuery<ApiResponse<PosSale>>({
-    queryKey: ['/api/admin/pos/sales/sample'],
+  const { data: recentSales } = useQuery<ApiResponse<PosSale[]>>({
+    queryKey: ['/api/admin/pos/sales/recent'],
+  });
+
+  const { data: posStatistics } = useQuery<ApiResponse<any>>({
+    queryKey: ['/api/admin/pos/statistics'],
   });
 
   const stats = posStats?.data;
   const register = registerStatus?.data;
-  const sale = sampleSale?.data;
+  const sales = recentSales?.data || [];
+  const businessStats = posStatistics?.data;
 
   if (!stats) return <div>Loading POS data...</div>;
 
@@ -82,19 +87,39 @@ export function PosSystemPanel() {
         </div>
       )}
 
-      {sale && (
+      {businessStats && (
+        <div style={{ padding: 12, backgroundColor: '#f0f9ff', borderRadius: 8, marginBottom: 16 }}>
+          <h4 style={{ fontSize: 14, fontWeight: 600, marginBottom: 8 }}>Business Statistics</h4>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
+            <div>Total Sales: {businessStats.total_sales}</div>
+            <div>Today's Sales: {businessStats.today_sales}</div>
+            <div>Total Revenue: ${(businessStats.total_revenue / 100).toFixed(2)}</div>
+            <div>Today's Revenue: ${(businessStats.today_revenue / 100).toFixed(2)}</div>
+          </div>
+          <div style={{ marginTop: 8, fontSize: 12, color: '#6b7280' }}>
+            Inventory Movements: {businessStats.inventory_movements} | Registers: {businessStats.registers_count}
+          </div>
+        </div>
+      )}
+
+      {sales.length > 0 && (
         <div style={{ padding: 12, backgroundColor: '#f0fdf4', borderRadius: 8 }}>
-          <h4 style={{ fontSize: 14, fontWeight: 600, marginBottom: 8 }}>Sample Sale Transaction</h4>
-          <div>ID: {sale.id}</div>
-          <div>Cashier: {sale.cashier_id}</div>
-          <div>Items: {sale.items.length}</div>
-          <div>Subtotal: ${(sale.subtotal / 100).toFixed(2)}</div>
-          <div>Tax: ${((sale.tax_il_otp + sale.tax_other) / 100).toFixed(2)}</div>
-          <div>Total: ${(sale.total / 100).toFixed(2)}</div>
-          <div>Tenders: {sale.tenders.map((t: any) => `${t.type}: $${(t.amount / 100).toFixed(2)}`).join(', ')}</div>
-          {sale.change_due > 0 && (
-            <div>Change Due: ${(sale.change_due / 100).toFixed(2)}</div>
-          )}
+          <h4 style={{ fontSize: 14, fontWeight: 600, marginBottom: 8 }}>Recent Sales ({sales.length})</h4>
+          <div style={{ maxHeight: 200, overflowY: 'auto' }}>
+            {sales.slice(0, 3).map((sale: any, idx: number) => (
+              <div key={sale.id} style={{ 
+                padding: 8, 
+                backgroundColor: idx % 2 === 0 ? '#ffffff' : '#f9fafb', 
+                borderRadius: 4, 
+                marginBottom: 4 
+              }}>
+                <div style={{ fontSize: 12, fontWeight: 600 }}>#{sale.id}</div>
+                <div style={{ fontSize: 11, color: '#6b7280' }}>
+                  {sale.items.length} items | ${(sale.total / 100).toFixed(2)} | {new Date(sale.created_at).toLocaleTimeString()}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>

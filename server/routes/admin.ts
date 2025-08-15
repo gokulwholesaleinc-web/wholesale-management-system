@@ -7,7 +7,7 @@ import { recordAudit, queryAudit } from '../services/audit';
 import { createApiKey, revokeApiKey } from '../services/keys';
 import { setFlag } from '../services/flags';
 import { listJobs, retryJob, cancelJob } from '../services/jobs';
-import { getPosDirectoryStats, generateMockPosSale, generateMockPosRegister } from '../services/pos-manager';
+import { getPosDirectoryStats, getCurrentPosRegister, getRecentPosSales, getPosStatistics } from '../services/pos-manager';
 
 const r = Router();
 r.use(attachUser);
@@ -18,7 +18,8 @@ r.get('/overview', requireAdmin('admin.read'), async (_req, res) => {
   const totalKeys = ADMIN_DB.keys.size;
   const totalFlags = ADMIN_DB.flags.size;
   const jobs = listJobs();
-  const posStats = await getPosDirectoryStats();
+  const posFileStats = await getPosDirectoryStats();
+  const posBusinessStats = getPosStatistics();
   
   res.json({
     data: {
@@ -27,8 +28,8 @@ r.get('/overview', requireAdmin('admin.read'), async (_req, res) => {
         { label: 'API Keys', value: totalKeys },
         { label: 'Feature Flags', value: totalFlags },
         { label: 'Jobs (queued)', value: jobs.filter(j=>j.status==='queued').length },
-        { label: 'POS Receipts', value: posStats.receipts.count },
-        { label: 'POS Exports', value: posStats.exports.count }
+        { label: 'POS Sales Today', value: posBusinessStats.today_sales },
+        { label: 'POS Receipts', value: posFileStats.receipts.count }
       ],
       health: { 
         ok: true, 
@@ -40,7 +41,8 @@ r.get('/overview', requireAdmin('admin.read'), async (_req, res) => {
           hardware_status: 'Available',
           receipts_dir: 'pos-receipts/',
           exports_dir: 'pos-exports/',
-          stats: posStats
+          stats: posFileStats,
+          business: posBusinessStats
         }
       }
     }
@@ -48,19 +50,24 @@ r.get('/overview', requireAdmin('admin.read'), async (_req, res) => {
 });
 
 // POS System Management
-r.get('/pos/sales/sample', requireAdmin('admin.read'), (_req, res) => {
-  const sampleSale = generateMockPosSale();
-  res.json({ data: sampleSale });
-});
-
 r.get('/pos/register/status', requireAdmin('admin.read'), (_req, res) => {
-  const registerStatus = generateMockPosRegister();
+  const registerStatus = getCurrentPosRegister();
   res.json({ data: registerStatus });
 });
 
-r.get('/pos/stats', requireAdmin('admin.read'), async (_req, res) => {
-  const posStats = await getPosDirectoryStats();
+r.get('/pos/sales/recent', requireAdmin('admin.read'), (_req, res) => {
+  const recentSales = getRecentPosSales(10);
+  res.json({ data: recentSales });
+});
+
+r.get('/pos/statistics', requireAdmin('admin.read'), (_req, res) => {
+  const posStats = getPosStatistics();
   res.json({ data: posStats });
+});
+
+r.get('/pos/stats', requireAdmin('admin.read'), async (_req, res) => {
+  const fileStats = await getPosDirectoryStats();
+  res.json({ data: fileStats });
 });
 
 /** USERS */
