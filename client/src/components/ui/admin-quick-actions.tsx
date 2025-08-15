@@ -86,6 +86,10 @@ export function AdminQuickActions({
             <Users className="mr-2 h-4 w-4" />
             Manage Customers
           </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => navigate("/admin/order-settings")}>
+            <Settings className="mr-2 h-4 w-4" />
+            Order & Delivery Settings
+          </DropdownMenuItem>
         </DropdownMenuGroup>
         
         <DropdownMenuSeparator />

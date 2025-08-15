@@ -783,6 +783,32 @@ export default function AdminDashboard() {
                 </CardFooter>
               </Card>
 
+              {/* Order & Delivery Settings Card */}
+              <Card className="border-2 border-blue-200">
+                <CardHeader className="bg-blue-50 rounded-t-lg">
+                  <CardTitle className="flex items-center">
+                    <Settings className="w-5 h-5 mr-2" />
+                    Order & Delivery Settings
+                  </CardTitle>
+                  <CardDescription>
+                    Configure minimum orders & delivery fees
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="pt-5">
+                  <p className="text-sm text-gray-500">
+                    Set minimum order amounts (${orderSettings?.minimumOrderAmount || 30}), delivery fees (${orderSettings?.deliveryFee || 5}), free delivery threshold (${orderSettings?.freeDeliveryThreshold || 250}), and loyalty points rate.
+                  </p>
+                </CardContent>
+                <CardFooter>
+                  <Button asChild className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                    <Link href="/admin/order-settings">
+                      <Settings className="w-4 h-4 mr-2" />
+                      Configure Settings
+                    </Link>
+                  </Button>
+                </CardFooter>
+              </Card>
+
               {/* Tax Management Card */}
               <Card className="border-2 border-red-200">
                 <CardHeader className="bg-red-50 rounded-t-lg">
