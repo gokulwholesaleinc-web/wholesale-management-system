@@ -10,7 +10,7 @@ export class CalculationTests {
   static async testFlatTaxCalculation(): Promise<boolean> {
     try {
       const { db } = await import('../db');
-      const { flatTaxes } = await import('../../shared/schema');
+      const { flatTaxes } = await import('../..../../shared/schema');
       const { eq } = await import('drizzle-orm');
       
       // Unit test: 60ct returns 18.00

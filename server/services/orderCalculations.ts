@@ -1,0 +1,131 @@
+import { randomUUID } from 'node:crypto';
+import { Order, OrderItem, OrderStatus, OrderStatusHistory, Payment } from '../../shared/order-types';
+
+const ALLOWED: Record<OrderStatus, OrderStatus[]> = {
+  NEW: ['PAID', 'CANCELLED', 'ON_HOLD'],
+  PAID: ['PACKED', 'REFUNDED', 'ON_HOLD'],
+  PACKED: ['SHIPPED', 'ON_HOLD'],
+  SHIPPED: ['DELIVERED', 'RETURN_REQUESTED'],
+  DELIVERED: [],
+  CANCELLED: [],
+  REFUNDED: [],
+  ON_HOLD: ['NEW', 'PAID', 'PACKED', 'CANCELLED']
+};
+
+export const DB = {
+  orders: new Map<string, Order>(),
+  history: new Map<string, OrderStatusHistory[]>(),
+  payments: new Map<string, Payment[]>()
+};
+
+// ---- Helpers
+
+export function cents(n: number) { return Math.round(n); }
+
+export function lineTotal(i: OrderItem) {
+  const base = i.qty * i.unit_price;
+  const tax = Math.round(base * (i.line_tax_rate || 0));
+  return { base, tax };
+}
+
+// Always include IL OTP tax line (even if zero)
+export function recalc(o: Order): Order {
+  const sums = o.items.map(lineTotal).reduce(
+    (acc, t) => ({ base: acc.base + t.base, tax_other: acc.tax_other + t.tax }),
+    { base: 0, tax_other: 0 }
+  );
+
+  const subtotal = sums.base;
+  const tax_other = sums.tax_other;
+
+  // tax_il_otp should be explicitly stored; ensure not NaN
+  const tax_il_otp = Number.isFinite(o.tax_il_otp) ? o.tax_il_otp : 0;
+
+  const total = subtotal + tax_il_otp + tax_other + (o.shipping || 0) - (o.discount || 0);
+  const paid = (DB.payments.get(o.id) || []).reduce((a, p) => a + p.amount, 0);
+  const balance = total - paid;
+
+  return {
+    ...o,
+    subtotal,
+    tax_other,
+    total,
+    paid,
+    balance
+  };
+}
+
+export function canTransition(from: OrderStatus, to: OrderStatus) {
+  return ALLOWED[from]?.includes(to) || to === 'CANCELLED';
+}
+
+export function pushHistory(order: Order, from: OrderStatus, to: OrderStatus, actor_id: string, reason?: string) {
+  const h = DB.history.get(order.id) || [];
+  const row: OrderStatusHistory = {
+    id: randomUUID(),
+    order_id: order.id,
+    from_status: from,
+    to_status: to,
+    actor_id,
+    reason,
+    created_at: new Date().toISOString()
+  };
+  h.push(row);
+  DB.history.set(order.id, h);
+}
+
+// Seed a couple of fake orders (remove in prod)
+export function seedOrders() {
+  if (DB.orders.size) return;
+
+  const now = new Date().toISOString();
+  const o1: Order = recalc({
+    id: 'ORD-1001',
+    currency: 'USD',
+    customer_id: 'CUST-1',
+    customer_name: 'Acme Market',
+    customer_email: 'buyer@acme.com',
+    customer_phone: '630-555-1212',
+    items: [
+      { id: 'it1', sku: 'TOB-001', name: 'Tobacco Pouch', qty: 5, unit_price: 1299, line_tax_rate: 0.1 },
+      { id: 'it2', sku: 'ECIG-010', name: 'E-Cig Device', qty: 2, unit_price: 3999, line_tax_rate: 0.1 }
+    ],
+    subtotal: 0,
+    tax_il_otp: 4500, // IL 45% OTP (example)
+    tax_other: 0,
+    shipping: 999,
+    discount: 0,
+    total: 0,
+    paid: 0,
+    balance: 0,
+    status: 'NEW',
+    created_at: now,
+    updated_at: now,
+    shipments: [],
+    payments: []
+  });
+
+  const o2: Order = recalc({
+    id: 'ORD-1002',
+    currency: 'USD',
+    customer_id: 'CUST-2',
+    customer_name: 'Bryn Mawr Deli',
+    items: [
+      { id: 'it3', sku: 'PAP-100', name: 'Paper Wraps', qty: 20, unit_price: 199, line_tax_rate: 0.07 }
+    ],
+    subtotal: 0,
+    tax_il_otp: 0,
+    tax_other: 0,
+    shipping: 0,
+    discount: 200,
+    total: 0,
+    paid: 0,
+    balance: 0,
+    status: 'PAID',
+    created_at: now,
+    updated_at: now
+  });
+
+  DB.orders.set(o1.id, recalc(o1));
+  DB.orders.set(o2.id, recalc(o2));
+}

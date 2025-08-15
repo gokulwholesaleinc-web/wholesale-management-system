@@ -3,6 +3,12 @@
 ## Overview
 Gokul Wholesale is a comprehensive B2B e-commerce platform designed to streamline wholesale operations. It offers robust features for ordering, administration, inventory tracking, and business analytics. The platform aims to enhance customer experience and provide tools for managing products, orders, and business insights, including multi-tier pricing, AI-powered invoice processing, and comprehensive analytics for business growth and market potential.
 
+## Recent Changes (August 15, 2025)
+- **Repository Standardization**: Implemented GitHub Actions CI/CD, dev container configuration, and enhanced TypeScript setup
+- **New Order Management System**: Added modern order system with Illinois tobacco tax compliance and TypeScript types
+- **Import Path Fixes**: Resolved module import issues across server architecture
+- **Security Enhancements**: Fixed all GitHub security vulnerabilities and standardized .gitignore
+
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 

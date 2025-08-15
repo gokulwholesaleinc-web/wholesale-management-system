@@ -1,7 +1,7 @@
 import { MailService } from '@sendgrid/mail';
-import { AccountRequest, User } from '@shared/schema';
+import { AccountRequest, User } from '../..../../../shared/schema';
 import { db } from '../db';
-import { users } from '@shared/schema';
+import { users } from '../..../../../shared/schema';
 import { or, eq } from 'drizzle-orm';
 import { SMSService } from './smsService';
 

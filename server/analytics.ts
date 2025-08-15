@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { orders, orderItems, products, users } from "@shared/schema";
+import { orders, orderItems, products, users } from "../shared/schema";
 import { eq, sql, desc, and, gte, lte, inArray } from "drizzle-orm";
 
 export interface SalesAnalytics {

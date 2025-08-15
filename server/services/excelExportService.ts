@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import OpenAI from 'openai';
 import { DatabaseStorage } from '../storage';
-import { ExcelExport } from '@shared/schema';
+import { ExcelExport } from '../..../../../shared/schema';
 
 export class ExcelExportService {
   private openai: OpenAI;

@@ -2,7 +2,7 @@
 // Implements SQL verification pattern from image: "Make the DB lookup unmissable"
 
 import { db } from '../db';
-import { flatTaxes, products } from '../../shared/schema';
+import { flatTaxes, products } from '../..../../shared/schema';
 import { eq, inArray } from 'drizzle-orm';
 
 export class FlatTaxVerifier {

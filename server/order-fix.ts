@@ -1,6 +1,6 @@
 import { db } from "./db";
 import { eq } from "drizzle-orm";
-import { cartItems, products, orders, orderItems } from "@shared/schema";
+import { cartItems, products, orders, orderItems } from "../shared/schema";
 
 export async function createOrderFromCart(userId: string, orderData: any) {
   console.log("FIXED ORDER CREATION - Starting for user:", userId);

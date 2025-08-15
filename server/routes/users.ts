@@ -2,7 +2,7 @@ import { Router } from "express";
 import { storage } from "../storage";
 import { requireAdmin, requireAuth } from "../simpleAuth";
 import { db } from '../db';
-import { deliveryAddresses } from '../../shared/schema';
+import { deliveryAddresses } from '../../..../../shared/schema';
 import { eq } from 'drizzle-orm';
 
 const router = Router();

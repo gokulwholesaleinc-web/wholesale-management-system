@@ -9,8 +9,8 @@ import {
   insertDeliveryAddressSchema,
   insertCustomerPriceMemorySchema,
   manualLoyaltyPointsSchema,
-} from "@shared/schema";
-import { accountRequests, users, customerCreditAccounts } from "@shared/schema";
+} from "../shared/schema";
+import { accountRequests, users, customerCreditAccounts } from "../shared/schema";
 import { db, pool } from "./db";
 import multer from "multer";
 import path from "path";
@@ -30,6 +30,7 @@ import emailSmsRoutes from "./routes/emailSmsRoutes";
 import { posRoutes } from "./routes/posRoutes";
 // POS auth routes removed to avoid duplication - using main auth system
 import { receiptGenerator } from "./services/receiptGenerator";
+import newOrderRoutes from "./routes/newOrderRoutes";
 
 // Helper function to calculate delivery fee based on order total
 async function calculateDeliveryFee(orderTotal: number): Promise<number> {
@@ -6976,7 +6977,7 @@ Recommend 3-4 products from our inventory that match current trends. Respond wit
       // If not enough trending products, get more from general product list
       if (suggestableProducts.length < 3) {
         console.log('Not enough trending products, getting more from general product list');
-        const { products } = await import("@shared/schema");
+        const { products } = await import("../shared/schema");
         const { sql } = await import("drizzle-orm");
         const moreProducts = await db.select().from(products)
           .where(sql`${products.stock} > 0`)
@@ -7153,7 +7154,7 @@ Recommend 3-4 products from our inventory that match current trends. Respond wit
         // Get actual available products if fallback suggestions are empty
         let finalFallbackSuggestions = fallbackSuggestions;
         if (fallbackSuggestions.length === 0) {
-          const { products } = await import("@shared/schema");
+          const { products } = await import("../shared/schema");
           const { sql } = await import("drizzle-orm");
           const actualProducts = await db.select().from(products)
             .where(sql`${products.stock} > 0`)
@@ -7802,6 +7803,9 @@ Recommend 3-4 products from our inventory that match current trends. Respond wit
   // Email and SMS notification routes
   app.use('/api/notifications', emailSmsRoutes);
   app.use('/api/pos', posRoutes);
+
+  // New order management system with IL tobacco tax compliance
+  app.use("/api/new-orders", newOrderRoutes);
   // POS auth routes removed - using main auth system to avoid duplication
 
   // ✅ NOTIFICATION ENDPOINTS FOR REGISTRY INTEGRATION
@@ -8323,7 +8327,7 @@ Recommend 3-4 products from our inventory that match current trends. Respond wit
   app.post('/api/account-requests', async (req, res) => {
     try {
       const bcrypt = await import('bcrypt');
-      const { insertAccountRequestSchema } = await import('@shared/schema');
+      const { insertAccountRequestSchema } = await import('../shared/schema');
       
       console.log('=== ACCOUNT CREATION SERVER DEBUG ===');
       console.log('Request body type:', typeof req.body);
@@ -9769,7 +9773,7 @@ Make it engaging and appropriate for a B2B wholesale business context. Respond i
       
       // Update user's loyalty points directly in database
       const { eq } = await import('drizzle-orm');
-      const { users } = await import('@shared/schema');
+      const { users } = await import('../shared/schema');
       const { db } = await import('./db');
       
       await db.update(users)

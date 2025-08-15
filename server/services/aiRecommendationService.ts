@@ -1,6 +1,6 @@
 import OpenAI from "openai";
 import { db } from "../db";
-import { aiRecommendations, products, categories } from "@shared/schema";
+import { aiRecommendations, products, categories } from "../..../../../shared/schema";
 import { eq, desc, and, gte, inArray } from "drizzle-orm";
 
 const openai = new OpenAI({

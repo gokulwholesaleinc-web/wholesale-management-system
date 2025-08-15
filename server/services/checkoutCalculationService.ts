@@ -3,7 +3,7 @@
 // NEVER trusts stored amounts - always recalculates from database
 
 import { db } from '../db';
-import { flatTaxes } from '../../shared/schema';
+import { flatTaxes } from '../../..../../../shared/schema';
 import { eq } from 'drizzle-orm';
 
 export interface CheckoutItem {
@@ -117,7 +117,7 @@ export class CheckoutCalculationService {
    */
   static async verifyFlatTaxMapping(productId: number, expectedFlatTaxId: number): Promise<boolean> {
     try {
-      const { products } = await import('../../shared/schema');
+      const { products } = await import('../../..../../../shared/schema');
       const [product] = await db.select().from(products).where(eq(products.id, productId));
       
       if (!product || !product.flatTaxIds) {

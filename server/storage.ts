@@ -31,7 +31,7 @@ import {
   type IlTp1TobaccoSale, type InsertIlTp1TobaccoSale,
   type TaxCalculationAudit, type InsertTaxCalculationAudit,
   trustedDevices, type TrustedDevice, type InsertTrustedDevice
-} from "@shared/schema";
+} from "../shared/schema";
 import { db, pool } from "./db";
 import { eq, and, desc, sql, not, or, count, sum, lt, gte, inArray, ilike, gt, isNotNull, asc, lte, isNull } from "drizzle-orm";
 import bcrypt from 'bcrypt';
@@ -2998,7 +2998,7 @@ export class DatabaseStorage implements IStorage {
 
   async deleteOrderNote(noteId: number, userId?: string): Promise<boolean> {
     try {
-      const { orderNotes } = await import('@shared/schema');
+      const { orderNotes } = await import('../shared/schema');
       const { eq } = await import('drizzle-orm');
 
       // First check if note exists and user has permission (admin can delete any, others only their own)
@@ -3382,7 +3382,7 @@ export class DatabaseStorage implements IStorage {
 
   async getOrderSettings(): Promise<OrderSettings | undefined> {
     try {
-      const { orderSettings } = await import('@shared/schema');
+      const { orderSettings } = await import('../shared/schema');
       const [settings] = await db.select().from(orderSettings).limit(1);
       return settings;
     } catch (error) {
@@ -3393,7 +3393,7 @@ export class DatabaseStorage implements IStorage {
 
   async updateOrderSettings(settings: Partial<InsertOrderSettings>): Promise<OrderSettings | undefined> {
     try {
-      const { orderSettings } = await import('@shared/schema');
+      const { orderSettings } = await import('../shared/schema');
 
       // First try to update existing settings
       const [updated] = await db
@@ -3754,7 +3754,7 @@ export class DatabaseStorage implements IStorage {
   async removeAISuggestedItemsForPurchaseOrder(purchaseOrderId: number, approvedItems: any[]): Promise<void> {
     try {
       // Remove approved items from database by deleting and re-inserting remaining items
-      const { aiPurchaseOrderSuggestions } = await import('@shared/schema');
+      const { aiPurchaseOrderSuggestions } = await import('../shared/schema');
       const { eq } = await import('drizzle-orm');
 
       const allSuggestions = await this.getAIPurchaseOrderSuggestions(purchaseOrderId);
@@ -3781,7 +3781,7 @@ export class DatabaseStorage implements IStorage {
   async addItemToPurchaseOrder(purchaseOrderId: number, productId: number, quantity: number, unitCost: number, productName: string): Promise<void> {
     try {
       // Insert directly into purchase_order_items table using the correct schema
-      const { purchaseOrderItems } = await import('@shared/schema');
+      const { purchaseOrderItems } = await import('../shared/schema');
       const totalCost = quantity * unitCost;
 
       const result = await db.insert(purchaseOrderItems).values({
@@ -4250,7 +4250,7 @@ export class DatabaseStorage implements IStorage {
 
   async getNotificationSettings(userId: string): Promise<any> {
     try {
-      const { notificationSettings } = await import('@shared/schema');
+      const { notificationSettings } = await import('../shared/schema');
       const { eq } = await import('drizzle-orm');
 
       let [settings] = await db
@@ -4293,7 +4293,7 @@ export class DatabaseStorage implements IStorage {
 
   async updateNotificationSettings(userId: string, settings: any): Promise<any> {
     try {
-      const { notificationSettings } = await import('@shared/schema');
+      const { notificationSettings } = await import('../shared/schema');
       const { eq } = await import('drizzle-orm');
 
       const [updatedSettings] = await db
@@ -4314,7 +4314,7 @@ export class DatabaseStorage implements IStorage {
 
   async createNotificationSettings(userId: string, settings: any): Promise<any> {
     try {
-      const { notificationSettings } = await import('@shared/schema');
+      const { notificationSettings } = await import('../shared/schema');
 
       const [newSettings] = await db
         .insert(notificationSettings)
@@ -4377,7 +4377,7 @@ export class DatabaseStorage implements IStorage {
   // Push notification methods
   async registerDeviceToken(userId: string, token: string, platform: string, deviceInfo?: any): Promise<any> {
     try {
-      const { deviceTokens } = await import('@shared/schema');
+      const { deviceTokens } = await import('../shared/schema');
       const { eq, and } = await import('drizzle-orm');
 
       // Check if token already exists for this user
@@ -4426,7 +4426,7 @@ export class DatabaseStorage implements IStorage {
 
   async getUserDeviceTokens(userId: string): Promise<any[]> {
     try {
-      const { deviceTokens } = await import('@shared/schema');
+      const { deviceTokens } = await import('../shared/schema');
       const { eq } = await import('drizzle-orm');
 
       const tokens = await db
@@ -4443,7 +4443,7 @@ export class DatabaseStorage implements IStorage {
 
   async removeDeviceToken(userId: string, token: string): Promise<void> {
     try {
-      const { deviceTokens } = await import('@shared/schema');
+      const { deviceTokens } = await import('../shared/schema');
       const { eq, and } = await import('drizzle-orm');
 
       await db
@@ -4460,7 +4460,7 @@ export class DatabaseStorage implements IStorage {
 
   async getPushNotificationSettings(userId: string): Promise<any> {
     try {
-      const { pushNotificationSettings } = await import('@shared/schema');
+      const { pushNotificationSettings } = await import('../shared/schema');
       const { eq } = await import('drizzle-orm');
 
       const [settings] = await db
@@ -4482,7 +4482,7 @@ export class DatabaseStorage implements IStorage {
 
   async updatePushNotificationSettings(userId: string, settings: any): Promise<any> {
     try {
-      const { pushNotificationSettings } = await import('@shared/schema');
+      const { pushNotificationSettings } = await import('../shared/schema');
       const { eq } = await import('drizzle-orm');
 
       const [updatedSettings] = await db
@@ -4503,7 +4503,7 @@ export class DatabaseStorage implements IStorage {
 
   async createPushNotificationSettings(userId: string, settings: any): Promise<any> {
     try {
-      const { pushNotificationSettings } = await import('@shared/schema');
+      const { pushNotificationSettings } = await import('../shared/schema');
 
       const defaultSettings = {
         userId,
@@ -4532,7 +4532,7 @@ export class DatabaseStorage implements IStorage {
 
   async logPushNotification(userId: string, title: string, body: string, platform: string, data?: any): Promise<any> {
     try {
-      const { pushNotificationLogs } = await import('@shared/schema');
+      const { pushNotificationLogs } = await import('../shared/schema');
 
       const [logEntry] = await db
         .insert(pushNotificationLogs)
@@ -4555,7 +4555,7 @@ export class DatabaseStorage implements IStorage {
 
   async updatePushNotificationStatus(logId: number, status: string, failureReason?: string): Promise<void> {
     try {
-      const { pushNotificationLogs } = await import('@shared/schema');
+      const { pushNotificationLogs } = await import('../shared/schema');
       const { eq } = await import('drizzle-orm');
 
       const updateData: any = {
@@ -4583,7 +4583,7 @@ export class DatabaseStorage implements IStorage {
   // Activity logging methods
   async logActivity(userId: string, username: string, action: string, details: string, targetType?: string | null, targetId?: string | null, ipAddress?: string, location?: string): Promise<void> {
     try {
-      const { activityLogs } = await import('@shared/schema');
+      const { activityLogs } = await import('../shared/schema');
 
       await db.insert(activityLogs).values({
         userId: userId,
@@ -4627,7 +4627,7 @@ export class DatabaseStorage implements IStorage {
   // Missing methods identified in audit
   async getCustomerOrders(userId: string): Promise<any[]> {
     try {
-      const { orders, orderItems, products } = await import('@shared/schema');
+      const { orders, orderItems, products } = await import('../shared/schema');
       const { eq, desc } = await import('drizzle-orm');
 
       const orderList = await db
@@ -4645,7 +4645,7 @@ export class DatabaseStorage implements IStorage {
 
   async removeCartItem(userId: string, productId: number): Promise<void> {
     try {
-      const { cartItems } = await import('@shared/schema');
+      const { cartItems } = await import('../shared/schema');
       const { eq, and } = await import('drizzle-orm');
 
       await db
@@ -4662,7 +4662,7 @@ export class DatabaseStorage implements IStorage {
 
   async getAdminStats(): Promise<any> {
     try {
-      const { orders, users, products } = await import('@shared/schema');
+      const { orders, users, products } = await import('../shared/schema');
       const { eq, gte, sql } = await import('drizzle-orm');
 
       // Calculate basic stats
@@ -4706,7 +4706,7 @@ export class DatabaseStorage implements IStorage {
   async getSalesAnalytics(timeframe: string = 'month'): Promise<any> {
     try {
       console.log('[getSalesAnalytics] Called with timeframe:', timeframe);
-      const { orders, users, products, orderItems } = await import('@shared/schema');
+      const { orders, users, products, orderItems } = await import('../shared/schema');
       const { eq, gte, sql, and, lt, desc } = await import('drizzle-orm');
 
       // Calculate date range based on timeframe
@@ -4846,7 +4846,7 @@ export class DatabaseStorage implements IStorage {
 
   async getArchivedProducts(): Promise<Product[]> {
     try {
-      const { products, categories } = await import('@shared/schema');
+      const { products, categories } = await import('../shared/schema');
       const { eq } = await import('drizzle-orm');
 
       // Get archived products with category names
@@ -4883,7 +4883,7 @@ export class DatabaseStorage implements IStorage {
 
   async clearAllCarts(): Promise<void> {
     try {
-      const { cartItems } = await import('@shared/schema');
+      const { cartItems } = await import('../shared/schema');
       await db.delete(cartItems);
     } catch (error) {
       console.error('Error clearing all carts:', error);
@@ -4893,7 +4893,7 @@ export class DatabaseStorage implements IStorage {
 
   async markNotificationAsRead(notificationId: number): Promise<void> {
     try {
-      const { notifications } = await import('@shared/schema');
+      const { notifications } = await import('../shared/schema');
       const { eq } = await import('drizzle-orm');
 
       await db
@@ -5136,7 +5136,7 @@ export class DatabaseStorage implements IStorage {
 
   async searchProducts(query: string): Promise<any[]> {
     try {
-      const { products } = await import('@shared/schema');
+      const { products } = await import('../shared/schema');
       const { ilike, or } = await import('drizzle-orm');
 
       const searchResults = await db
@@ -5161,7 +5161,7 @@ export class DatabaseStorage implements IStorage {
 
   async getUserDeliveryAddresses(userId: string): Promise<any[]> {
     try {
-      const { deliveryAddresses } = await import('@shared/schema');
+      const { deliveryAddresses } = await import('../shared/schema');
       const { eq } = await import('drizzle-orm');
 
       const addresses = await db
@@ -5178,7 +5178,7 @@ export class DatabaseStorage implements IStorage {
 
   async getRecentOrders(limit: number = 10): Promise<any[]> {
     try {
-      const { orders } = await import('@shared/schema');
+      const { orders } = await import('../shared/schema');
       const { desc } = await import('drizzle-orm');
 
       const recentOrders = await db
@@ -5196,7 +5196,7 @@ export class DatabaseStorage implements IStorage {
 
   async getUserNotificationSettings(userId: string): Promise<any> {
     try {
-      const { notificationSettings } = await import('@shared/schema');
+      const { notificationSettings } = await import('../shared/schema');
       const { eq } = await import('drizzle-orm');
 
       const [settings] = await db
@@ -5233,7 +5233,7 @@ export class DatabaseStorage implements IStorage {
 
   async updateUserNotificationSettings(userId: string, settings: any): Promise<any> {
     try {
-      const { notificationSettings } = await import('@shared/schema');
+      const { notificationSettings } = await import('../shared/schema');
       const { eq } = await import('drizzle-orm');
 
       // Check if settings exist
@@ -5296,13 +5296,13 @@ export class DatabaseStorage implements IStorage {
 
   // AI Invoice Processing Methods
   async createAiInvoiceProcessing(data: any) {
-    const { aiInvoiceProcessing } = await import('@shared/schema');
+    const { aiInvoiceProcessing } = await import('../shared/schema');
     const result = await db.insert(aiInvoiceProcessing).values(data).returning();
     return result[0];
   }
 
   async updateAiInvoiceProcessing(id: number, data: any) {
-    const { aiInvoiceProcessing } = await import('@shared/schema');
+    const { aiInvoiceProcessing } = await import('../shared/schema');
     const { eq } = await import('drizzle-orm');
     const result = await db.update(aiInvoiceProcessing)
       .set({ ...data, updatedAt: new Date() })
@@ -5312,7 +5312,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAiInvoiceProcessing(id: number) {
-    const { aiInvoiceProcessing } = await import('@shared/schema');
+    const { aiInvoiceProcessing } = await import('../shared/schema');
     const { eq } = await import('drizzle-orm');
     const result = await db.select()
       .from(aiInvoiceProcessing)
@@ -5322,13 +5322,13 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createAiProductSuggestion(data: any) {
-    const { aiProductSuggestions } = await import('@shared/schema');
+    const { aiProductSuggestions } = await import('../shared/schema');
     const result = await db.insert(aiProductSuggestions).values(data).returning();
     return result[0];
   }
 
   async getAiProductSuggestions(invoiceId: number) {
-    const { aiProductSuggestions } = await import('@shared/schema');
+    const { aiProductSuggestions } = await import('../shared/schema');
     const { eq } = await import('drizzle-orm');
     return await db.select()
       .from(aiProductSuggestions)
@@ -5336,7 +5336,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAllCategories() {
-    const { categories } = await import('@shared/schema');
+    const { categories } = await import('../shared/schema');
     return await db.select().from(categories);
   }
 
@@ -5697,7 +5697,7 @@ export class DatabaseStorage implements IStorage {
   }): Promise<any> {
     try {
       // Import the draft orders and items tables
-      const { draftOrders, draftOrderItems } = await import("@shared/schema");
+      const { draftOrders, draftOrderItems } = await import("../shared/schema");
 
       const [draftOrder] = await db
         .insert(draftOrders)
@@ -5734,7 +5734,7 @@ export class DatabaseStorage implements IStorage {
 
   async getDraftOrders(customerId: string): Promise<any[]> {
     try {
-      const { draftOrders, draftOrderItems } = await import("@shared/schema");
+      const { draftOrders, draftOrderItems } = await import("../shared/schema");
 
       const drafts = await db
         .select()
@@ -5771,7 +5771,7 @@ export class DatabaseStorage implements IStorage {
 
   async getDraftOrderById(id: number): Promise<any> {
     try {
-      const { draftOrders, draftOrderItems } = await import("@shared/schema");
+      const { draftOrders, draftOrderItems } = await import("../shared/schema");
 
       const [draft] = await db
         .select()
@@ -5802,7 +5802,7 @@ export class DatabaseStorage implements IStorage {
 
   async updateDraftOrder(id: number, data: any): Promise<any> {
     try {
-      const { draftOrders } = await import("@shared/schema");
+      const { draftOrders } = await import("../shared/schema");
 
       const [updated] = await db
         .update(draftOrders)
@@ -5822,7 +5822,7 @@ export class DatabaseStorage implements IStorage {
 
   async deleteDraftOrder(id: number): Promise<void> {
     try {
-      const { draftOrders, draftOrderItems } = await import("@shared/schema");
+      const { draftOrders, draftOrderItems } = await import("../shared/schema");
 
       // Delete items first
       await db.delete(draftOrderItems).where(eq(draftOrderItems.draftOrderId, id));
@@ -5837,7 +5837,7 @@ export class DatabaseStorage implements IStorage {
 
   async addDraftOrderItem(draftOrderId: number, productId: number, quantity: number, price: number): Promise<any> {
     try {
-      const { draftOrderItems } = await import("@shared/schema");
+      const { draftOrderItems } = await import("../shared/schema");
 
       const [item] = await db
         .insert(draftOrderItems)
@@ -5858,7 +5858,7 @@ export class DatabaseStorage implements IStorage {
 
   async updateDraftOrderItem(itemId: number, quantity: number): Promise<any> {
     try {
-      const { draftOrderItems } = await import("@shared/schema");
+      const { draftOrderItems } = await import("../shared/schema");
 
       const [updated] = await db
         .update(draftOrderItems)
@@ -5875,7 +5875,7 @@ export class DatabaseStorage implements IStorage {
 
   async removeDraftOrderItem(itemId: number): Promise<void> {
     try {
-      const { draftOrderItems } = await import("@shared/schema");
+      const { draftOrderItems } = await import("../shared/schema");
 
       await db.delete(draftOrderItems).where(eq(draftOrderItems.id, itemId));
     } catch (error) {
@@ -5917,7 +5917,7 @@ export class DatabaseStorage implements IStorage {
   // Wishlist operations - for saving favorite products
   async addToWishlist(customerId: string, productId: number, priceWhenAdded: number, notes?: string): Promise<any> {
     try {
-      const { wishlistItems } = await import("@shared/schema");
+      const { wishlistItems } = await import("../shared/schema");
 
       const [item] = await db
         .insert(wishlistItems)
@@ -5939,7 +5939,7 @@ export class DatabaseStorage implements IStorage {
 
   async removeFromWishlist(customerId: string, productId: number): Promise<void> {
     try {
-      const { wishlistItems } = await import("@shared/schema");
+      const { wishlistItems } = await import("../shared/schema");
 
       await db
         .delete(wishlistItems)
@@ -5957,7 +5957,7 @@ export class DatabaseStorage implements IStorage {
 
   async getWishlist(customerId: string): Promise<any[]> {
     try {
-      const { wishlistItems } = await import("@shared/schema");
+      const { wishlistItems } = await import("../shared/schema");
 
       const wishlist = await db
         .select({
@@ -5985,7 +5985,7 @@ export class DatabaseStorage implements IStorage {
 
   async clearWishlist(customerId: string): Promise<void> {
     try {
-      const { wishlistItems } = await import("@shared/schema");
+      const { wishlistItems } = await import("../shared/schema");
 
       await db.delete(wishlistItems).where(eq(wishlistItems.customerId, customerId));
     } catch (error) {
@@ -5996,7 +5996,7 @@ export class DatabaseStorage implements IStorage {
 
   async updateWishlistItemNotes(customerId: string, productId: number, notes: string): Promise<any> {
     try {
-      const { wishlistItems } = await import("@shared/schema");
+      const { wishlistItems } = await import("../shared/schema");
 
       const [updated] = await db
         .update(wishlistItems)
@@ -6025,7 +6025,7 @@ export class DatabaseStorage implements IStorage {
     deliveryAddressId?: number;
   }): Promise<any> {
     try {
-      const { orderTemplates, orderTemplateItems } = await import("@shared/schema");
+      const { orderTemplates, orderTemplateItems } = await import("../shared/schema");
 
       const [template] = await db
         .insert(orderTemplates)
@@ -6060,7 +6060,7 @@ export class DatabaseStorage implements IStorage {
 
   async getOrderTemplates(customerId: string): Promise<any[]> {
     try {
-      const { orderTemplates, orderTemplateItems } = await import("@shared/schema");
+      const { orderTemplates, orderTemplateItems } = await import("../shared/schema");
 
       const templates = await db
         .select()
@@ -6097,7 +6097,7 @@ export class DatabaseStorage implements IStorage {
 
   async getOrderTemplateById(id: number): Promise<any> {
     try {
-      const { orderTemplates, orderTemplateItems } = await import("@shared/schema");
+      const { orderTemplates, orderTemplateItems } = await import("../shared/schema");
 
       const [template] = await db
         .select()
@@ -6128,7 +6128,7 @@ export class DatabaseStorage implements IStorage {
 
   async updateOrderTemplate(id: number, data: any): Promise<any> {
     try {
-      const { orderTemplates } = await import("@shared/schema");
+      const { orderTemplates } = await import("../shared/schema");
 
       const [updated] = await db
         .update(orderTemplates)
@@ -6145,7 +6145,7 @@ export class DatabaseStorage implements IStorage {
 
   async deleteOrderTemplate(id: number): Promise<void> {
     try {
-      const { orderTemplates, orderTemplateItems } = await import("@shared/schema");
+      const { orderTemplates, orderTemplateItems } = await import("../shared/schema");
 
       // Delete items first
       await db.delete(orderTemplateItems).where(eq(orderTemplateItems.templateId, id));
@@ -6160,7 +6160,7 @@ export class DatabaseStorage implements IStorage {
 
   async addOrderTemplateItem(templateId: number, productId: number, quantity: number): Promise<any> {
     try {
-      const { orderTemplateItems } = await import("@shared/schema");
+      const { orderTemplateItems } = await import("../shared/schema");
 
       const [item] = await db
         .insert(orderTemplateItems)
@@ -6180,7 +6180,7 @@ export class DatabaseStorage implements IStorage {
 
   async updateOrderTemplateItem(itemId: number, quantity: number): Promise<any> {
     try {
-      const { orderTemplateItems } = await import("@shared/schema");
+      const { orderTemplateItems } = await import("../shared/schema");
 
       const [updated] = await db
         .update(orderTemplateItems)
@@ -6197,7 +6197,7 @@ export class DatabaseStorage implements IStorage {
 
   async removeOrderTemplateItem(itemId: number): Promise<void> {
     try {
-      const { orderTemplateItems } = await import("@shared/schema");
+      const { orderTemplateItems } = await import("../shared/schema");
 
       await db.delete(orderTemplateItems).where(eq(orderTemplateItems.id, itemId));
     } catch (error) {
@@ -6208,7 +6208,7 @@ export class DatabaseStorage implements IStorage {
 
   async useOrderTemplate(templateId: number): Promise<any> {
     try {
-      const { orderTemplates } = await import("@shared/schema");
+      const { orderTemplates } = await import("../shared/schema");
 
       const [updated] = await db
         .update(orderTemplates)
@@ -6229,7 +6229,7 @@ export class DatabaseStorage implements IStorage {
   // AI Suggestions operations - for caching AI-generated recommendations
   async cacheAISuggestions(cacheKey: string, suggestionType: string, inputData: any, suggestions: any, expirationHours: number): Promise<any> {
     try {
-      const { aiSuggestions } = await import("@shared/schema");
+      const { aiSuggestions } = await import("../shared/schema");
       const { sql } = await import("drizzle-orm");
 
       // Use ON CONFLICT to handle duplicate cache keys
@@ -6262,7 +6262,7 @@ export class DatabaseStorage implements IStorage {
 
   async getAISuggestions(cacheKey: string): Promise<any> {
     try {
-      const { aiSuggestions } = await import("@shared/schema");
+      const { aiSuggestions } = await import("../shared/schema");
 
       const [cached] = await db
         .select()
@@ -6307,7 +6307,7 @@ export class DatabaseStorage implements IStorage {
 
   async getTrendingProducts(): Promise<any[]> {
     try {
-      const { products, orderItems, orders } = await import("@shared/schema");
+      const { products, orderItems, orders } = await import("../shared/schema");
       const { desc, count, eq, gte, sql } = await import("drizzle-orm");
 
       // Get products ordered in the last 30 days, sorted by order frequency
@@ -6356,7 +6356,7 @@ export class DatabaseStorage implements IStorage {
 
   async clearExpiredAISuggestions(): Promise<void> {
     try {
-      const { aiSuggestions } = await import("@shared/schema");
+      const { aiSuggestions } = await import("../shared/schema");
 
       await db
         .delete(aiSuggestions)
@@ -6370,7 +6370,7 @@ export class DatabaseStorage implements IStorage {
   // AI Recommendation Tracking implementation
   async trackAIRecommendation(data: any): Promise<any> {
     try {
-      const { aiRecommendationTracking } = await import("@shared/schema");
+      const { aiRecommendationTracking } = await import("../shared/schema");
 
       const [tracked] = await db
         .insert(aiRecommendationTracking)
@@ -6396,7 +6396,7 @@ export class DatabaseStorage implements IStorage {
 
   async updateAIRecommendationAction(trackingId: number, action: 'clicked' | 'added_to_cart' | 'purchased', orderId?: number): Promise<any> {
     try {
-      const { aiRecommendationTracking } = await import("@shared/schema");
+      const { aiRecommendationTracking } = await import("../shared/schema");
 
       const now = new Date();
       const updateData: any = {};
@@ -6485,7 +6485,7 @@ export class DatabaseStorage implements IStorage {
 
   async getAIRecommendationConversionRate(recommendationType?: string): Promise<any> {
     try {
-      const { aiRecommendationTracking } = await import("@shared/schema");
+      const { aiRecommendationTracking } = await import("../shared/schema");
 
       let query = db
         .select({
@@ -6715,7 +6715,7 @@ export class DatabaseStorage implements IStorage {
   // AI Purchase Order Suggestions methods
   async storeAIPurchaseOrderSuggestions(purchaseOrderId: number, suggestions: any[]): Promise<void> {
     try {
-      const { aiPurchaseOrderSuggestions } = await import('@shared/schema');
+      const { aiPurchaseOrderSuggestions } = await import('../shared/schema');
       const { eq } = await import('drizzle-orm');
 
       // Clear existing suggestions for this purchase order
@@ -6747,7 +6747,7 @@ export class DatabaseStorage implements IStorage {
 
   async getAIPurchaseOrderSuggestions(purchaseOrderId: number): Promise<any[]> {
     try {
-      const { aiPurchaseOrderSuggestions } = await import('@shared/schema');
+      const { aiPurchaseOrderSuggestions } = await import('../shared/schema');
       const { eq } = await import('drizzle-orm');
 
       const suggestions = await db

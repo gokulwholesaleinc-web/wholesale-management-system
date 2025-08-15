@@ -14,7 +14,7 @@ import {
   categories,
   orders,
   orderItems
-} from "@shared/schema";
+} from "../shared/schema";
 import { db } from "./db";
 import multer from "multer";
 import path from "path";

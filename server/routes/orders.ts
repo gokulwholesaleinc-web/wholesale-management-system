@@ -3,7 +3,7 @@ import { storage } from '../storage';
 import { requireAuth, requireAdmin } from '../simpleAuth';
 import { z } from 'zod';
 import { db } from '../db';
-import { orders, products } from '../../shared/schema';
+import { orders, products } from '../../..../../shared/schema';
 import { count, eq, sql } from 'drizzle-orm';
 
 const router = express.Router();

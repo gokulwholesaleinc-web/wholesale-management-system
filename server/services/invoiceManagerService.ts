@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { DatabaseStorage } from '../storage';
-import { Order, User } from '@shared/schema';
+import { Order, User } from '../..../../../shared/schema';
 
 interface InvoiceSearchResult {
   orderId: number;

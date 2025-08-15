@@ -7,7 +7,7 @@ import {
   insertOrderSchema,
   insertOrderItemSchema,
   insertDeliveryAddressSchema,
-} from "@shared/schema";
+} from "../shared/schema";
 import { db } from "./db";
 import multer from "multer";
 import path from "path";
