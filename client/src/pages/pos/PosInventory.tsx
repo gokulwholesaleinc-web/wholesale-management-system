@@ -11,7 +11,8 @@ interface Product {
   id: number;
   name: string;
   price: number;
-  inventory: number;
+  stock: number; // Normalized stock field
+  inventory?: number; // Legacy field mapping for compatibility
   categoryId: number;
   upcCode?: string;
   description?: string;
@@ -52,7 +53,7 @@ export const PosInventory: React.FC = () => {
   });
 
   const getLowStockProducts = () => {
-    return products.filter((product: Product) => product.inventory <= 10);
+    return products.filter((product: Product) => (product.stock || product.inventory || 0) <= 10);
   };
 
   return (
@@ -141,13 +142,13 @@ export const PosInventory: React.FC = () => {
                       <span className="font-medium text-sm">{product.name}</span>
                     </div>
                     <div className={`px-2 py-1 rounded-full text-xs ${
-                      product.inventory <= 5 
+                      (product.stock || product.inventory || 0) <= 5 
                         ? 'bg-red-100 text-red-800' 
-                        : product.inventory <= 10
+                        : (product.stock || product.inventory || 0) <= 10
                           ? 'bg-yellow-100 text-yellow-800'
                           : 'bg-green-100 text-green-800'
                     }`}>
-                      {product.inventory} in stock
+                      {product.stock || product.inventory || 0} in stock
                     </div>
                   </div>
                   
@@ -221,7 +222,7 @@ export const PosInventory: React.FC = () => {
                 <div>
                   <p className="text-sm text-gray-600">In Stock</p>
                   <p className="text-xl font-bold">
-                    {products.filter((p: Product) => p.inventory > 10).length}
+                    {products.filter((p: Product) => (p.stock || p.inventory || 0) > 10).length}
                   </p>
                 </div>
               </div>
@@ -235,7 +236,7 @@ export const PosInventory: React.FC = () => {
                 <div>
                   <p className="text-sm text-gray-600">Out of Stock</p>
                   <p className="text-xl font-bold">
-                    {products.filter((p: Product) => p.inventory === 0).length}
+                    {products.filter((p: Product) => (p.stock || p.inventory || 0) === 0).length}
                   </p>
                 </div>
               </div>

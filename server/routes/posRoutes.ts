@@ -1751,6 +1751,211 @@ router.post('/manager-override', async (req, res) => {
   }
 });
 
+// POS Report Stub Endpoints
+// TODO: Replace with real calculations based on actual transaction data
+
+// GET /api/pos/reports/end-of-day?date=YYYY-MM-DD
+router.get('/reports/end-of-day', requireEmployeeOrAdmin, async (req, res) => {
+  try {
+    const date = req.query.date as string || new Date().toISOString().split('T')[0];
+    
+    // TODO: Calculate actual EOD metrics from transactions
+    const eodReport = {
+      date,
+      businessDate: date,
+      totalSales: 2847.50,
+      transactionCount: 23,
+      averageTransaction: 123.80,
+      taxCollected: 227.80,
+      discountsGiven: 45.00,
+      paymentBreakdown: {
+        cash: 1250.00,
+        card: 1400.00,
+        check: 197.50,
+        account_credit: 0.00
+      },
+      topProducts: [
+        { productName: "Sample Product 1", quantitySold: 15, revenue: 450.00 },
+        { productName: "Sample Product 2", quantitySold: 12, revenue: 360.00 },
+        { productName: "Sample Product 3", quantitySold: 8, revenue: 240.00 }
+      ],
+      hourlyBreakdown: Array.from({ length: 12 }, (_, i) => ({
+        hour: i + 8, // 8 AM to 8 PM
+        sales: Math.random() * 300 + 50,
+        transactions: Math.floor(Math.random() * 8) + 1
+      }))
+    };
+    
+    res.json(eodReport);
+  } catch (error) {
+    console.error('Error generating end-of-day report:', error);
+    res.status(500).json({ error: 'Failed to generate end-of-day report' });
+  }
+});
+
+// GET /api/pos/reports/hourly-sales?date=YYYY-MM-DD
+router.get('/reports/hourly-sales', requireEmployeeOrAdmin, async (req, res) => {
+  try {
+    const date = req.query.date as string || new Date().toISOString().split('T')[0];
+    
+    // TODO: Calculate actual hourly sales from transaction timestamps
+    const hourlySales = Array.from({ length: 12 }, (_, i) => ({
+      hour: i + 8, // 8 AM to 8 PM
+      formattedHour: `${(i + 8) % 12 || 12}:00 ${i + 8 >= 12 ? 'PM' : 'AM'}`,
+      sales: Math.random() * 400 + 100,
+      transactions: Math.floor(Math.random() * 10) + 1,
+      averageTransaction: 0
+    }));
+    
+    // Calculate average transaction amounts
+    hourlySales.forEach(hour => {
+      hour.averageTransaction = hour.sales / hour.transactions;
+    });
+    
+    res.json({
+      date,
+      hourlyData: hourlySales,
+      totalSales: hourlySales.reduce((sum, hour) => sum + hour.sales, 0),
+      totalTransactions: hourlySales.reduce((sum, hour) => sum + hour.transactions, 0)
+    });
+  } catch (error) {
+    console.error('Error generating hourly sales report:', error);
+    res.status(500).json({ error: 'Failed to generate hourly sales report' });
+  }
+});
+
+// GET /api/pos/reports/cashier-performance?date=YYYY-MM-DD
+router.get('/reports/cashier-performance', requireEmployeeOrAdmin, async (req, res) => {
+  try {
+    const date = req.query.date as string || new Date().toISOString().split('T')[0];
+    
+    // TODO: Calculate actual cashier performance from transaction data
+    const cashierPerformance = [
+      {
+        cashierId: "emp_001",
+        cashierName: "John Smith",
+        transactionCount: 45,
+        totalSales: 1250.00,
+        averageTransaction: 27.78,
+        hoursWorked: 8,
+        salesPerHour: 156.25,
+        voidCount: 2,
+        discountCount: 5,
+        performanceScore: 92
+      },
+      {
+        cashierId: "emp_002", 
+        cashierName: "Jane Doe",
+        transactionCount: 38,
+        totalSales: 980.00,
+        averageTransaction: 25.79,
+        hoursWorked: 6,
+        salesPerHour: 163.33,
+        voidCount: 1,
+        discountCount: 3,
+        performanceScore: 88
+      },
+      {
+        cashierId: "emp_003",
+        cashierName: "Mike Johnson", 
+        transactionCount: 32,
+        totalSales: 875.00,
+        averageTransaction: 27.34,
+        hoursWorked: 7,
+        salesPerHour: 125.00,
+        voidCount: 0,
+        discountCount: 7,
+        performanceScore: 85
+      }
+    ];
+    
+    res.json({
+      date,
+      cashiers: cashierPerformance,
+      summary: {
+        totalCashiers: cashierPerformance.length,
+        totalTransactions: cashierPerformance.reduce((sum, c) => sum + c.transactionCount, 0),
+        totalSales: cashierPerformance.reduce((sum, c) => sum + c.totalSales, 0),
+        averagePerformanceScore: cashierPerformance.reduce((sum, c) => sum + c.performanceScore, 0) / cashierPerformance.length
+      }
+    });
+  } catch (error) {
+    console.error('Error generating cashier performance report:', error);
+    res.status(500).json({ error: 'Failed to generate cashier performance report' });
+  }
+});
+
+// GET /api/pos/reports/product-movement?date=YYYY-MM-DD
+router.get('/reports/product-movement', requireEmployeeOrAdmin, async (req, res) => {
+  try {
+    const date = req.query.date as string || new Date().toISOString().split('T')[0];
+    
+    // TODO: Calculate actual product movement from transaction items
+    const productMovement = [
+      {
+        productId: "prod_001",
+        productName: "Premium Coffee Beans",
+        sku: "COF-001",
+        quantitySold: 24,
+        revenue: 480.00,
+        cost: 288.00,
+        profit: 192.00,
+        profitMargin: 40.0,
+        inventoryRemaining: 156
+      },
+      {
+        productId: "prod_002", 
+        productName: "Organic Tea Variety Pack",
+        sku: "TEA-002",
+        quantitySold: 18,
+        revenue: 360.00,
+        cost: 180.00,
+        profit: 180.00,
+        profitMargin: 50.0,
+        inventoryRemaining: 87
+      },
+      {
+        productId: "prod_003",
+        productName: "Artisan Chocolate Bar",
+        sku: "CHO-003", 
+        quantitySold: 35,
+        revenue: 175.00,
+        cost: 105.00,
+        profit: 70.00,
+        profitMargin: 40.0,
+        inventoryRemaining: 245
+      },
+      {
+        productId: "prod_004",
+        productName: "Gourmet Snack Mix",
+        sku: "SNK-004",
+        quantitySold: 12,
+        revenue: 144.00,
+        cost: 72.00,
+        profit: 72.00,
+        profitMargin: 50.0,
+        inventoryRemaining: 68
+      }
+    ];
+    
+    res.json({
+      date,
+      products: productMovement,
+      summary: {
+        totalProducts: productMovement.length,
+        totalQuantitySold: productMovement.reduce((sum, p) => sum + p.quantitySold, 0),
+        totalRevenue: productMovement.reduce((sum, p) => sum + p.revenue, 0),
+        totalCost: productMovement.reduce((sum, p) => sum + p.cost, 0),
+        totalProfit: productMovement.reduce((sum, p) => sum + p.profit, 0),
+        averageProfitMargin: productMovement.reduce((sum, p) => sum + p.profitMargin, 0) / productMovement.length
+      }
+    });
+  } catch (error) {
+    console.error('Error generating product movement report:', error);
+    res.status(500).json({ error: 'Failed to generate product movement report' });
+  }
+});
+
 // AI-powered POS endpoints
 router.post('/ai-suggestions', async (req, res) => {
   try {

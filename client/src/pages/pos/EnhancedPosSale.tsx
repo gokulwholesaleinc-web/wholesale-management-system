@@ -263,7 +263,7 @@ export const EnhancedPosSale: React.FC = () => {
         total: unitPrice * quantity,
         barcode: product.upcCode,
         imageUrl: product.imageUrl,
-        inventory: product.inventory,
+        inventory: product.stock || product.inventory || 0, // Normalize to stock field
         category: product.category?.name || 'N/A'
       };
       
@@ -338,7 +338,7 @@ export const EnhancedPosSale: React.FC = () => {
       total: (item.unitPrice || item.price) * item.quantity,
       barcode: item.barcode,
       imageUrl: item.imageUrl,
-      inventory: item.inventory,
+      inventory: item.stock || item.inventory || 0, // Normalize to stock field
       category: item.category || 'N/A',
       specialPrice: item.specialPrice
     })) || [];
@@ -597,21 +597,57 @@ export const EnhancedPosSale: React.FC = () => {
     setIsProcessingPayment(true);
 
     try {
-      // Simulate transaction processing like RMS
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Prepare transaction data for server
+      const transactionData = {
+        customerId: selectedCustomer?.id || null,
+        items: cart.map(item => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice || item.price,
+          lineSubtotal: (item.unitPrice || item.price) * item.quantity,
+          lineTax: 0, // TODO: Calculate line tax based on product tax settings
+          lineTotal: (item.unitPrice || item.price) * item.quantity,
+          originalPrice: item.price, // Original catalog price
+          specialPrice: item.specialPrice || null
+        })),
+        paymentMethod: paymentMode === 'cash' ? 'cash' : 
+                       paymentMode === 'card' ? 'card' : 
+                       paymentMode === 'check' ? 'check' : 'account_credit',
+        cashReceived: paymentMode === 'cash' ? parseFloat(cashReceived) || 0 : null,
+        cashChange: paymentMode === 'cash' ? Math.max(0, (parseFloat(cashReceived) || 0) - total) : null,
+        checkNumber: paymentMode === 'check' ? 'CHK001' : null, // TODO: Capture check number
+        subtotal: subtotal,
+        tax: tax,
+        total: total,
+        notes: '',
+        savePriceMemory: true // Save special pricing to memory
+      };
+
+      // Create transaction via API
+      const response = await apiRequest('POST', '/api/pos/transactions', transactionData);
       
-      const receiptNumber = `R${Date.now()}`;
+      if (response.success) {
+        // Use server transaction data for receipt
+        const { transactionNumber, transaction } = response;
+        
+        toast({
+          title: "Transaction Complete",
+          description: `Transaction #${transactionNumber} - $${total.toFixed(2)}`,
+        });
+
+        // TODO: Print receipt using server transaction data
+        console.log('Transaction completed:', { transactionNumber, transaction });
+        
+        clearTransaction();
+      } else {
+        throw new Error(response.message || 'Transaction failed');
+      }
       
-      toast({
-        title: "Transaction Complete",
-        description: `Receipt #${receiptNumber} - $${total.toFixed(2)}`,
-      });
-      
-      clearTransaction();
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Transaction error:', error);
       toast({
         title: "Transaction Failed",
-        description: "Please try again or contact support",
+        description: error.message || "Please try again or contact support",
         variant: "destructive"
       });
     } finally {
@@ -916,8 +952,8 @@ export const EnhancedPosSale: React.FC = () => {
                               <div className="font-medium truncate">{product.name}</div>
                               <div className="text-sm text-gray-500 flex flex-wrap gap-3">
                                 <span>SKU: {product.id}</span>
-                                <span className={`${product.inventory <= 10 ? 'text-red-600 font-medium' : 'text-gray-500'}`}>
-                                  Stock: {product.inventory}
+                                <span className={`${(product.stock || product.inventory || 0) <= 10 ? 'text-red-600 font-medium' : 'text-gray-500'}`}>
+                                  Stock: {product.stock || product.inventory || 0}
                                 </span>
                                 {product.upcCode && <span>UPC: {product.upcCode}</span>}
                               </div>
@@ -972,7 +1008,7 @@ export const EnhancedPosSale: React.FC = () => {
                                     addItemToCart(product);
                                   }}
                                   className="h-6 px-2 text-xs"
-                                  disabled={product.inventory <= 0}
+                                  disabled={(product.stock || product.inventory || 0) <= 0}
                                 >
                                   Add
                                 </Button>
@@ -1074,7 +1110,7 @@ export const EnhancedPosSale: React.FC = () => {
                             <div className="flex items-center gap-4 text-sm text-gray-500">
                               <span>SKU: {item.productId}</span>
                               <span className={`${item.inventory && item.inventory <= 10 ? 'text-red-600 font-medium' : ''}`}>
-                                Stock: {item.inventory || 0}
+                                Stock: {item.inventory || item.stock || 0}
                               </span>
                               {item.specialPrice && (
                                 <Badge variant="secondary" className="text-xs">
@@ -1462,8 +1498,8 @@ export const EnhancedPosSale: React.FC = () => {
                     </div>
                     <div>
                       <span className="text-gray-500">Stock:</span> 
-                      <span className={selectedItemInfo.inventory <= 10 ? 'text-red-600 font-medium ml-1' : 'ml-1'}>
-                        {selectedItemInfo.inventory}
+                      <span className={(selectedItemInfo.stock || selectedItemInfo.inventory || 0) <= 10 ? 'text-red-600 font-medium ml-1' : 'ml-1'}>
+                        {selectedItemInfo.stock || selectedItemInfo.inventory || 0}
                       </span>
                     </div>
                     {selectedItemInfo.upcCode && (
@@ -1536,7 +1572,7 @@ export const EnhancedPosSale: React.FC = () => {
                     addItemToCart(selectedItemInfo);
                     setIsItemInfoOpen(false);
                   }}
-                  disabled={selectedItemInfo.inventory <= 0}
+                  disabled={(selectedItemInfo.stock || selectedItemInfo.inventory || 0) <= 0}
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   Add to Cart
@@ -2209,10 +2245,10 @@ export const EnhancedPosSale: React.FC = () => {
                     </div>
                     <div className="text-right">
                       <div className={`text-lg font-semibold ${
-                        product.inventory <= 10 ? 'text-red-600' : 
-                        product.inventory <= 25 ? 'text-yellow-600' : 'text-green-600'
+                        (product.stock || product.inventory || 0) <= 10 ? 'text-red-600' : 
+                        (product.stock || product.inventory || 0) <= 25 ? 'text-yellow-600' : 'text-green-600'
                       }`}>
-                        {product.inventory}
+                        {product.stock || product.inventory || 0}
                       </div>
                       <div className="text-sm text-gray-500">in stock</div>
                       <div className="text-sm font-medium">${product.price}</div>

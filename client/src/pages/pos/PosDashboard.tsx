@@ -32,7 +32,7 @@ export const PosDashboard: React.FC = () => {
 
   const { data: lowStockItems } = useQuery({
     queryKey: ['/api/pos/products'],
-    select: (data: any) => (data || []).filter((product: any) => product.inventory <= 10)
+    select: (data: any) => (data || []).filter((product: any) => product.stock <= 10)
   });
 
   const handleBack = () => {
