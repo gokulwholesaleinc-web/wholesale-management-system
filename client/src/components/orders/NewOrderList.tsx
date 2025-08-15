@@ -1,192 +1,92 @@
-import React, { useState } from 'react';
-import { useOrders, useChangeStatus } from '../../hooks/useNewOrders';
+import React, { useState, useMemo } from 'react';
+import { useOrders } from '../../hooks/useNewOrders';
 import { StatusPill } from './StatusPill';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Search, Plus, Filter } from 'lucide-react';
+import { OrderDrawer } from './OrderDrawer';
+
+type Filters = { query: string; status: string };
 
 export function NewOrderList() {
-  const [query, setQuery] = useState('');
-  const [status, setStatus] = useState('');
-  const [page, setPage] = useState(1);
-  
-  const { data: orders, isLoading, error } = useOrders({ query, status, page, limit: 20 });
-  const changeStatus = useChangeStatus();
+  const [filters, setFilters] = useState<Filters>({ query: '', status: '' });
+  const [selectedId, setSelectedId] = useState<string | undefined>();
+  const { data, isLoading } = useOrders({ query: filters.query, status: filters.status, limit: 50 });
 
-  const handleStatusChange = async (orderId: string, newStatus: string) => {
-    try {
-      await changeStatus.mutateAsync({ 
-        id: orderId, 
-        to: newStatus, 
-        reason: `Status changed to ${newStatus}` 
-      });
-    } catch (error) {
-      console.error('Failed to change status:', error);
-    }
-  };
+  const rows = data?.data || [];
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="text-center py-8">
-        <p className="text-red-600">Failed to load orders</p>
-        <Button onClick={() => window.location.reload()} className="mt-4">
-          Retry
-        </Button>
-      </div>
-    );
-  }
+  const statusCounts = useMemo(() => {
+    const m = new Map<string, number>();
+    rows.forEach((r: any) => m.set(r.status, (m.get(r.status) || 0) + 1));
+    return Array.from(m.entries()).sort();
+  }, [rows]);
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Order Management</h1>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          New Order
-        </Button>
-      </div>
+    <div style={{ padding: 16 }}>
+      <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 12 }}>New Orders (IL Compliance)</h2>
 
       {/* Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <Filter className="h-4 w-4 mr-2" />
-            Filters
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder="Search orders..."
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-            <Select value={status} onValueChange={setStatus}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="All Statuses" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">All Statuses</SelectItem>
-                <SelectItem value="NEW">New</SelectItem>
-                <SelectItem value="PAID">Paid</SelectItem>
-                <SelectItem value="PACKED">Packed</SelectItem>
-                <SelectItem value="SHIPPED">Shipped</SelectItem>
-                <SelectItem value="DELIVERED">Delivered</SelectItem>
-                <SelectItem value="CANCELLED">Cancelled</SelectItem>
-                <SelectItem value="REFUNDED">Refunded</SelectItem>
-                <SelectItem value="ON_HOLD">On Hold</SelectItem>
-                <SelectItem value="RETURN_REQUESTED">Return Requested</SelectItem>
-              </SelectContent>
-            </Select>
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 12 }}>
+        <input
+          placeholder="Search by order #, customer, SKU"
+          value={filters.query}
+          onChange={e => setFilters(s => ({ ...s, query: e.target.value }))}
+          style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #e5e7eb', minWidth: 320 }}
+        />
+        <select
+          value={filters.status}
+          onChange={e => setFilters(s => ({ ...s, status: e.target.value }))}
+          style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #e5e7eb' }}
+        >
+          <option value="">All statuses</option>
+          {['NEW','PAID','PACKED','SHIPPED','DELIVERED','CANCELLED','REFUNDED','ON_HOLD','RETURN_REQUESTED']
+            .map(s => <option key={s} value={s}>{s}</option>)}
+        </select>
+      </div>
+
+      {/* Status chips */}
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
+        {statusCounts.map(([s, n]) => (
+          <div key={s} style={{ fontSize: 12, background: '#f3f4f6', border: '1px solid #e5e7eb', borderRadius: 999, padding: '4px 10px' }}>
+            {s}: {n}
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Orders List */}
-      <div className="space-y-4">
-        {orders?.data?.map((order: any) => (
-          <Card key={order.id} className="hover:shadow-md transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex justify-between items-start">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-3">
-                    <h3 className="text-lg font-semibold">{order.id}</h3>
-                    <StatusPill status={order.status} />
-                  </div>
-                  <p className="text-gray-600">{order.customer_name}</p>
-                  {order.customer_email && (
-                    <p className="text-sm text-gray-500">{order.customer_email}</p>
-                  )}
-                </div>
-
-                <div className="text-right space-y-2">
-                  <div className="text-2xl font-bold">
-                    ${(order.total / 100).toFixed(2)}
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    Balance: ${(order.balance / 100).toFixed(2)}
-                  </div>
-                  {order.tax_il_otp > 0 && (
-                    <Badge variant="outline" className="text-xs">
-                      IL Tobacco Tax: ${(order.tax_il_otp / 100).toFixed(2)}
-                    </Badge>
-                  )}
-                </div>
-              </div>
-
-              <div className="mt-4 pt-4 border-t">
-                <div className="flex justify-between items-center">
-                  <div className="text-sm text-gray-500">
-                    {order.items?.length} items • Created {new Date(order.created_at).toLocaleDateString()}
-                  </div>
-                  <div className="flex gap-2">
-                    <Select 
-                      onValueChange={(newStatus) => handleStatusChange(order.id, newStatus)}
-                      disabled={changeStatus.isPending}
-                    >
-                      <SelectTrigger className="w-32">
-                        <SelectValue placeholder="Change Status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="PAID">Mark Paid</SelectItem>
-                        <SelectItem value="PACKED">Mark Packed</SelectItem>
-                        <SelectItem value="SHIPPED">Mark Shipped</SelectItem>
-                        <SelectItem value="DELIVERED">Mark Delivered</SelectItem>
-                        <SelectItem value="ON_HOLD">Put On Hold</SelectItem>
-                        <SelectItem value="CANCELLED">Cancel</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Button variant="outline" size="sm">
-                      View Details
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         ))}
       </div>
 
-      {/* Pagination */}
-      {orders && orders.total > orders.limit && (
-        <div className="flex justify-center gap-2 mt-6">
-          <Button 
-            variant="outline" 
-            onClick={() => setPage(p => Math.max(1, p - 1))}
-            disabled={page === 1}
-          >
-            Previous
-          </Button>
-          <span className="flex items-center px-4">
-            Page {page} of {Math.ceil(orders.total / orders.limit)}
-          </span>
-          <Button 
-            variant="outline"
-            onClick={() => setPage(p => p + 1)}
-            disabled={page >= Math.ceil(orders.total / orders.limit)}
-          >
-            Next
-          </Button>
+      {/* Table */}
+      <div style={{ border: '1px solid #e5e7eb', borderRadius: 10, overflow: 'hidden' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '140px 170px 1fr 100px 100px 120px', gap: 0, background: '#f9fafb', fontSize: 12, fontWeight: 700, padding: '10px 12px' }}>
+          <div>Order #</div>
+          <div>Date</div>
+          <div>Customer</div>
+          <div>Total</div>
+          <div>Balance</div>
+          <div>Status</div>
         </div>
-      )}
+
+        {isLoading && <div style={{ padding: 16 }}>Loading…</div>}
+
+        {rows.map((r: any) => (
+          <button
+            key={r.id}
+            onClick={() => setSelectedId(r.id)}
+            style={{ display: 'grid', gridTemplateColumns: '140px 170px 1fr 100px 100px 120px',
+              width: '100%', textAlign: 'left', padding: '12px', borderTop: '1px solid #f3f4f6', background: 'white' }}
+          >
+            <div style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' }}>{r.id}</div>
+            <div style={{ color: '#6b7280', fontSize: 12 }}>{new Date(r.created_at).toLocaleString()}</div>
+            <div>
+              <div style={{ fontWeight: 600 }}>{r.customer_name}</div>
+              <div style={{ color: '#6b7280', fontSize: 12 }}>{r.items?.length || 0} items</div>
+            </div>
+            <div>${(r.total/100).toFixed(2)}</div>
+            <div style={{ color: r.balance > 0 ? '#ef4444' : '#16a34a' }}>
+              ${(r.balance/100).toFixed(2)}
+            </div>
+            <div><StatusPill status={r.status} /></div>
+          </button>
+        ))}
+      </div>
+
+      {/* Drawer */}
+      {selectedId && <OrderDrawer id={selectedId} onClose={() => setSelectedId(undefined)} />}
     </div>
   );
 }
