@@ -71,10 +71,16 @@ export const PosAuthProvider: React.FC<PosAuthProviderProps> = ({ children }) =>
     }
   };
 
-  const login = (userData: PosUser, posToken: string) => {
+  const login = (userData: PosUser, posToken: string, mainToken?: string) => {
     try {
       setPosToken(posToken);
       setUser(userData);
+      
+      // UNIFIED AUTH FIX: Also set main app token for API calls
+      if (mainToken) {
+        localStorage.setItem('authToken', mainToken);
+        console.log('✅ Set main auth token for POS API calls');
+      }
       
       console.log('✅ POS user authenticated:', userData.username);
       

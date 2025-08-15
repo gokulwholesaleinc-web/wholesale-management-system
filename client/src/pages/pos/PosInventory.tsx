@@ -30,13 +30,13 @@ export const PosInventory: React.FC = () => {
 
   // Fetch products - use the same endpoint as main app
   const { data: products = [], isLoading } = useQuery({
-    queryKey: ['/api/products'],
+    queryKey: ['/api/pos/products'],
     select: (data: any) => data || []
   });
 
   // Fetch categories
   const { data: categories = [] } = useQuery({
-    queryKey: ['/api/categories'],
+    queryKey: ['/api/pos/categories'],
     select: (data: any) => data || []
   });
 

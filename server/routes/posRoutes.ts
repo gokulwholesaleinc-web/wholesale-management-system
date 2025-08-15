@@ -430,17 +430,7 @@ router.get('/todays-sales', async (req, res) => {
   }
 });
 
-// Add held transactions endpoint
-router.get('/held-transactions', async (req, res) => {
-  try {
-    // Return held transactions from database
-    const heldTransactions = await db.select().from(posHeldTransactions).orderBy(desc(posHeldTransactions.createdAt));
-    res.json(heldTransactions);
-  } catch (error) {
-    console.error('Error fetching held transactions:', error);
-    res.status(500).json({ error: 'Failed to fetch held transactions' });
-  }
-});
+// REMOVED: Duplicate held-transactions endpoint - keeping the main one below
 
 // Generate unique transaction number
 function generateTransactionNumber(): string {

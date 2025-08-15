@@ -24,25 +24,26 @@ export const posQueryClient = new QueryClient({
   },
 });
 
-// POS-specific API request function
+// POS-specific API request function - Now uses main app JWT for consistency
 export async function posApiRequest(
   url: string,
   options: RequestInit = {}
 ): Promise<any> {
-  // Get POS token from localStorage
-  const posToken = localStorage.getItem('pos_auth_token');
+  // UNIFIED AUTH: Use main app JWT token for all POS API calls
+  const mainToken = localStorage.getItem('authToken');
   
-  if (!posToken) {
-    throw new Error('401: POS authentication required');
+  if (!mainToken) {
+    console.error('[POS API] No main auth token found - POS user needs to login');
+    throw new Error('401: POS authentication required - please login');
   }
 
-  console.log(`[POS API] ${options.method || 'GET'} ${url} with POS token: ${posToken.substring(0, 20)}...`);
+  console.log(`[POS API] ${options.method || 'GET'} ${url} with main JWT token`);
 
   const config: RequestInit = {
     ...options,
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${posToken}`,
+      'Authorization': `Bearer ${mainToken}`,
       ...options.headers,
     },
   };
