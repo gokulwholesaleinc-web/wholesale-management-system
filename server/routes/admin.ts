@@ -7,7 +7,7 @@ import { recordAudit, queryAudit } from '../services/audit';
 import { createApiKey, revokeApiKey } from '../services/keys';
 import { setFlag } from '../services/flags';
 import { listJobs, retryJob, cancelJob } from '../services/jobs';
-import { getPosDirectoryStats } from '../services/pos-manager';
+import { getPosDirectoryStats, generateMockPosSale, generateMockPosRegister } from '../services/pos-manager';
 
 const r = Router();
 r.use(attachUser);
@@ -45,6 +45,22 @@ r.get('/overview', requireAdmin('admin.read'), async (_req, res) => {
       }
     }
   });
+});
+
+// POS System Management
+r.get('/pos/sales/sample', requireAdmin('admin.read'), (_req, res) => {
+  const sampleSale = generateMockPosSale();
+  res.json({ data: sampleSale });
+});
+
+r.get('/pos/register/status', requireAdmin('admin.read'), (_req, res) => {
+  const registerStatus = generateMockPosRegister();
+  res.json({ data: registerStatus });
+});
+
+r.get('/pos/stats', requireAdmin('admin.read'), async (_req, res) => {
+  const posStats = await getPosDirectoryStats();
+  res.json({ data: posStats });
 });
 
 /** USERS */

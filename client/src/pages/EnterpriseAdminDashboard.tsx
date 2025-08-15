@@ -4,8 +4,9 @@ import {
   useInviteUser, useCreateKey, useSetFlag
 } from '../hooks/useAdmin';
 import { DataTable } from '../components/admin/DataTable';
+import { PosSystemPanel } from '../components/admin/PosSystemPanel';
 
-type Tab = 'overview'|'users'|'keys'|'flags'|'jobs'|'audit'|'settings';
+type Tab = 'overview'|'users'|'keys'|'flags'|'jobs'|'audit'|'pos'|'settings';
 
 export default function EnterpriseAdminDashboard() {
   const [tab, setTab] = useState<Tab>('overview');
@@ -14,7 +15,7 @@ export default function EnterpriseAdminDashboard() {
     <div style={{ padding: 16 }}>
       <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 12 }}>Enterprise Admin Dashboard</h2>
       <div style={{ display:'flex', gap:8, marginBottom:12 }}>
-        {(['overview','users','keys','flags','jobs','audit','settings'] as Tab[]).map(t=>(
+        {(['overview','users','keys','flags','jobs','audit','pos','settings'] as Tab[]).map(t=>(
           <button key={t} onClick={()=>setTab(t)}
             style={{ padding:'8px 12px', borderRadius:8, border:'1px solid #e5e7eb', background: tab===t ? '#111827' : 'white', color: tab===t ? 'white' : 'black' }}>
             {t.toUpperCase()}
@@ -28,6 +29,7 @@ export default function EnterpriseAdminDashboard() {
       {tab==='flags' && <FlagsTab/>}
       {tab==='jobs' && <JobsTab/>}
       {tab==='audit' && <AuditTab/>}
+      {tab==='pos' && <PosTab/>}
       {tab==='settings' && <SettingsTab/>}
     </div>
   );
@@ -161,6 +163,15 @@ function AuditTab() {
         columns={[{key:'at',label:'Time'},{key:'actor_email',label:'Actor'},{key:'type',label:'Event'},{key:'resource',label:'Resource'}]}
         rows={data?.data||[]}
       />
+    </div>
+  );
+}
+
+function PosTab() {
+  return (
+    <div>
+      <h3 style={{ fontSize:18, fontWeight:700, marginBottom:16 }}>POS System Management</h3>
+      <PosSystemPanel />
     </div>
   );
 }

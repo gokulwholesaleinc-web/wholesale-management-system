@@ -1,5 +1,6 @@
 import { promises as fs } from 'fs';
 import path from 'path';
+import type { PosSale, PosRegister, InventoryAdjustment } from '../../shared/pos-types';
 
 export interface PosStats {
   receipts: {
@@ -75,4 +76,51 @@ export function formatFileSize(bytes: number): string {
   const sizes = ['B', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// Mock data generators for testing
+export function generateMockPosSale(): PosSale {
+  const now = new Date();
+  const dateStr = now.toISOString().split('T')[0].replace(/-/g, '');
+  const seq = Math.floor(Math.random() * 9999).toString().padStart(4, '0');
+  
+  return {
+    id: `POS-${dateStr}-${seq}`,
+    store_id: process.env.POS_STORE_ID || 'ITASCA',
+    register_id: process.env.POS_REGISTER_ID || 'REG-01',
+    created_at: now.toISOString(),
+    cashier_id: 'admin',
+    items: [
+      {
+        sku: 'BIC-MINI-50',
+        name: 'Bic Mini Lighters (50ct)',
+        qty: 1,
+        unit_price: 4500, // $45.00 in cents
+        line_tax_rate: 0.08,
+        il_otp_cents: 0
+      }
+    ],
+    subtotal: 4500,
+    tax_il_otp: 0,
+    tax_other: 360, // 8% of $45.00
+    discount: 0,
+    total: 4860,
+    tenders: [{ type: 'CASH', amount: 5000 }],
+    change_due: 140,
+    customer_id: undefined,
+    note: undefined
+  };
+}
+
+export function generateMockPosRegister(): PosRegister {
+  return {
+    id: process.env.POS_REGISTER_ID || 'REG-01',
+    store_id: process.env.POS_STORE_ID || 'ITASCA',
+    name: 'Main Register',
+    is_open: true,
+    opening_float_cents: 20000, // $200.00
+    opened_at: new Date().toISOString(),
+    closed_at: undefined,
+    z_seq: 1
+  };
 }
