@@ -39,7 +39,7 @@ function OverviewTab() {
   const health = data?.data?.health ?? { ok: false };
   return (
     <div>
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:12, marginBottom:12 }}>
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(3, 1fr)', gap:12, marginBottom:12 }}>
         {cards.map((c:any,i:number)=>(
           <div key={i} style={{ border:'1px solid #e5e7eb', borderRadius:10, padding:12 }}>
             <div style={{ color:'#6b7280', fontSize:12 }}>{c.label}</div>
@@ -58,6 +58,14 @@ function OverviewTab() {
             <div>Store: {health.pos.store_id}</div>
             <div>Register: {health.pos.register_id}</div>
             <div>Hardware: {health.pos.hardware_status}</div>
+            <div style={{ fontSize:10, color:'#9ca3af', marginTop:4 }}>
+              Receipts: {health.pos.receipts_dir} | Exports: {health.pos.exports_dir}
+              {health.pos.stats && (
+                <div style={{ marginTop:2 }}>
+                  Receipt Files: {health.pos.stats.receipts.count} | Export Files: {health.pos.stats.exports.count}
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>

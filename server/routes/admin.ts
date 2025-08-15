@@ -7,23 +7,28 @@ import { recordAudit, queryAudit } from '../services/audit';
 import { createApiKey, revokeApiKey } from '../services/keys';
 import { setFlag } from '../services/flags';
 import { listJobs, retryJob, cancelJob } from '../services/jobs';
+import { getPosDirectoryStats } from '../services/pos-manager';
 
 const r = Router();
 r.use(attachUser);
 
 // Overview (metrics you can later back with real data)
-r.get('/overview', requireAdmin('admin.read'), (_req, res) => {
+r.get('/overview', requireAdmin('admin.read'), async (_req, res) => {
   const totalUsers = ADMIN_DB.users.size;
   const totalKeys = ADMIN_DB.keys.size;
   const totalFlags = ADMIN_DB.flags.size;
   const jobs = listJobs();
+  const posStats = await getPosDirectoryStats();
+  
   res.json({
     data: {
       cards: [
         { label: 'Admin Users', value: totalUsers },
         { label: 'API Keys', value: totalKeys },
         { label: 'Feature Flags', value: totalFlags },
-        { label: 'Jobs (queued)', value: jobs.filter(j=>j.status==='queued').length }
+        { label: 'Jobs (queued)', value: jobs.filter(j=>j.status==='queued').length },
+        { label: 'POS Receipts', value: posStats.receipts.count },
+        { label: 'POS Exports', value: posStats.exports.count }
       ],
       health: { 
         ok: true, 
@@ -32,7 +37,10 @@ r.get('/overview', requireAdmin('admin.read'), (_req, res) => {
         pos: {
           store_id: process.env.POS_STORE_ID || 'Not configured',
           register_id: process.env.POS_REGISTER_ID || 'Not configured',
-          hardware_status: 'Available'
+          hardware_status: 'Available',
+          receipts_dir: 'pos-receipts/',
+          exports_dir: 'pos-exports/',
+          stats: posStats
         }
       }
     }
