@@ -1,6 +1,40 @@
-node_modules
-dist
+# Environment variables and secrets
+.env
+*.env
+*.pem
+*.p12
+*.key
+
+# Credentials and sensitive files
+all-working-credentials.md
+complete-verified-credentials.md
+cookies.txt
+
+# Runtime/build/output
+dist/
+build/
+node_modules/
+
+# App data
+uploads/
+invoices/
+backups/
+*.pdf
+*.sqlite
+*.db
+
+# Logs
+*.log
+logs/
+
+# OS files
 .DS_Store
-server/public
-vite.config.ts.*
-*.tar.gz
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+
+# Temporary files
+*.tmp
+*.temp
