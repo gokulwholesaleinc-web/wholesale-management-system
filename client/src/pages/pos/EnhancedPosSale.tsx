@@ -14,6 +14,7 @@ import { useLocation } from 'wouter';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
+import { useUnifiedOrders } from '@/lib/unified-api-registry';
 import { printerService } from '@/services/printerService';
 
 // RMS/RMH-style Professional POS Interface
