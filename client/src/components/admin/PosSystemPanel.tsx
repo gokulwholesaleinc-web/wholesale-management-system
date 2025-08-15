@@ -1,4 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 import type { PosSale, PosRegister } from "@shared/pos-types";
 
 interface PosStats {
@@ -21,6 +22,8 @@ interface ApiResponse<T> {
 }
 
 export function PosSystemPanel() {
+  const queryClient = useQueryClient();
+  
   const { data: posStats } = useQuery<ApiResponse<PosStats>>({
     queryKey: ['/api/admin/pos/stats'],
   });
@@ -35,6 +38,17 @@ export function PosSystemPanel() {
 
   const { data: posStatistics } = useQuery<ApiResponse<any>>({
     queryKey: ['/api/admin/pos/statistics'],
+  });
+
+  const createSampleTransaction = useMutation({
+    mutationFn: () => apiRequest('/api/admin/pos/sample-transaction', {
+      method: 'POST'
+    }),
+    onSuccess: () => {
+      // Refresh all POS data after creating sample transaction
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/pos/sales/recent'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/pos/statistics'] });
+    }
   });
 
   const stats = posStats?.data;
@@ -116,12 +130,49 @@ export function PosSystemPanel() {
                 <div style={{ fontSize: 12, fontWeight: 600 }}>#{sale.id}</div>
                 <div style={{ fontSize: 11, color: '#6b7280' }}>
                   {sale.items.length} items | ${(sale.total / 100).toFixed(2)} | {new Date(sale.created_at).toLocaleTimeString()}
+                  {sale.tax_il_otp > 0 && <span style={{ color: '#dc2626', marginLeft: 4 }}>IL-OTP</span>}
                 </div>
               </div>
             ))}
           </div>
+          {sales.length > 3 && (
+            <div style={{ fontSize: 11, color: '#6b7280', marginTop: 8 }}>
+              Showing 3 of {sales.length} recent sales
+            </div>
+          )}
         </div>
       )}
+
+      {/* Test Controls */}
+      <div style={{ marginTop: 16, padding: 12, backgroundColor: '#fef3c7', borderRadius: 8, border: '1px solid #f59e0b' }}>
+        <h4 style={{ fontSize: 14, fontWeight: 600, marginBottom: 8 }}>POS Testing</h4>
+        <button
+          onClick={() => createSampleTransaction.mutate()}
+          disabled={createSampleTransaction.isPending}
+          style={{
+            padding: '6px 12px',
+            backgroundColor: '#059669',
+            color: 'white',
+            border: 'none',
+            borderRadius: 4,
+            fontSize: 12,
+            cursor: createSampleTransaction.isPending ? 'not-allowed' : 'pointer',
+            opacity: createSampleTransaction.isPending ? 0.6 : 1
+          }}
+        >
+          {createSampleTransaction.isPending ? 'Creating...' : 'Create Sample Sale (w/ IL-OTP Tax)'}
+        </button>
+        {createSampleTransaction.isSuccess && (
+          <div style={{ fontSize: 11, color: '#059669', marginTop: 4 }}>
+            ✅ Sample transaction created successfully
+          </div>
+        )}
+        {createSampleTransaction.isError && (
+          <div style={{ fontSize: 11, color: '#dc2626', marginTop: 4 }}>
+            ❌ Failed to create sample transaction
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -65,6 +65,74 @@ r.get('/pos/statistics', requireAdmin('admin.read'), (_req, res) => {
   res.json({ data: posStats });
 });
 
+// Generate receipt for POS sale
+r.post('/pos/receipt/:saleId', requireAdmin('admin.write'), async (req, res) => {
+  try {
+    const { saleId } = req.params;
+    const { buildReceiptText } = await import('../services/pos-manager');
+    const { POS_DB } = await import('../services/pos-db');
+    
+    const sale = POS_DB.sales.get(saleId);
+    if (!sale) {
+      return res.status(404).json({ error: 'Sale not found' });
+    }
+    
+    const receiptText = buildReceiptText(sale);
+    
+    res.setHeader('Content-Type', 'text/plain');
+    res.json({ data: { receiptText, sale } });
+  } catch (error) {
+    console.error('Error generating receipt:', error);
+    res.status(500).json({ error: 'Failed to generate receipt' });
+  }
+});
+
+// Create sample POS transaction for testing
+r.post('/pos/sample-transaction', requireAdmin('admin.write'), async (req, res) => {
+  try {
+    const { createSale, computeTotals } = await import('../services/pos-db');
+    
+    // Sample transaction with Illinois tobacco tax
+    const items = [
+      {
+        sku: 'TOB-001',
+        name: 'Newport Cigarettes',
+        qty: 1,
+        unit_price: 1200, // $12.00
+        line_tax_rate: 0.08,
+        il_otp_cents: 540 // 45% of $12.00
+      },
+      {
+        sku: 'BIC-MINI-50',
+        name: 'Bic Mini Lighters (50ct)', 
+        qty: 2,
+        unit_price: 4500, // $45.00 each
+        line_tax_rate: 0.08,
+        il_otp_cents: 0
+      }
+    ];
+    
+    const totals = computeTotals(items);
+    
+    const saleData = {
+      store_id: process.env.POS_STORE_ID || 'ITASCA',
+      register_id: process.env.POS_REGISTER_ID || 'REG-01',
+      cashier_id: 'admin',
+      items,
+      ...totals,
+      discount: 0,
+      tenders: [{ type: 'CASH' as const, amount: totals.total + 100 }] // $1 extra for change
+    };
+    
+    const sale = await createSale(saleData);
+    
+    res.json({ data: sale, message: 'Sample POS transaction created successfully' });
+  } catch (error) {
+    console.error('Error creating sample transaction:', error);
+    res.status(500).json({ error: 'Failed to create sample transaction' });
+  }
+});
+
 r.get('/pos/stats', requireAdmin('admin.read'), async (_req, res) => {
   const fileStats = await getPosDirectoryStats();
   res.json({ data: fileStats });

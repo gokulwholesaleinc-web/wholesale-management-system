@@ -134,3 +134,38 @@ export function getPosStatistics() {
     registers_count: POS_DB.registers.size
   };
 }
+
+// Professional receipt formatting for ESC/POS printers
+export function buildReceiptText(sale: any) {
+  // Fixed-width plain text for ESC/POS
+  const line = (s = '') => (s.length > 42 ? s.slice(0, 42) : s).padEnd(42, ' ');
+  let out = '';
+  out += line('GOKUL WHOLESALE') + '\n';
+  out += line('1141 W Bryn Mawr Ave, Itasca IL 60143') + '\n';
+  out += line('Phone: 630-540-9910') + '\n';
+  out += line('www.shopgokul.com') + '\n';
+  out += '-'.repeat(42) + '\n';
+  out += line(`SALE ${sale.id}`) + '\n';
+  out += line(new Date(sale.created_at).toLocaleString()) + '\n';
+  out += '-'.repeat(42) + '\n';
+
+  for (const it of sale.items) {
+    const price = (it.unit_price / 100).toFixed(2);
+    const total = ((it.unit_price * it.qty) / 100).toFixed(2);
+    out += line(`${it.name}`) + '\n';
+    out += line(`  ${it.sku}  x${it.qty}  @${price}   $${total}`) + '\n';
+  }
+  out += '-'.repeat(42) + '\n';
+  out += line(`Subtotal                 $${(sale.subtotal/100).toFixed(2)}`) + '\n';
+  out += line(`45% IL TOBACCO TAX PAID  $${(sale.tax_il_otp/100).toFixed(2)}`) + '\n';
+  out += line(`Other Taxes              $${(sale.tax_other/100).toFixed(2)}`) + '\n';
+  out += line(`Discount                -$${(sale.discount/100).toFixed(2)}`) + '\n';
+  out += line(`TOTAL                    $${(sale.total/100).toFixed(2)}`) + '\n';
+  const paid = sale.tenders.reduce((a:any,t:any)=>a+t.amount,0);
+  out += line(`Paid                     $${(paid/100).toFixed(2)}`) + '\n';
+  out += line(`Change                   $${(sale.change_due/100).toFixed(2)}`) + '\n';
+  out += '-'.repeat(42) + '\n';
+  out += line('Thank you!') + '\n';
+  out += '\n\n';
+  return out;
+}

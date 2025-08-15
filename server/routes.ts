@@ -7804,6 +7804,10 @@ Recommend 3-4 products from our inventory that match current trends. Respond wit
   app.use('/api/notifications', emailSmsRoutes);
   app.use('/api/pos', posRoutes);
 
+  // POS API routes with complete business logic and Illinois OTP tax calculations  
+  const posApiRoutes = await import('./routes/pos-api');
+  app.use('/api/pos-api', posApiRoutes.default);
+
   // New order management system with IL tobacco tax compliance
   app.use("/api/new-orders", newOrderRoutes);
   // POS auth routes removed - using main auth system to avoid duplication
