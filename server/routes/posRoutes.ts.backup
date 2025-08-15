@@ -1,6 +1,5 @@
 import { Router } from 'express';
 import { storage } from '../storage';
-import { createAuthToken } from '../simpleAuth';
 // POS auth will be handled in the new dedicated auth routes
 // import { requirePosAuth } from './posAuthRoutes';
 import { 
@@ -130,7 +129,6 @@ router.post('/login', async (req, res) => {
             // Device is trusted and not expired, skip OTP
             const timestamp = Date.now();
             const posToken = `pos-${user.id}-${timestamp}`;
-            const mainToken = createAuthToken(user.id); // Main JWT for API calls
             
             // Update last used timestamp
             await storage.updateTrustedDeviceLastUsed(user.id, deviceFingerprint);
@@ -140,7 +138,6 @@ router.post('/login', async (req, res) => {
               skipOtp: true,
               message: 'Trusted device login successful',
               token: posToken,
-              mainToken: mainToken, // Main JWT token for API calls
               user: {
                 id: user.id,
                 username: user.username,
@@ -311,10 +308,9 @@ router.post('/verify-otp', async (req, res) => {
       });
     }
     
-    // Generate POS session token AND main JWT token
+    // Generate POS session token
     const timestamp = Date.now();
     const posToken = `pos-${user.id}-${timestamp}`;
-    const mainToken = createAuthToken(user.id); // Main JWT for API calls
     
     // If user chose to remember device, add it to trusted devices
     if (rememberDevice && deviceFingerprint) {
@@ -338,8 +334,7 @@ router.post('/verify-otp', async (req, res) => {
     res.json({
       success: true,
       message: 'POS authentication successful',
-      token: posToken, // POS-specific token for compatibility
-      mainToken: mainToken, // Main JWT token for API calls
+      token: posToken,
       deviceTrusted: rememberDevice && deviceFingerprint,
       user: {
         id: user.id,
@@ -383,6 +378,18 @@ router.get('/todays-sales', async (req, res) => {
       date: new Date().toISOString().split('T')[0],
       averageTransaction: 0
     });
+  }
+});
+
+// Add held transactions endpoint
+router.get('/held-transactions', async (req, res) => {
+  try {
+    // Return held transactions from database
+    const heldTransactions = await db.select().from(posHeldTransactions).orderBy(desc(posHeldTransactions.createdAt));
+    res.json(heldTransactions);
+  } catch (error) {
+    console.error('Error fetching held transactions:', error);
+    res.status(500).json({ error: 'Failed to fetch held transactions' });
   }
 });
 
@@ -524,6 +531,19 @@ router.get('/categories', async (req, res) => {
   } catch (error) {
     console.error('Error fetching categories:', error);
     res.status(500).json({ error: 'Failed to fetch categories' });
+  }
+});
+
+// GET /api/pos/held-transactions - Get held transactions
+router.get('/held-transactions', async (req, res) => {
+  try {
+    const heldTransactions = await db.select().from(posHeldTransactions)
+      .orderBy(desc(posHeldTransactions.createdAt));
+    
+    res.json(heldTransactions);
+  } catch (error) {
+    console.error('Error fetching held transactions:', error);
+    res.status(500).json({ error: 'Failed to fetch held transactions' });
   }
 });
 
@@ -1127,6 +1147,64 @@ router.get('/customer-history/:customerId', async (req, res) => {
   } catch (error) {
     console.error('Error fetching customer history:', error);
     res.status(500).json({ error: 'Failed to fetch customer history' });
+  }
+});
+
+// POST /api/pos/held-transactions/:id/recall - Recall held transaction
+router.post('/held-transactions/:id/recall', async (req, res) => {
+  try {
+    const user = req.user!;
+    const heldTransactionId = parseInt(req.params.id);
+    
+    const [heldTransaction] = await db.select()
+      .from(posHeldTransactions)
+      .where(eq(posHeldTransactions.id, heldTransactionId))
+      .limit(1);
+    
+    if (!heldTransaction) {
+      return res.status(404).json({ error: 'Held transaction not found' });
+    }
+    
+    // Get customer info if exists
+    let customer = null;
+    if (heldTransaction.customerId) {
+      const [customerResult] = await db.select()
+        .from(users)
+        .where(eq(users.id, heldTransaction.customerId))
+        .limit(1);
+      customer = customerResult;
+    }
+    
+    await logPosAudit(
+      user.id,
+      'recall_held_transaction',
+      'held_transaction',
+      heldTransactionId.toString(),
+      `Recalled held transaction ${heldTransaction.transactionName}`,
+      req.ip
+    );
+    
+    // Parse items if they're stored as JSON string
+    let items = heldTransaction.items;
+    if (typeof items === 'string') {
+      try {
+        items = JSON.parse(items);
+      } catch (e) {
+        console.error('Failed to parse held transaction items:', e);
+        items = [];
+      }
+    }
+
+    res.json({
+      items,
+      customer,
+      subtotal: heldTransaction.subtotal,
+      tax: heldTransaction.tax,
+      total: heldTransaction.total
+    });
+  } catch (error) {
+    console.error('Error recalling held transaction:', error);
+    res.status(500).json({ error: 'Failed to recall held transaction' });
   }
 });
 

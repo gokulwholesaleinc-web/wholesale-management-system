@@ -143,6 +143,34 @@ export const PosAuthProvider: React.FC<PosAuthProviderProps> = ({ children }) =>
     initializeAuth();
   }, []);
 
+  // Route guard: Check for main JWT when under /instore routes
+  useEffect(() => {
+    const currentPath = window.location.pathname;
+    if (currentPath.startsWith('/instore') && !currentPath.startsWith('/instore/login')) {
+      // Check if user has a main JWT token
+      const hasMainToken = () => {
+        // Check unified auth first
+        const unifiedAuth = sessionStorage.getItem('gokul_unified_auth') || localStorage.getItem('gokul_unified_auth');
+        if (unifiedAuth) {
+          try {
+            const authData = JSON.parse(unifiedAuth);
+            return authData.token && authData.expiresAt > Date.now();
+          } catch (e) {
+            return false;
+          }
+        }
+        
+        // Fallback to legacy token
+        return !!(sessionStorage.getItem('authToken') || localStorage.getItem('authToken'));
+      };
+
+      if (!hasMainToken()) {
+        console.warn('🚫 POS Route Guard: No main JWT found, redirecting to POS login');
+        window.location.href = '/instore/login';
+      }
+    }
+  }, []);  // Run once on mount and when route changes
+
   const value: PosAuthContextType = {
     user,
     isAuthenticated: !!user,
