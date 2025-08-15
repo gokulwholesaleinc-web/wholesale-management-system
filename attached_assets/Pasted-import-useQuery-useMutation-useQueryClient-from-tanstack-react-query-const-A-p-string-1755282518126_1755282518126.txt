@@ -1,0 +1,98 @@
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+
+const A = (p: string) => `/api/admin${p}`;
+
+async function j(url: string, init?: RequestInit) {
+  const res = await fetch(url, { headers: { 'Content-Type': 'application/json' }, ...init });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export function useAdminOverview() {
+  return useQuery({ queryKey:['admin','overview'], queryFn:()=> j(A('/overview')) });
+}
+export function useAdminUsers() {
+  return useQuery({ queryKey:['admin','users'], queryFn:()=> j(A('/users')) });
+}
+export function useAdminRoles() {
+  return useQuery({ queryKey:['admin','roles'], queryFn:()=> j(A('/roles')) });
+}
+export function useAdminKeys() {
+  return useQuery({ queryKey:['admin','keys'], queryFn:()=> j(A('/keys')) });
+}
+export function useAdminFlags() {
+  return useQuery({ queryKey:['admin','flags'], queryFn:()=> j(A('/flags')) });
+}
+export function useAdminJobs() {
+  return useQuery({ queryKey:['admin','jobs'], queryFn:()=> j(A('/jobs')) });
+}
+export function useAudit(params: { q?: string; from?: string; to?: string; type?: string }) {
+  const qs = new URLSearchParams();
+  Object.entries(params).forEach(([k,v])=>{ if(v) qs.set(k,String(v)); });
+  return useQuery({ queryKey:['admin','audit',params], queryFn:()=> j(A(`/audit?${qs.toString()}`)) });
+}
+
+// mutations
+export function useInviteUser() {
+  const qc=useQueryClient();
+  return useMutation({
+    mutationFn: (body:{email:string;name:string;roles:string[]}) => j(A('/users/invite'),{method:'POST',body:JSON.stringify(body)}),
+    onSuccess: ()=> qc.invalidateQueries({queryKey:['admin','users']})
+  });
+}
+export function useSetUserRoles(id:string) {
+  const qc=useQueryClient();
+  return useMutation({
+    mutationFn: (roles:string[]) => j(A(`/users/${id}/roles`),{method:'POST',body:JSON.stringify({roles})}),
+    onSuccess: ()=> qc.invalidateQueries({queryKey:['admin','users']})
+  });
+}
+export function useSuspendUser(id:string) {
+  const qc=useQueryClient();
+  return useMutation({
+    mutationFn: ()=> j(A(`/users/${id}/suspend`),{method:'POST'}),
+    onSuccess: ()=> qc.invalidateQueries({queryKey:['admin','users']})
+  });
+}
+export function useRestoreUser(id:string) {
+  const qc=useQueryClient();
+  return useMutation({
+    mutationFn: ()=> j(A(`/users/${id}/restore`),{method:'POST'}),
+    onSuccess: ()=> qc.invalidateQueries({queryKey:['admin','users']})
+  });
+}
+export function useCreateKey() {
+  const qc=useQueryClient();
+  return useMutation({
+    mutationFn: (body:{name:string;scopes:string[]}) => j(A('/keys'),{method:'POST',body:JSON.stringify(body)}),
+    onSuccess: ()=> qc.invalidateQueries({queryKey:['admin','keys']})
+  });
+}
+export function useRevokeKey(id:string) {
+  const qc=useQueryClient();
+  return useMutation({
+    mutationFn: ()=> j(A(`/keys/${id}/revoke`),{method:'POST'}),
+    onSuccess: ()=> qc.invalidateQueries({queryKey:['admin','keys']})
+  });
+}
+export function useSetFlag(key:string) {
+  const qc=useQueryClient();
+  return useMutation({
+    mutationFn: (body:{on:boolean;note?:string;targeting?:any}) => j(A(`/flags/${key}`),{method:'POST',body:JSON.stringify(body)}),
+    onSuccess: ()=> qc.invalidateQueries({queryKey:['admin','flags']})
+  });
+}
+export function useRetryJob(id:string) {
+  const qc=useQueryClient();
+  return useMutation({
+    mutationFn: ()=> j(A(`/jobs/${id}/retry`),{method:'POST'}),
+    onSuccess: ()=> qc.invalidateQueries({queryKey:['admin','jobs']})
+  });
+}
+export function useCancelJob(id:string) {
+  const qc=useQueryClient();
+  return useMutation({
+    mutationFn: ()=> j(A(`/jobs/${id}/cancel`),{method:'POST'}),
+    onSuccess: ()=> qc.invalidateQueries({queryKey:['admin','jobs']})
+  });
+}
