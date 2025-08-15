@@ -4,6 +4,8 @@
 Gokul Wholesale is a comprehensive B2B e-commerce platform designed to streamline wholesale operations. It offers robust features for ordering, administration, inventory tracking, and business analytics. The platform aims to enhance customer experience and provide tools for managing products, orders, and business insights, including multi-tier pricing, AI-powered invoice processing, and comprehensive analytics for business growth and market potential.
 
 ## Recent Changes (August 15, 2025)
+- **Enterprise Admin System**: Integrated comprehensive admin framework with RBAC (5-tier roles), audit logging, API key management, feature flags, and background job processing
+- **POS Configuration**: Added POS system environment variables for Itasca store (POS_STORE_ID, POS_REGISTER_ID) and hardware integration
 - **Repository Standardization**: Implemented GitHub Actions CI/CD, dev container configuration, and enhanced TypeScript setup
 - **New Order Management System**: Added modern order system with Illinois tobacco tax compliance and TypeScript types
 - **Import Path Fixes**: Resolved module import issues across server architecture  

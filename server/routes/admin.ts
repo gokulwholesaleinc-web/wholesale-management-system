@@ -25,7 +25,16 @@ r.get('/overview', requireAdmin('admin.read'), (_req, res) => {
         { label: 'Feature Flags', value: totalFlags },
         { label: 'Jobs (queued)', value: jobs.filter(j=>j.status==='queued').length }
       ],
-      health: { ok: true, version: 'admin-1.0.0', time: new Date().toISOString() }
+      health: { 
+        ok: true, 
+        version: 'admin-1.0.0', 
+        time: new Date().toISOString(),
+        pos: {
+          store_id: process.env.POS_STORE_ID || 'Not configured',
+          register_id: process.env.POS_REGISTER_ID || 'Not configured',
+          hardware_status: 'Available'
+        }
+      }
     }
   });
 });

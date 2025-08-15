@@ -48,10 +48,18 @@ function OverviewTab() {
         ))}
       </div>
       <div style={{ border:'1px solid #e5e7eb', borderRadius:10, padding:12 }}>
-        <div style={{ fontWeight:700, marginBottom:6 }}>System</div>
+        <div style={{ fontWeight:700, marginBottom:6 }}>System Health</div>
         <div>Status: {health.ok ? 'Healthy' : 'Issues'}</div>
         <div>Version: {health.version}</div>
         <div>Time: {health.time}</div>
+        {health.pos && (
+          <div style={{ marginTop:8, paddingTop:8, borderTop:'1px solid #e5e7eb' }}>
+            <div style={{ fontWeight:600, fontSize:12, color:'#6b7280' }}>POS SYSTEM</div>
+            <div>Store: {health.pos.store_id}</div>
+            <div>Register: {health.pos.register_id}</div>
+            <div>Hardware: {health.pos.hardware_status}</div>
+          </div>
+        )}
       </div>
     </div>
   );
