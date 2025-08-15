@@ -135,39 +135,101 @@ export const EnhancedPosSale: React.FC = () => {
   
   const itemSearchRef = useRef<HTMLInputElement>(null);
 
-  // Fetch real data from main application
+  // Fetch products using proper authentication
   const { data: products = [], isLoading: isLoadingProducts } = useQuery({
     queryKey: ['/api/pos/products'],
-    select: (data: any) => data || []
-  });
-
-  const { data: customers = [], isLoading: isLoadingCustomers } = useQuery({
-    queryKey: ['/api/pos/customers'],
     queryFn: async () => {
-      // Use posApiRequest for proper POS authentication
       try {
-        const response = await fetch('/api/pos/customers', {
+        const token = localStorage.getItem('authToken') || localStorage.getItem('pos_auth_token');
+        if (!token) {
+          throw new Error('No authentication token found');
+        }
+        
+        const response = await fetch('/api/pos/products', {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('authToken') || localStorage.getItem('pos_auth_token')}`,
+            'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
           }
         });
+        
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
+        
         const data = await response.json();
-        console.log('POS Customers loaded:', data?.length || 0, 'customers');
+        console.log('POS Products loaded:', data?.length || 0, 'products');
         return data || [];
       } catch (error) {
-        console.error('Failed to load POS customers:', error);
+        console.error('Failed to load POS products:', error);
         throw error;
       }
     }
   });
 
+  const { data: customers = [], isLoading: isLoadingCustomers, error: customersError } = useQuery({
+    queryKey: ['/api/pos/customers'],
+    queryFn: async () => {
+      try {
+        const token = localStorage.getItem('authToken') || localStorage.getItem('pos_auth_token');
+        if (!token) {
+          console.warn('No authentication token found for customer lookup');
+          throw new Error('Authentication required - please login to POS');
+        }
+        
+        const response = await fetch('/api/pos/customers', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('POS Customers API Error:', response.status, errorText);
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log('✅ POS Customers loaded successfully:', data?.length || 0, 'customers');
+        return data || [];
+      } catch (error) {
+        console.error('❌ Failed to load POS customers:', error);
+        throw error;
+      }
+    },
+    retry: (failureCount, error) => {
+      // Don't retry auth errors
+      if (error.message.includes('401') || error.message.includes('Authentication')) {
+        return false;
+      }
+      return failureCount < 2;
+    }
+  });
+
   const { data: categories = [] } = useQuery({
     queryKey: ['/api/pos/categories'],
-    select: (data: any) => data || []
+    queryFn: async () => {
+      try {
+        const token = localStorage.getItem('authToken') || localStorage.getItem('pos_auth_token');
+        const response = await fetch('/api/pos/categories', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log('✅ POS Categories loaded:', data?.length || 0, 'categories');
+        return data || [];
+      } catch (error) {
+        console.error('❌ Failed to load POS categories:', error);
+        return [];
+      }
+    }
   });
 
   const { data: heldTransactions = [], refetch: refetchHeldTransactions } = useQuery({
