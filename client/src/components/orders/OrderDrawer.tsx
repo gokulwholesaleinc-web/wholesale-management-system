@@ -1,5 +1,5 @@
 import React from 'react';
-import { useOrder, useChangeStatus } from '../../hooks/useNewOrders';
+import { useQuery } from '@tanstack/react-query';
 
 const ALLOWED: Record<string, string[]> = {
   NEW: ['PAID', 'CANCELLED', 'ON_HOLD'],
@@ -13,12 +13,20 @@ const ALLOWED: Record<string, string[]> = {
 };
 
 export function OrderDrawer({ id, onClose }: { id?: string; onClose: () => void }) {
-  const { data, isLoading } = useOrder(id);
-  const mutate = useChangeStatus();
+  // Use the real database API instead of the confusing in-memory system
+  const { data, isLoading } = useQuery({
+    queryKey: ['order', id],
+    queryFn: async () => {
+      const res = await fetch(`/api/orders/${id}`);
+      if (!res.ok) throw new Error('Failed to fetch order');
+      return res.json();
+    },
+    enabled: !!id
+  });
 
   if (!id) return null;
 
-  const order = data?.data;
+  const order = data; // Real database returns order directly, not wrapped in .data
 
   return (
     <div style={{
@@ -34,9 +42,9 @@ export function OrderDrawer({ id, onClose }: { id?: string; onClose: () => void 
       {order && (
         <>
           <div style={{ marginTop: 12 }}>
-            <div style={{ fontWeight: 600 }}>{order.customer_name}</div>
+            <div style={{ fontWeight: 600 }}>{order.customerName || order.user?.firstName + ' ' + order.user?.lastName}</div>
             <div style={{ color: '#6b7280', fontSize: 12 }}>
-              {order.customer_email} · {order.customer_phone}
+              {order.user?.email} {order.user?.phone && '· ' + order.user.phone}
             </div>
           </div>
 
@@ -117,7 +125,7 @@ export function OrderDrawer({ id, onClose }: { id?: string; onClose: () => void 
           <div style={{ marginTop: 16 }}>
             <button
               onClick={async () => {
-                await fetch(`/api/new-orders/${order.id}/recalc`, { method: 'POST' });
+                // Remove the confusing recalc call to in-memory system
                 window.location.reload();
               }}
               style={{ padding: '8px 12px', borderRadius: 8, background: '#111827', color: 'white' }}
