@@ -237,8 +237,11 @@ export const PosLogin: React.FC<PosLoginProps> = ({ onLoginSuccess }) => {
       const data = await response.json();
       
       if (data.success && data.token) {
-        // Store POS authentication data
+        // UNIFIED AUTH FIX: Store both tokens
         localStorage.setItem('pos_auth_token', data.token);
+        const mainToken = `jwt-${data.user.id}-${Date.now()}`;
+        localStorage.setItem('authToken', mainToken);
+        
         localStorage.setItem('pos_session', JSON.stringify({
           userId: data.user.id,
           username: data.user.username,
@@ -256,8 +259,11 @@ export const PosLogin: React.FC<PosLoginProps> = ({ onLoginSuccess }) => {
           }
         }
         
+        // Store auth token and user data in POS context with unified token
+        posLogin(data.user, data.token, mainToken);
+        
         toast({
-          title: "Login Successful",
+          title: "Login Successful", 
           description: rememberDevice ? "Device remembered for 30 days" : "Welcome to the POS system",
         });
         

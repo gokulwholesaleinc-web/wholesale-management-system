@@ -975,30 +975,7 @@ router.post('/hold-transaction', async (req, res) => {
   }
 });
 
-// GET /api/pos/held-transactions - Get held transactions
-router.get('/held-transactions', async (req, res) => {
-  try {
-    const heldTransactions = await db
-      .select({
-        transaction: posHeldTransactions,
-        customer: {
-          id: users.id,
-          username: users.username,
-          firstName: users.firstName,
-          lastName: users.lastName,
-          customerLevel: users.customerLevel
-        }
-      })
-      .from(posHeldTransactions)
-      .leftJoin(users, eq(posHeldTransactions.customerId, users.id))
-      .orderBy(desc(posHeldTransactions.createdAt));
-
-    res.json(heldTransactions);
-  } catch (error) {
-    console.error('Error fetching held transactions:', error);
-    res.status(500).json({ error: 'Failed to fetch held transactions' });
-  }
-});
+// REMOVED: Duplicate of held-transactions endpoint above - keeping main implementation
 
 // DELETE /api/pos/held-transactions/:id - Delete held transaction
 router.delete('/held-transactions/:id', async (req, res) => {
