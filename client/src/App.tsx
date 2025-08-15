@@ -56,6 +56,7 @@ import AdminInvoices from "@/pages/AdminInvoices";
 import AdminTaxManagerPage from "@/pages/AdminTaxManagerPage";
 import InstoreLoginNew from "@/pages/InstoreLoginNew";
 import PosApp from "@/pages/pos/PosApp";
+import NewOrdersPage from "@/pages/NewOrdersPage";
 
 
 import { Helmet } from "react-helmet";
@@ -294,6 +295,9 @@ function App() {
           </Route>
           <Route path="/admin/orders">
             <AdminProtectedRoute component={AdminOrdersPage} />
+          </Route>
+          <Route path="/admin/new-orders">
+            <AdminProtectedRoute component={NewOrdersPage} />
           </Route>
           <Route path="/admin">
             <AdminProtectedRoute component={AdminDashboard} />
