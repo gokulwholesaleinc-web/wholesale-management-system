@@ -799,17 +799,11 @@ export default function AdminDashboard() {
                     Set minimum order amounts (${orderSettings?.minimumOrderAmount || 30}), delivery fees (${orderSettings?.deliveryFee || 5}), free delivery threshold (${orderSettings?.freeDeliveryThreshold || 250}), and loyalty points rate.
                   </p>
                 </CardContent>
-                <CardFooter className="flex flex-col space-y-2">
+                <CardFooter>
                   <Button asChild className="w-full bg-blue-600 hover:bg-blue-700 text-white">
                     <Link href="/admin/order-settings">
                       <Settings className="w-4 h-4 mr-2" />
                       Configure Settings
-                    </Link>
-                  </Button>
-                  <Button asChild className="w-full" variant="outline">
-                    <Link href="/admin/enterprise">
-                      <Shield className="w-4 h-4 mr-2" />
-                      Enterprise Admin
                     </Link>
                   </Button>
                 </CardFooter>

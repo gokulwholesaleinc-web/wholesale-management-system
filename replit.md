@@ -4,14 +4,12 @@
 Gokul Wholesale is a comprehensive B2B e-commerce platform designed to streamline wholesale operations. It offers robust features for ordering, administration, inventory tracking, and business analytics. The platform aims to enhance customer experience and provide tools for managing products, orders, and business insights, including multi-tier pricing, AI-powered invoice processing, and comprehensive analytics for business growth and market potential.
 
 ## Recent Changes (August 15, 2025)
-- **Admin & POS System Consolidation**: Unified `/admin` and `/admin/enterprise` into single comprehensive interface with 12 integrated tabs covering all business operations and enterprise management
-- **Complete POS Integration**: Consolidated `/pos`, `/instore`, and `/pos-direct` into unified POS system with Illinois OTP tax calculations, hardware bridge integration, and professional receipt generation
-- **Hardware Integration**: Added POSBridge adapter for Epson TM-T88V printers and MMF cash drawers with automatic receipt printing and cash drawer opening
-- **Enterprise Admin System**: Integrated comprehensive admin framework with RBAC (5-tier roles), audit logging, API key management, feature flags, and background job processing
 - **Repository Standardization**: Implemented GitHub Actions CI/CD, dev container configuration, and enhanced TypeScript setup
+- **New Order Management System**: Added modern order system with Illinois tobacco tax compliance and TypeScript types
 - **Import Path Fixes**: Resolved module import issues across server architecture  
 - **Security Enhancements**: Fixed all GitHub security vulnerabilities and standardized .gitignore
 - **System Health Verification**: Comprehensive testing shows 290 endpoints working with zero duplicates or conflicts
+- **Repository Cleanup**: Secured sensitive files, moved 19 maintenance scripts to organized structure, enhanced .gitignore protection
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
@@ -46,7 +44,7 @@ Preferred communication style: Simple, everyday language.
 - **Order Management**: Shopping cart, order processing, delivery address management, status tracking, history, delivery fee calculation, and bulk order completion.
 - **Admin Dashboard**: Real-time business statistics, user management, product/category management, order fulfillment, backup/restore, activity logging, credit management, AI recommendation management, and comprehensive tax management.
 - **Business Intelligence Dashboard**: Advanced analytics including profit margins, customer lifetime value, pricing intelligence, sales forecasting, and AI-powered business insights.
-- **Unified POS System**: Comprehensive point-of-sale system with complete business logic including Illinois OTP tax calculations, inventory adjustment tracking, register open/close operations, transaction processing with change calculation, SKU lookup integration, and receipt printing. Features proper ID generation (POS-YYYYMMDD-XXXX format) and complete separation from main e-commerce system.
+- **Unified POS System**: Comprehensive point-of-sale system with barcode scanning, customer pricing memory, hold/recall transactions, order management, customer history, credit management, and receipt printing.
 - **Tax Management System**: Admin interface for flat tax configuration, IL-TP1 tobacco sales tracking, tax calculation audits, and customer/product tax settings. Handles percentage and flat taxes, with database-driven flat tax values.
 - **Customer Features**: Registration, profile management, product browsing (search/filter), shopping cart, multiple delivery addresses, order history, and customer-specific pricing.
 - **Account Creation System**: User-defined username/password, admin approval workflow with customer tier selection, credit limit assignment, and multi-staff email and SMS notifications with TCPA compliance.

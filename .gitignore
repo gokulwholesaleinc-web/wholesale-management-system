@@ -15,10 +15,6 @@ uploads/
 invoices/
 backups/
 exports/
-
-# POS artifacts
-pos-receipts/
-pos-exports/
 *.pdf
 *.sqlite
 *.db

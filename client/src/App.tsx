@@ -55,8 +55,6 @@ import LoyaltyRedemptionHistoryPage from "@/pages/LoyaltyRedemptionHistoryPage";
 import AdminInvoices from "@/pages/AdminInvoices";
 import AdminTaxManagerPage from "@/pages/AdminTaxManagerPage";
 import AdminOrderSettings from "@/pages/AdminOrderSettings";
-import EnterpriseAdminDashboard from "@/pages/EnterpriseAdminDashboard";
-import InStorePOS from "@/pages/pos/InStorePOS";
 import InstoreLoginNew from "@/pages/InstoreLoginNew";
 import PosApp from "@/pages/pos/PosApp";
 import NewOrdersPage from "@/pages/NewOrdersPage";
@@ -196,14 +194,6 @@ function App() {
           <Route path="/admin/order-settings">
             <AdminProtectedRoute component={AdminOrderSettings} />
           </Route>
-          <Route path="/admin/enterprise">
-            <AdminProtectedRoute component={EnterpriseAdminDashboard} />
-          </Route>
-          
-          {/* Consolidated Admin Routes - Enterprise becomes the main admin interface */}
-          <Route path="/admin">
-            <AdminProtectedRoute component={EnterpriseAdminDashboard} />
-          </Route>
 
           <Route path="/admin/purchase-orders">
             <AdminProtectedRoute component={AdminProductManagement} />
@@ -250,18 +240,12 @@ function App() {
           <Route path="/admin/credit-management">
             <AdminProtectedRoute component={AdminCreditManagement} />
           </Route>
-          {/* Unified POS System - Consolidating /instore and /pos-direct */}
+          {/* In-Store POS System Routes - Completely isolated from main app */}
           <Route path="/instore/:path*">
-            <AdminProtectedRoute component={InStorePOS} />
+            <PosApp />
           </Route>
           <Route path="/instore">
-            <AdminProtectedRoute component={InStorePOS} />
-          </Route>
-          <Route path="/pos-direct">
-            <AdminProtectedRoute component={InStorePOS} />
-          </Route>
-          <Route path="/pos">
-            <AdminProtectedRoute component={InStorePOS} />
+            <PosApp />
           </Route>
           <Route path="/order-details/:orderId">
             <StaffProtectedRoute component={OrderDetailPage} />
@@ -318,6 +302,9 @@ function App() {
           </Route>
           <Route path="/admin/new-orders">
             <AdminProtectedRoute component={NewOrdersPage} />
+          </Route>
+          <Route path="/admin">
+            <AdminProtectedRoute component={AdminDashboard} />
           </Route>
           
           {/* Public routes */}
