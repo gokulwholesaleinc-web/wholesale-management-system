@@ -7,8 +7,8 @@ import { Label } from '@/components/ui/label';
 import { useLocation } from 'wouter';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiRequest } from '@/lib/queryClient';
-import { useAuth } from '@/hooks/useAuth';
+import { posApiRequest } from '@/lib/posQueryClient';
+import { usePosAuth } from '@/pages/pos/PosAuthContext';
 
 interface Customer {
   id: string;
@@ -32,7 +32,7 @@ interface LoyaltyTransaction {
 export const PosLoyalty: React.FC = () => {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user } = usePosAuth();
   const queryClient = useQueryClient();
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -56,7 +56,7 @@ export const PosLoyalty: React.FC = () => {
   // Redeem points mutation
   const redeemPointsMutation = useMutation({
     mutationFn: async ({ userId, points }: { userId: string; points: number }) => {
-      return apiRequest(`/api/users/loyalty/redeem`, {
+      return posApiRequest(`/api/users/loyalty/redeem`, {
         method: 'POST',
         body: JSON.stringify({ userId, points })
       });
@@ -82,7 +82,7 @@ export const PosLoyalty: React.FC = () => {
   // Manual adjust points mutation (admin only)
   const manualAdjustMutation = useMutation({
     mutationFn: async ({ userId, points, reason }: { userId: string; points: number; reason: string }) => {
-      return apiRequest(`/api/admin/loyalty/manual-adjust`, {
+      return posApiRequest(`/api/admin/loyalty/manual-adjust`, {
         method: 'POST',
         body: JSON.stringify({ userId, points, reason })
       });

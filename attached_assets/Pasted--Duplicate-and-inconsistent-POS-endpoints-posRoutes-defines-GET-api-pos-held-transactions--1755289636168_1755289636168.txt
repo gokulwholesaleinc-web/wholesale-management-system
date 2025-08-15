@@ -1,0 +1,146 @@
+
+    Duplicate and inconsistent POS endpoints
+
+    posRoutes defines GET /api/pos/held-transactions twice and POST /api/pos/held-transactions/:id/recall twice (two separate implementations). This is brittle and may mask bugs depending on route order.
+    Pricing memory schema mismatch:
+        Frontend expects pricing memory items to have lastPrice, but GET /api/pos/pricing-memory/:customerId returns specialPrice/originalPrice/isActive/… instead.
+        Transactions saving “pricing memory” write lastPrice in one place; a different set of fields is read elsewhere.
+
+    POS screen calls mixed namespaces and structures
+
+    Frontend POS screens call /api/products and /api/categories instead of /api/pos/products and /api/pos/categories (you implemented POS-optimized endpoints already).
+    Customer addresses on POS use /api/admin/customers/:id/addresses in queries, but your public endpoints appear to be /api/users/:userId/addresses. This will 404 or return wrong data.
+    The PosSystem createTransaction mutation uses Authorization: Bearer localStorage.getItem('token') (not set) and expects transactionNumber in response, while backend returns { success, transaction: { …, transactionNumber }, … }.
+
+    Business rules missing or incomplete on backend
+
+    No credit-line enforcement for account_credit payments (should decline if exceeds available credit and create proper ledger entries).
+    Inventory decrement references products.stock but client seems to use product.inventory or product.quantity in multiple places—field mismatch risk.
+    Item persistence uses originalPrice: item.unitPrice (should be product base price before overrides), and subtotal may be undefined because frontend sends total but not subtotal per item in some flows.
+
+    Security gaps for POS routes
+
+    Most /api/pos routes rely on req.user but there’s no requirePosAuth in posRoutes. Given POS uses pos_auth_token (not a JWT), you either need a middleware that validates pos_auth_token and populates req.user, or you must rely on main JWT and drop pos_auth_token for API calls.
+    Manager override UI exists (client/src/pages/pos/ManagerOverride.tsx) but the backend route /api/pos/manager-override is not implemented.
+
+    Dead/legacy and split implementations
+
+    You have both a monolithic PosSystem.tsx and a modular /instore app (PosApp + pages). The monolith mixes Ecommerce layout and POS concerns and is inconsistent with the newer POS flow. Keeping both increases maintenance risk.
+
+    POS reporting and till features are stubbed on UI but missing on backend
+
+    PosReports queries a set of /api/pos/reports/* endpoints that don’t exist.
+    No POS till/register open/close sessions and no X/Z reports or reconciliation endpoints.
+
+    Printing/receipt flow inconsistencies
+
+    Browser print uses the current cart array (which you clear after success) instead of the persisted transaction payload from server. This can produce incomplete receipts.
+    Printer setup docs exist, but runtime config and errors aren’t surfaced in the sale flow.
+
+Systematic improvements (prioritized)
+
+Phase 1: Make it work reliably
+
+    Auth, tokens, and headers
+        Decide on one of these and make it consistent:
+            A) POS API uses the main JWT; pos_auth_token is only for client-side gating of /instore routes.
+            B) POS API uses pos_auth_token; add a requirePosAuth middleware that reads Bearer pos-{userId}-timestamp, loads user, and sets req.user for /api/pos/*.
+        Recommendation: A) is faster to stabilize. Keep pos_auth_token + pos_session purely for client route gating. Ensure all POS API calls use apiRequest/queryClient so the main JWT is always attached.
+        Actions:
+            In PosLogin success, also set authToken (main JWT) in storage or reuse the main login flow before/after POS OTP so queryClient adds Authorization.
+            Replace direct fetches in POS screens with apiRequest to inherit consistent headers.
+            In queryClient, optionally add: if pathname startsWith('/instore') and no main token, redirect to /instore/login.
+
+    Remove duplicates and fix endpoint shapes
+        In server/routes/posRoutes.ts:
+            Keep one GET /held-transactions and one POST /held-transactions/:id/recall; delete the duplicates.
+            Normalize /transactions response to include transactionNumber at top-level or update client to read data.transaction.transactionNumber. Pick one and stick with it.
+        Align pricing memory
+            On save: store lastPrice consistently (or rename to specialPrice everywhere).
+            On read: return the same fields the frontend uses. Either:
+                Rename response to include lastPrice, or
+                Update frontend to use specialPrice consistently.
+            Make GET path consistent with frontend calls: either use /api/pos/pricing-memory/:customerId and change client to that, or expose /api/pos/pricing-memory?customerId=… as you’re currently querying with react-query keys.
+
+    Namespace correctness
+        Change all POS screens to use /api/pos/products and /api/pos/categories; add a search param (search=) to drive live search instead of a separate /api/products/search.
+        Fix addresses fetch to /api/users/:userId/addresses (or add a /api/pos/customers/:id/addresses that proxies the same data).
+
+    Item payloads and totals
+        Frontend: send both unitPrice, quantity, lineSubtotal, lineTax, lineTotal per item. Back-end should not rely on recalculating totals invisibly.
+        Backend: compute authoritative totals server-side and cross-check; reject mismatches if needed.
+        Use product base price as originalPrice (not the overridden unitPrice).
+
+    Receipt printing data
+        Use the server response’s canonical transaction (items, totals, tax, number) for rendering receipts. Don’t read from the cart after mutation.
+
+Quick code changes to queue up:
+
+    Replace fetch calls in PosSystem.tsx with apiRequest; fix Authorization header to come from queryClient; switch endpoints to /api/pos/*.
+    Update PosLogin to also set main auth token (or call main login) so API calls succeed immediately.
+
+Phase 2: Make it safe and maintainable
+
+    Introduce requirePosAuth middleware (if you choose POS token for APIs)
+        Middleware: validate pos-{userId}-{timestamp}, load user, check isAdmin or isEmployee, set req.user, attach req.posSession (deviceId, registerId optional).
+        Apply to router.use('/api/pos', requirePosAuth) except for /login, /verify-otp, /validate-session.
+
+    Centralize business rules
+        Credit lines: on account_credit, check available credit; update balances via customerCreditLines and creditLineTransactions; reject if over limit.
+        Taxes: stop hard-coding 8% on order item updates; read from posSettings/taxes/productTaxAssignments/customerTaxExemptions. Expose a tax service to compute per-line tax.
+        Inventory: standardize the stock field name. If DB uses products.stock, ensure client reads and shows stock consistently (and rename client references to stock).
+
+    POS session and till management
+        Add tables pos_registers and pos_sessions; endpoints:
+            POST /api/pos/sessions/open, POST /api/pos/sessions/close, GET /api/pos/sessions/current
+        Require an open session to complete sales; store opening_float, closing_expected, over_short, cashier_user_id.
+
+    Reporting endpoints to match UI
+        Implement:
+            GET /api/pos/reports/end-of-day?date=YYYY-MM-DD
+            GET /api/pos/reports/hourly-sales?date=…
+            GET /api/pos/reports/cashier-performance?date=…
+            GET /api/pos/reports/product-movement?date=…
+        Ensure all orders/transactions are tagged with sales_channel='instore' (add to orders/transactions tables if missing).
+
+    Manager override API
+        Implement POST /api/pos/manager-override that:
+            Authenticates a manager user (isAdmin or specific permission).
+            Logs an audit entry and returns an approval token or approval object.
+        Wire ManagerOverride.tsx to it.
+
+    Remove the legacy monolith
+        Retire client/src/pages/PosSystem.tsx (or move strictly to /instore until fully removed).
+        Keep only PosApp + modular pages for POS.
+
+Phase 3: Performance and UX polish
+
+    Route-level code splitting is already in place via the /instore mount; keep POS bundles separate from ecommerce.
+    Barcode/keyboard capture
+        Add a hidden key buffer so scanner input works even if focus is elsewhere; debounce and detect suffix “Enter” to auto-add.
+    Offline resilience
+        Add IndexedDB cart cache and an offline queue for finalize-sale; flush on connectivity restored; guard against double-submission with idempotency keys.
+    Printing and hardware
+        Surface printer status in the sale screen; warn or block cash payments when drawer/print not available unless manager override.
+        Move receipt building to a shared template utility so both BrowserPrint and PrinterControls use the same markup/data.
+
+Phase 4: Observability and security hardening
+
+    Audit trail already scaffolded—expand events: pos.session.opened, pos.transaction.completed, pos.override.approved.
+    Rate-limit login/OTP endpoints; mask all secrets in logs.
+    Add role-based guards on endpoints (e.g., only admins can change POS settings or authorize IPs).
+    Consider CSRF protection for non-GET POS endpoints if they’re consumed from a browser context.
+
+Targeted fixes you should implement first (low-effort, high-impact)
+
+    Unify token usage in POS screens:
+        In PosLogin success, also set authToken (or reuse main login). Then replace all fetch calls in POS with apiRequest to ensure headers are correct.
+    Clean duplicates and mismatches in posRoutes:
+        Remove the second definitions of GET /held-transactions and POST /held-transactions/:id/recall.
+        Make /pricing-memory consistent: either rename specialPrice to lastPrice in the response or adapt the frontend to use specialPrice.
+    Switch POS queries to POS endpoints:
+        /api/pos/products?search= and /api/pos/categories
+        Fix addresses to /api/users/:userId/addresses (or add /api/pos/customers/:id/addresses).
+    Fix create transaction payload/response:
+        Frontend: include lineSubtotal; Backend: set originalPrice from product not from unitPrice; return { transactionNumber, … } at top-level or update client to read data.transaction.transactionNumber.
+    Add at least a minimal credit-line check for account_credit payments; block when exceeding available credit.

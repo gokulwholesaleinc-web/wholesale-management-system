@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Route, Switch, useLocation, useRoute } from 'wouter';
+import React from 'react';
+import { useLocation, useRoute } from 'wouter';
 import { PosLogin } from './PosLogin';
 import { PosDashboard } from './PosDashboard';
 import { EnhancedPosSale } from './EnhancedPosSale';
@@ -7,9 +7,11 @@ import { PosInventory } from './PosInventory';
 import { PosCustomers } from './PosCustomers';
 import PosReports from './PosReports';
 import HardwareTestPage from './HardwareTestPage';
-// import { usePosAuth } from './PosAuthContext'; // Will integrate proper auth later
+import { PosAuthProvider, usePosAuth } from './PosAuthContext';
+import { QueryClientProvider } from '@tanstack/react-query';
+import posQueryClient from '@/lib/posQueryClient';
 
-// Professional POS theme colors inspired by RMS/RMH
+// Professional POS theme colors
 const POS_THEME = {
   primary: '#2563eb', // Professional blue
   secondary: '#64748b', // Neutral gray
@@ -22,108 +24,74 @@ const POS_THEME = {
   border: '#e2e8f0' // Light border
 };
 
-export const PosApp: React.FC = () => {
+// Internal POS Router - handles routing within POS system
+const PosRouter: React.FC = () => {
   const [, setLocation] = useLocation();
   const [match, params] = useRoute('/instore/:page?');
-  // Check for POS authentication
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  
-  useEffect(() => {
-    // Check if user has valid POS session/token
-    const posToken = localStorage.getItem('pos_auth_token');
-    const posSession = localStorage.getItem('pos_session');
-    
-    if (posToken && posSession) {
-      // Validate the token with backend
-      fetch('/api/pos/validate-session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${posToken}`
-        },
-        body: JSON.stringify({ session: posSession })
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.valid) {
-          setIsAuthenticated(true);
-        } else {
-          // Clear invalid tokens
-          localStorage.removeItem('pos_auth_token');
-          localStorage.removeItem('pos_session');
-        }
-      })
-      .catch(() => {
-        // Clear tokens on error
-        localStorage.removeItem('pos_auth_token');
-        localStorage.removeItem('pos_session');
-      });
-    }
-  }, []);
-  const [isLoading, setIsLoading] = useState(true);
+  const { user, isAuthenticated, isLoading } = usePosAuth();
 
-  useEffect(() => {
-    // Initialize POS system with small delay
-    const timer = setTimeout(() => setIsLoading(false), 1000);
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Handle redirects and default routing
-  useEffect(() => {
-    if (!isLoading) {
-      if (!isAuthenticated) {
-        setLocation('/instore/login');
-      } else if (!params?.page || params.page === '') {
-        setLocation('/instore/dashboard');
-      }
-    }
-  }, [isAuthenticated, isLoading, params]);
-
+  // Handle routing logic
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-100 flex items-center justify-center">
         <div className="bg-white p-8 rounded-lg shadow-lg">
-          <div className="flex items-center space-x-4">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <span className="text-lg font-medium text-gray-700">Initializing POS System...</span>
+          <div className="flex items-center space-x-3">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+            <span className="text-gray-600 font-medium">Initializing POS System...</span>
           </div>
         </div>
       </div>
     );
   }
 
-  const handleLoginSuccess = () => {
-    setIsAuthenticated(true);
-    setLocation('/instore/dashboard');
-  };
-
+  // Redirect to login if not authenticated
   if (!isAuthenticated) {
-    return <PosLogin onLoginSuccess={handleLoginSuccess} />;
+    return <PosLogin onLoginSuccess={() => setLocation('/instore/dashboard')} />;
   }
 
+  // Get current page from URL params
+  const currentPage = params?.page || 'dashboard';
+
+  // Render appropriate page component based on route
+  const renderPage = () => {
+    switch (currentPage) {
+      case 'login':
+        return <PosLogin onLoginSuccess={() => setLocation('/instore/dashboard')} />;
+      case 'dashboard':
+        return <PosDashboard />;
+      case 'sale':
+      case 'sales':
+        return <EnhancedPosSale />;
+      case 'inventory':
+        return <PosInventory />;
+      case 'customers':
+        return <PosCustomers />;
+      case 'reports':
+        return <PosReports />;
+      case 'hardware':
+        return <HardwareTestPage />;
+      default:
+        // Redirect unknown routes to dashboard
+        setLocation('/instore/dashboard');
+        return <PosDashboard />;
+    }
+  };
+
   return (
-    <div 
-      className="min-h-screen"
-      style={{ 
-        backgroundColor: POS_THEME.background,
-        fontFamily: 'system-ui, -apple-system, sans-serif'
-      }}
-    >
-      <Switch>
-        <Route path="/instore/login" component={() => <PosLogin onLoginSuccess={handleLoginSuccess} />} />
-        <Route path="/instore/dashboard" component={PosDashboard} />
-        <Route path="/instore/sale" component={EnhancedPosSale} />
-        <Route path="/instore/inventory" component={PosInventory} />
-        <Route path="/instore/customers" component={PosCustomers} />
-        <Route path="/instore/reports" component={PosReports} />
-        <Route path="/instore/till" component={() => React.lazy(() => import('./TillManagement'))} />
-        <Route path="/instore/hardware-test" component={HardwareTestPage} />
-        <Route>
-          {/* Default fallback - redirect to dashboard */}
-          <PosDashboard />
-        </Route>
-      </Switch>
+    <div className="min-h-screen" style={{ backgroundColor: POS_THEME.background }}>
+      {renderPage()}
     </div>
+  );
+};
+
+// Main POS App with proper authentication and query client providers
+export const PosApp: React.FC = () => {
+  return (
+    <QueryClientProvider client={posQueryClient}>
+      <PosAuthProvider>
+        <PosRouter />
+      </PosAuthProvider>
+    </QueryClientProvider>
   );
 };
 

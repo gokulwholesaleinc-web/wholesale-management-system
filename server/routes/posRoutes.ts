@@ -25,7 +25,56 @@ import { eq, desc, and, like, or, sql } from 'drizzle-orm';
 
 const router = Router();
 
-// POS Authentication endpoints
+// POS Authentication verification endpoint
+router.post('/auth/verify', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ success: false, message: 'No valid authentication token' });
+    }
+    
+    const token = authHeader.replace('Bearer ', '');
+    
+    // Validate POS token format (pos-{userId}-{timestamp})
+    if (!token.startsWith('pos-')) {
+      return res.status(401).json({ success: false, message: 'Invalid POS token format' });
+    }
+    
+    // Extract user ID from token
+    const tokenParts = token.split('-');
+    if (tokenParts.length < 3) {
+      return res.status(401).json({ success: false, message: 'Invalid token structure' });
+    }
+    
+    const userId = tokenParts.slice(1, -1).join('-'); // Handle user IDs with hyphens
+    
+    // Verify user exists and has admin/employee privileges
+    const user = await storage.getUser(userId);
+    if (!user || (!user.isAdmin && !user.isEmployee)) {
+      return res.status(401).json({ success: false, message: 'User not found or insufficient privileges' });
+    }
+    
+    // Return authenticated user data
+    res.json({ 
+      success: true,
+      user: {
+        id: user.id,
+        username: user.username,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        isAdmin: user.isAdmin,
+        isEmployee: user.isEmployee,
+        role: user.isAdmin ? 'admin' : 'employee'
+      }
+    });
+  } catch (error) {
+    console.error('POS token verification error:', error);
+    res.status(500).json({ success: false, message: 'Token verification failed' });
+  }
+});
+
+// Legacy session validation (for backward compatibility)
 router.post('/validate-session', async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
