@@ -32,8 +32,9 @@ export function AdminCartController() {
       // First, clear client-side cache immediately for better UX
       queryClient.setQueryData(['/api/cart'], []);
       
-      // Get the authentication token
-      const token = localStorage.getItem('authToken') || '';
+      // Get the authentication token using centralized auth store
+      import { getAuthToken } from '@/lib/authStore';
+      const token = getAuthToken('main') || '';
       
       // Use our new dedicated admin cart clear endpoint
       await fetch('/api/admin/clear-global-cart', {

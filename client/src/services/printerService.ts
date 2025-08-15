@@ -519,7 +519,7 @@ class PrinterService {
    */
   private async logDrawerAction(status: 'success' | 'failure', method: string, details?: string): Promise<void> {
     try {
-      const authToken = localStorage.getItem('posAuthToken');
+      const authToken = localStorage.getItem('pos_auth_token');
       await fetch('/api/pos/log-drawer-action', {
         method: 'POST',
         headers: { 

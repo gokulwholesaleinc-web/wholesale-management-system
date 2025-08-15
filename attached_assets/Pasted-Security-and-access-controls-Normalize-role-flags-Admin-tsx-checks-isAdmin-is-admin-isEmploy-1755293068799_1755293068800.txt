@@ -1,0 +1,59 @@
+Security and access controls
+
+    Normalize role flags: Admin.tsx checks isAdmin, is_admin, isEmployee, is_employee. Add a server-normalized shape (e.g., roles: ['admin','employee']) and expose a single canonical property on the client to avoid drift.
+    Enforce server-side RBAC on every admin endpoint: Some UI pages already redirect non-admins (AdminDashboard.tsx, AdminStaffManagement.tsx), but the real gate must be on the server. Keep requireAdmin on routes like backup, users, orders, etc., and avoid any “staff” access unless explicitly needed.
+    Remove header hacks: Admin.tsx sometimes sets x-admin-token for “compatibility.” Standardize on Authorization with your unified token and route all admin calls through a single API client.
+    Audit log and sensitive actions: Surface GET /api/admin/recent-activity in the UI and require typed confirmation for destructive operations (delete user, backup/restore, bulk updates). Log who did what, when.
+
+UX and navigation
+
+    Make /admin the dashboard hub, split management into clear sections:
+        Users: /admin/users (current Admin.tsx)
+        Orders: /admin/orders
+        Products and categories: /admin/products, /admin/categories
+        Tax: /admin/tax (flat taxes, audits, preview)
+        Loyalty: /admin/loyalty (manual adjust, stats)
+        Content and exports: /admin/exports (inventory, customers)
+        Backups: /admin/backups (list, create, download, delete, restore)
+        Account onboarding: /admin/account-requests (approve/reject)
+        System health and insights: /admin/system-health, /admin/business-insights
+    Use a consistent Admin layout with a left sidebar, breadcrumbs, and tabs. You already have BreadcrumbNavigation; apply it across all admin pages.
+    Mobile experience: Admin.tsx has mobile-specific branches; ensure actions, drawers/modals, and tables degrade gracefully on small screens.
+
+User management (Admin.tsx)
+
+    Filters, search, sort, pagination: Filter by role, customer level, company; sort by recent activity; add server-side pagination and virtualized rows for performance.
+    Inline details drawer: Clicking a user opens a side panel with summary, addresses (GET /api/admin/customers/:customerId/addresses), order history (GET /api/admin/users/:userId/orders), notification/consent status, and quick actions.
+    Bulk actions: Select-and-apply for role changes, notification preferences, or password reset prompts (with audit trail).
+    Validation and feedback: Ensure every mutation returns helpful errors, shows toasts, and optimistically updates lists (then revalidates).
+
+Products, categories, and orders
+
+    Products:
+        Toggle visibility (PUT /api/admin/products/:id/visibility)
+        Price history and sales analytics views (GET /api/admin/products/:id/price-history, /sales-analytics)
+        Archived products screen with unarchive actions
+        Bulk update/import flows with progress and failure reporting
+    Categories:
+        Drafts and visibility screens
+        Merge categories UI (POST /api/admin/categories/merge)
+    Orders:
+        Admin order list with search, status updates, and a full detail view
+        Purchase orders workflow (list, receive, status changes)
+
+Compliance and communications
+
+    Tax center: Manage flat taxes, preview calculations, and view audits in one place.
+    Consent center: Show SMS/email marketing consent (GET/PUT /api/admin/sms-consent…), with per-user overrides.
+    AI recommendations: Status, regenerate, and history endpoints exist—add a simple controls panel.
+
+Backups and system admin
+
+    Backups page: List backups (GET /api/admin/backup), create, download, delete, and restore—with big warnings, environment labels, and role restrictions. Run restores behind a feature flag and require typed confirmation.
+    System health and insights: Surface /api/admin/system-health and /api/admin/business-insights on the dashboard with minimal cards and links to drill downs.
+
+Code health improvements for the admin area
+
+    Single API client: Replace scattered fetch usage with your apiRequest helper to ensure Authorization is always attached, handle 401s consistently, and centralize error handling.
+    Remove legacy/debug endpoints from UI: Avoid wiring anything like simple cart endpoints into production admin. Keep dev-only routes behind an env flag.
+    Componentize forms and tables: Extract reusable AdminTable, AdminForm, and ConfirmDialog with consistent styles and validation.

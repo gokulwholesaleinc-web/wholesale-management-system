@@ -35,7 +35,7 @@ export function getAuthToken(preferredType: TokenType = 'main'): string | null {
     }
     
     // Legacy fallbacks
-    return localStorage.getItem('posAuthToken') || 
+    return localStorage.getItem('pos_auth_token') || 
            localStorage.getItem('authToken') ||
            localStorage.getItem('token');
   } else {
@@ -97,7 +97,7 @@ export function clearAuthTokens(): void {
   const tokenKeys = [
     'gokul_unified_auth',
     'pos_auth_token', 
-    'posAuthToken',
+    'pos_auth_token',
     'authToken',
     'token',
     'tempAuthToken'
