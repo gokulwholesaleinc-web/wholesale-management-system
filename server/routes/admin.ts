@@ -40,7 +40,7 @@ r.post('/users/invite', requireAdmin('admin.users.write'), (req,res)=>{
   const id = crypto.randomUUID();
   const row: AdminUser = { id, email: body.email, name: body.name, roles: body.roles, suspended: false };
   ADMIN_DB.users.set(id, row);
-  recordAudit({ actor_id: req.user!.id, actor_email: req.user!.email, type:'USER_INVITE', resource:`user:${id}`, payload: { roles: body.roles } });
+  recordAudit({ actor_id: req.user!.id, actor_email: req.user!.email || req.user!.username, type:'USER_INVITE', resource:`user:${id}`, payload: { roles: body.roles } });
   res.json({ data: row });
 });
 r.post('/users/:id/roles', requireAdmin('admin.users.write'), (req,res)=>{
@@ -49,24 +49,24 @@ r.post('/users/:id/roles', requireAdmin('admin.users.write'), (req,res)=>{
   const user = ADMIN_DB.users.get(req.params.id);
   if (!user) return res.status(404).json({ error: 'not_found' });
   user.roles = roles; ADMIN_DB.users.set(user.id, user);
-  recordAudit({ actor_id: req.user!.id, actor_email: req.user!.email, type:'USER_ROLE_UPDATE', resource:`user:${user.id}`, payload:{ roles } });
+  recordAudit({ actor_id: req.user!.id, actor_email: req.user!.email || req.user!.username, type:'USER_ROLE_UPDATE', resource:`user:${user.id}`, payload:{ roles } });
   res.json({ data: user });
 });
 r.post('/users/:id/suspend', requireAdmin('admin.users.write'), (req,res)=>{
   const user = ADMIN_DB.users.get(req.params.id); if (!user) return res.status(404).json({ error: 'not_found' });
   user.suspended = true; ADMIN_DB.users.set(user.id, user);
-  recordAudit({ actor_id: req.user!.id, actor_email: req.user!.email, type:'USER_SUSPEND', resource:`user:${user.id}` });
+  recordAudit({ actor_id: req.user!.id, actor_email: req.user!.email || req.user!.username, type:'USER_SUSPEND', resource:`user:${user.id}` });
   res.json({ data: user });
 });
 r.post('/users/:id/restore', requireAdmin('admin.users.write'), (req,res)=>{
   const user = ADMIN_DB.users.get(req.params.id); if (!user) return res.status(404).json({ error: 'not_found' });
   user.suspended = false; ADMIN_DB.users.set(user.id, user);
-  recordAudit({ actor_id: req.user!.id, actor_email: req.user!.email, type:'USER_RESTORE', resource:`user:${user.id}` });
+  recordAudit({ actor_id: req.user!.id, actor_email: req.user!.email || req.user!.username, type:'USER_RESTORE', resource:`user:${user.id}` });
   res.json({ data: user });
 });
 r.post('/users/:id/impersonate', requireAdmin('admin.impersonate'), (req,res)=>{
   const user = ADMIN_DB.users.get(req.params.id); if (!user) return res.status(404).json({ error: 'not_found' });
-  recordAudit({ actor_id: req.user!.id, actor_email: req.user!.email, type:'IMPERSONATE_START', resource:`user:${user.id}` });
+  recordAudit({ actor_id: req.user!.id, actor_email: req.user!.email || req.user!.username, type:'IMPERSONATE_START', resource:`user:${user.id}` });
   // TODO: set special impersonation session
   res.json({ data: { ok: true, target: user.id } });
 });
@@ -80,13 +80,13 @@ r.post('/keys', requireAdmin('admin.keys.write'), (req,res)=>{
   const schema = z.object({ name: z.string().min(1), scopes: z.array(z.string()).default(['read']) });
   const { name, scopes } = schema.parse(req.body);
   const key = createApiKey(name, scopes);
-  recordAudit({ actor_id: req.user!.id, actor_email: req.user!.email, type:'APIKEY_CREATE', resource:`key:${key.id}`, payload:{ scopes } });
+  recordAudit({ actor_id: req.user!.id, actor_email: req.user!.email || req.user!.username, type:'APIKEY_CREATE', resource:`key:${key.id}`, payload:{ scopes } });
   res.json({ data: key, token_preview:`${key.token_prefix}…` });
 });
 r.post('/keys/:id/revoke', requireAdmin('admin.keys.write'), (req,res)=>{
   const key = revokeApiKey(req.params.id);
   if (!key) return res.status(404).json({ error: 'not_found' });
-  recordAudit({ actor_id: req.user!.id, actor_email: req.user!.email, type:'APIKEY_REVOKE', resource:`key:${key.id}` });
+  recordAudit({ actor_id: req.user!.id, actor_email: req.user!.email || req.user!.username, type:'APIKEY_REVOKE', resource:`key:${key.id}` });
   res.json({ data: key });
 });
 
@@ -96,7 +96,7 @@ r.post('/flags/:key', requireAdmin('admin.flags.write'), (req,res)=>{
   const schema = z.object({ on: z.boolean(), note: z.string().optional(), targeting: z.object({ roles: z.array(z.string()).optional(), stores: z.array(z.string()).optional(), pct: z.number().min(0).max(100).optional() }).optional() });
   const { on, note, targeting } = schema.parse(req.body);
   const row = setFlag(req.params.key, on, note, targeting);
-  recordAudit({ actor_id: req.user!.id, actor_email: req.user!.email, type:'FLAG_TOGGLE', resource:`flag:${row.key}`, payload:{ on, targeting } });
+  recordAudit({ actor_id: req.user!.id, actor_email: req.user!.email || req.user!.username, type:'FLAG_TOGGLE', resource:`flag:${row.key}`, payload:{ on, targeting } });
   res.json({ data: row });
 });
 
@@ -104,12 +104,12 @@ r.post('/flags/:key', requireAdmin('admin.flags.write'), (req,res)=>{
 r.get('/jobs', requireAdmin('admin.jobs.read'), (_req,res)=> res.json({ data: listJobs() }));
 r.post('/jobs/:id/retry', requireAdmin('admin.jobs.write'), (req,res)=>{
   const row = retryJob(req.params.id); if (!row) return res.status(404).json({ error: 'not_found' });
-  recordAudit({ actor_id: req.user!.id, actor_email: req.user!.email, type:'JOB_RETRY', resource:`job:${row.id}` });
+  recordAudit({ actor_id: req.user!.id, actor_email: req.user!.email || req.user!.username, type:'JOB_RETRY', resource:`job:${row.id}` });
   res.json({ data: row });
 });
 r.post('/jobs/:id/cancel', requireAdmin('admin.jobs.write'), (req,res)=>{
   const row = cancelJob(req.params.id); if (!row) return res.status(404).json({ error: 'not_found' });
-  recordAudit({ actor_id: req.user!.id, actor_email: req.user!.email, type:'JOB_CANCEL', resource:`job:${row.id}` });
+  recordAudit({ actor_id: req.user!.id, actor_email: req.user!.email || req.user!.username, type:'JOB_CANCEL', resource:`job:${row.id}` });
   res.json({ data: row });
 });
 
