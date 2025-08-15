@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Route, Switch, useLocation, useRoute } from 'wouter';
+import { apiRequest } from '@/lib/queryClient';
 import { PosLogin } from './PosLogin';
 import { PosDashboard } from './PosDashboard';
 import { EnhancedPosSale } from './EnhancedPosSale';
@@ -34,30 +35,22 @@ export const PosApp: React.FC = () => {
     const posSession = localStorage.getItem('pos_session');
     
     if (posToken && posSession) {
-      // Validate the token with backend
-      fetch('/api/pos/validate-session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${posToken}`
-        },
-        body: JSON.stringify({ session: posSession })
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.valid) {
-          setIsAuthenticated(true);
-        } else {
-          // Clear invalid tokens
+      // Validate the token with backend using apiRequest
+      apiRequest('POST', '/api/pos/validate-session', { session: posSession })
+        .then(data => {
+          if (data.valid) {
+            setIsAuthenticated(true);
+          } else {
+            // Clear invalid tokens
+            localStorage.removeItem('pos_auth_token');
+            localStorage.removeItem('pos_session');
+          }
+        })
+        .catch(() => {
+          // Clear tokens on error
           localStorage.removeItem('pos_auth_token');
           localStorage.removeItem('pos_session');
-        }
-      })
-      .catch(() => {
-        // Clear tokens on error
-        localStorage.removeItem('pos_auth_token');
-        localStorage.removeItem('pos_session');
-      });
+        });
     }
   }, []);
   const [isLoading, setIsLoading] = useState(true);

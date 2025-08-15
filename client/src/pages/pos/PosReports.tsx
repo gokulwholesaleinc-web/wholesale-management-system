@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useQuery } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
 import { format } from 'date-fns';
 
 export default function PosReports() {
@@ -34,9 +35,7 @@ export default function PosReports() {
 
   const generateEODReport = async () => {
     try {
-      await fetch(`/api/pos/reports/generate-eod/${selectedDate}`, {
-        method: 'POST',
-      });
+      await apiRequest('POST', `/api/pos/reports/generate-eod/${selectedDate}`);
       refetchEOD();
     } catch (error) {
       console.error('Failed to generate EOD report:', error);

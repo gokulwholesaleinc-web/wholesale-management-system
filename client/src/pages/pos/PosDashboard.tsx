@@ -22,7 +22,7 @@ export const PosDashboard: React.FC = () => {
 
   // Fetch real data from main application
   const { data: products = [] } = useQuery({
-    queryKey: ['/api/products'],
+    queryKey: ['/api/pos/products'],
     select: (data: any) => data || []
   });
 
@@ -31,8 +31,8 @@ export const PosDashboard: React.FC = () => {
   });
 
   const { data: lowStockItems } = useQuery({
-    queryKey: ['/api/products'],
-    select: (data: any) => (data || []).filter((product: any) => product.inventory <= 10)
+    queryKey: ['/api/pos/products'],
+    select: (data: any) => (data || []).filter((product: any) => product.stock <= 10)
   });
 
   const handleBack = () => {

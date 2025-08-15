@@ -148,6 +148,26 @@ export const PosLogin: React.FC<PosLoginProps> = ({ onLoginSuccess }) => {
           deviceFingerprint
         }));
         
+        // Store main JWT token for API calls (unified auth)
+        if (data.mainToken) {
+          const authData = {
+            token: data.mainToken,
+            user: data.user,
+            expiresAt: Date.now() + (8 * 60 * 60 * 1000), // 8 hours
+            loginTime: Date.now()
+          };
+          
+          // Store in unified auth system
+          sessionStorage.setItem('gokul_unified_auth', JSON.stringify(authData));
+          localStorage.setItem('gokul_unified_auth', JSON.stringify(authData));
+          
+          // Legacy storage for compatibility
+          sessionStorage.setItem('authToken', data.mainToken);
+          sessionStorage.setItem('gokul_auth_data', JSON.stringify(authData));
+          
+          console.log('✅ POS Trusted Device: Main JWT token stored for API calls');
+        }
+        
         toast({
           title: "Welcome Back",
           description: "Trusted device login successful",
@@ -245,6 +265,26 @@ export const PosLogin: React.FC<PosLoginProps> = ({ onLoginSuccess }) => {
           loginTime: Date.now(),
           deviceFingerprint
         }));
+        
+        // Store main JWT token for API calls (unified auth)
+        if (data.mainToken) {
+          const authData = {
+            token: data.mainToken,
+            user: data.user,
+            expiresAt: Date.now() + (8 * 60 * 60 * 1000), // 8 hours
+            loginTime: Date.now()
+          };
+          
+          // Store in unified auth system
+          sessionStorage.setItem('gokul_unified_auth', JSON.stringify(authData));
+          localStorage.setItem('gokul_unified_auth', JSON.stringify(authData));
+          
+          // Legacy storage for compatibility
+          sessionStorage.setItem('authToken', data.mainToken);
+          sessionStorage.setItem('gokul_auth_data', JSON.stringify(authData));
+          
+          console.log('✅ POS Login: Main JWT token stored for API calls');
+        }
         
         // If device was marked as trusted, store it locally for UI feedback
         if (data.deviceTrusted && rememberDevice) {
