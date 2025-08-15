@@ -143,32 +143,49 @@ export function PosSystemPanel() {
         </div>
       )}
 
-      {/* Test Controls */}
+      {/* POS Controls */}
       <div style={{ marginTop: 16, padding: 12, backgroundColor: '#fef3c7', borderRadius: 8, border: '1px solid #f59e0b' }}>
-        <h4 style={{ fontSize: 14, fontWeight: 600, marginBottom: 8 }}>POS Testing</h4>
-        <button
-          onClick={() => createSampleTransaction.mutate()}
-          disabled={createSampleTransaction.isPending}
-          style={{
-            padding: '6px 12px',
-            backgroundColor: '#059669',
-            color: 'white',
-            border: 'none',
-            borderRadius: 4,
-            fontSize: 12,
-            cursor: createSampleTransaction.isPending ? 'not-allowed' : 'pointer',
-            opacity: createSampleTransaction.isPending ? 0.6 : 1
-          }}
-        >
-          {createSampleTransaction.isPending ? 'Creating...' : 'Create Sample Sale (w/ IL-OTP Tax)'}
-        </button>
+        <h4 style={{ fontSize: 14, fontWeight: 600, marginBottom: 8 }}>POS Management</h4>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <a 
+            href="/pos-direct" 
+            target="_blank"
+            style={{
+              padding: '6px 12px',
+              backgroundColor: '#1e40af',
+              color: 'white',
+              textDecoration: 'none',
+              borderRadius: 4,
+              fontSize: 12,
+              display: 'inline-block'
+            }}
+          >
+            Open POS Terminal
+          </a>
+          <button
+            onClick={() => createSampleTransaction.mutate()}
+            disabled={createSampleTransaction.isPending}
+            style={{
+              padding: '6px 12px',
+              backgroundColor: '#059669',
+              color: 'white',
+              border: 'none',
+              borderRadius: 4,
+              fontSize: 12,
+              cursor: createSampleTransaction.isPending ? 'not-allowed' : 'pointer',
+              opacity: createSampleTransaction.isPending ? 0.6 : 1
+            }}
+          >
+            {createSampleTransaction.isPending ? 'Creating...' : 'Create Sample Sale'}
+          </button>
+        </div>
         {createSampleTransaction.isSuccess && (
-          <div style={{ fontSize: 11, color: '#059669', marginTop: 4 }}>
+          <div style={{ fontSize: 11, color: '#059669', marginTop: 8 }}>
             ✅ Sample transaction created successfully
           </div>
         )}
         {createSampleTransaction.isError && (
-          <div style={{ fontSize: 11, color: '#dc2626', marginTop: 4 }}>
+          <div style={{ fontSize: 11, color: '#dc2626', marginTop: 8 }}>
             ❌ Failed to create sample transaction
           </div>
         )}

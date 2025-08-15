@@ -56,6 +56,7 @@ import AdminInvoices from "@/pages/AdminInvoices";
 import AdminTaxManagerPage from "@/pages/AdminTaxManagerPage";
 import AdminOrderSettings from "@/pages/AdminOrderSettings";
 import EnterpriseAdminDashboard from "@/pages/EnterpriseAdminDashboard";
+import InStorePOS from "@/pages/pos/InStorePOS";
 import InstoreLoginNew from "@/pages/InstoreLoginNew";
 import PosApp from "@/pages/pos/PosApp";
 import NewOrdersPage from "@/pages/NewOrdersPage";
@@ -250,6 +251,11 @@ function App() {
           </Route>
           <Route path="/instore">
             <PosApp />
+          </Route>
+          
+          {/* Direct POS Interface for Admin/Staff */}
+          <Route path="/pos-direct">
+            <AdminProtectedRoute component={InStorePOS} />
           </Route>
           <Route path="/order-details/:orderId">
             <StaffProtectedRoute component={OrderDetailPage} />
