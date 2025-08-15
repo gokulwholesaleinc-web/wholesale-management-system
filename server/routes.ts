@@ -31,6 +31,7 @@ import { posRoutes } from "./routes/posRoutes";
 // POS auth routes removed to avoid duplication - using main auth system
 import { receiptGenerator } from "./services/receiptGenerator";
 import newOrderRoutes from "./routes/newOrderRoutes";
+import ordersRoutes from "./routes/ordersRoutes";
 
 // Helper function to calculate delivery fee based on order total
 async function calculateDeliveryFee(orderTotal: number): Promise<number> {
@@ -7806,6 +7807,9 @@ Recommend 3-4 products from our inventory that match current trends. Respond wit
 
   // New order management system with IL tobacco tax compliance
   app.use("/api/new-orders", newOrderRoutes);
+  
+  // Enhanced orders system with seeding and status management
+  app.use("/api/orders", ordersRoutes);
   // POS auth routes removed - using main auth system to avoid duplication
 
   // ✅ NOTIFICATION ENDPOINTS FOR REGISTRY INTEGRATION

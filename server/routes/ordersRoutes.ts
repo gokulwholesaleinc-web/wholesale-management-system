@@ -1,0 +1,109 @@
+import { Router } from 'express';
+import { z } from 'zod';
+import { requireAuth } from '../simpleAuth';
+import { DB, canTransition, recalc, pushHistory, seedOrders } from '../services/orders';
+
+const router = Router();
+
+// Ensure we have data on boot if DB is empty
+seedOrders();
+
+// ✅ Debug endpoints to help you verify in Replit
+router.get('/_debug', (_req, res) => {
+  const rows = Array.from(DB.orders.values()).map(o => recalc(o));
+  res.json({ count: rows.length, ids: rows.map(r => r.id) });
+});
+router.post('/_seed', (_req, res) => {
+  seedOrders();
+  const rows = Array.from(DB.orders.values()).map(o => recalc(o));
+  res.json({ count: rows.length });
+});
+
+// GET /api/orders
+router.get('/', requireAuth, (req, res) => {
+  const { query = '', status = '', page = '1', limit = '50', from = '', to = '' } = req.query as Record<string, string>;
+
+  let rows = Array.from(DB.orders.values());
+
+  if (status) rows = rows.filter(o => o.status === status);
+  if (query) {
+    const q = query.toLowerCase();
+    rows = rows.filter(o =>
+      o.id.toLowerCase().includes(q) ||
+      o.customer_name.toLowerCase().includes(q) ||
+      o.items.some(i => i.sku.toLowerCase().includes(q))
+    );
+  }
+
+  // ✅ Be forgiving with malformed dates so we don't filter everything out
+  const fromOk = from && !isNaN(Date.parse(from));
+  const toOk = to && !isNaN(Date.parse(to));
+  if (fromOk) rows = rows.filter(o => Date.parse(o.created_at) >= Date.parse(from));
+  if (toOk) rows = rows.filter(o => Date.parse(o.created_at) <= Date.parse(to));
+
+  rows = rows.sort((a, b) => b.created_at.localeCompare(a.created_at));
+
+  const p = Math.max(1, Number(page) || 1);
+  const l = Math.min(200, Math.max(1, Number(limit) || 50));
+  const start = (p - 1) * l;
+
+  const data = rows.slice(start, start + l).map(o => recalc(o));
+  res.json({ data, total: rows.length, page: p, limit: l });
+});
+
+// GET /api/orders/:id
+router.get('/:id', requireAuth, (req, res) => {
+  const o = DB.orders.get(req.params.id);
+  if (!o) return res.status(404).json({ error: 'Not found' });
+  res.json({ data: recalc(o), history: (DB.history.get(o.id) || []), payments: (DB.payments.get(o.id) || []) });
+});
+
+// POST /api/orders/:id/status
+router.post('/:id/status', requireAuth, (req, res) => {
+  const schema = z.object({ to: z.string(), reason: z.string().optional(), actor_id: z.string().default('system') });
+  const { to, reason, actor_id } = schema.parse(req.body);
+
+  const o = DB.orders.get(req.params.id);
+  if (!o) return res.status(404).json({ error: 'Not found' });
+
+  if (!canTransition(o.status, to as any)) return res.status(409).json({ error: `Invalid transition ${o.status} → ${to}` });
+
+  const from = o.status;
+  o.status = to as any;
+  o.updated_at = new Date().toISOString();
+  DB.orders.set(o.id, o);
+  pushHistory(o, from, o.status, actor_id, reason);
+
+  res.json({ data: recalc(o) });
+});
+
+// PATCH /api/orders/:id/item/:itemId
+router.patch('/:id/item/:itemId', (req, res) => {
+  const schema = z.object({
+    qty: z.number().int().min(0).optional(),
+    unit_price: z.number().int().min(0).optional()
+  });
+  const body = schema.parse(req.body);
+  const o = DB.orders.get(req.params.id);
+  if (!o) return res.status(404).json({ error: 'Not found' });
+
+  const it = o.items.find(i => i.id === req.params.itemId);
+  if (!it) return res.status(404).json({ error: 'Item not found' });
+
+  if (typeof body.qty === 'number') it.qty = body.qty;
+  if (typeof body.unit_price === 'number') it.unit_price = body.unit_price;
+
+  o.updated_at = new Date().toISOString();
+  DB.orders.set(o.id, recalc(o));
+  res.json({ data: DB.orders.get(o.id) });
+});
+
+// POST /api/orders/:id/recalc
+router.post('/:id/recalc', requireAuth, (req, res) => {
+  const o = DB.orders.get(req.params.id);
+  if (!o) return res.status(404).json({ error: 'Not found' });
+  DB.orders.set(o.id, recalc(o));
+  res.json({ data: DB.orders.get(o.id) });
+});
+
+export default router;

@@ -1,0 +1,161 @@
+import { randomUUID } from 'node:crypto';
+
+// Order types definition
+export type OrderStatus = 
+  | 'NEW' 
+  | 'PAID' 
+  | 'PACKED' 
+  | 'SHIPPED' 
+  | 'DELIVERED' 
+  | 'CANCELLED' 
+  | 'REFUNDED' 
+  | 'ON_HOLD' 
+  | 'RETURN_REQUESTED';
+
+export interface OrderItem {
+  id: string;
+  sku: string;
+  name: string;
+  qty: number;
+  unit_price: number; // in cents
+  line_tax_rate?: number;
+}
+
+export interface Order {
+  id: string;
+  currency: string;
+  customer_id: string;
+  customer_name: string;
+  customer_email: string;
+  customer_phone: string;
+  items: OrderItem[];
+  subtotal: number; // in cents
+  tax_il_otp: number; // IL tobacco tax in cents
+  tax_other: number; // other taxes in cents
+  shipping: number; // in cents
+  discount: number; // in cents
+  total: number; // in cents
+  paid: number; // in cents
+  balance: number; // in cents
+  status: OrderStatus;
+  created_at: string;
+  updated_at: string;
+  shipments: any[];
+  payments: any[];
+}
+
+export interface OrderStatusHistory {
+  id: string;
+  order_id: string;
+  from_status: OrderStatus;
+  to_status: OrderStatus;
+  actor_id: string;
+  reason?: string;
+  created_at: string;
+}
+
+export interface Payment {
+  id: string;
+  provider: string;
+  external_id?: string;
+  amount: number; // in cents
+  type: 'charge' | 'refund';
+  status: 'succeeded' | 'failed' | 'pending';
+  created_at: string;
+}
+
+const ALLOWED: Record<OrderStatus, OrderStatus[]> = {
+  NEW: ['PAID', 'CANCELLED', 'ON_HOLD'],
+  PAID: ['PACKED', 'REFUNDED', 'ON_HOLD'],
+  PACKED: ['SHIPPED', 'ON_HOLD'],
+  SHIPPED: ['DELIVERED', 'RETURN_REQUESTED'],
+  DELIVERED: [],
+  CANCELLED: [],
+  REFUNDED: [],
+  ON_HOLD: ['NEW', 'PAID', 'PACKED', 'CANCELLED']
+};
+
+export const DB = {
+  orders: new Map<string, Order>(),
+  history: new Map<string, OrderStatusHistory[]>(),
+  payments: new Map<string, Payment[]>()
+};
+
+export function lineTotal(i: OrderItem) {
+  const base = i.qty * i.unit_price;
+  const tax = Math.round(base * (i.line_tax_rate || 0));
+  return { base, tax };
+}
+
+export function recalc(o: Order): Order {
+  const sums = o.items.map(lineTotal).reduce(
+    (acc, t) => ({ base: acc.base + t.base, tax_other: acc.tax_other + t.tax }),
+    { base: 0, tax_other: 0 }
+  );
+
+  const subtotal = sums.base;
+  const tax_other = sums.tax_other;
+  const tax_il_otp = Number.isFinite(o.tax_il_otp) ? o.tax_il_otp : 0;
+  const total = subtotal + tax_il_otp + tax_other + (o.shipping || 0) - (o.discount || 0);
+  const paid = (DB.payments.get(o.id) || []).reduce((a, p) => a + p.amount, 0);
+  const balance = total - paid;
+
+  return { ...o, subtotal, tax_other, total, paid, balance };
+}
+
+export function canTransition(from: OrderStatus, to: OrderStatus) {
+  return ALLOWED[from]?.includes(to) || to === 'CANCELLED';
+}
+
+export function pushHistory(order: Order, from: OrderStatus, to: OrderStatus, actor_id: string, reason?: string) {
+  const h = DB.history.get(order.id) || [];
+  h.push({
+    id: randomUUID(),
+    order_id: order.id,
+    from_status: from,
+    to_status: to,
+    actor_id,
+    reason,
+    created_at: new Date().toISOString()
+  });
+  DB.history.set(order.id, h);
+}
+
+// ✅ Idempotent seeder (won't duplicate if already present)
+export function seedOrders() {
+  if (DB.orders.size) return;
+
+  const now = new Date().toISOString();
+  const mk = (id: string, il_otp: number): Order => recalc({
+    id,
+    currency: 'USD',
+    customer_id: `CUST-${id}`,
+    customer_name: id === 'ORD-1001' ? 'Acme Market' : 'Bryn Mawr Deli',
+    customer_email: 'buyer@example.com',
+    customer_phone: '630-540-9910',
+    items: id === 'ORD-1001'
+      ? [
+          { id: 'it1', sku: 'TOB-001', name: 'Tobacco Pouch', qty: 5, unit_price: 1299, line_tax_rate: 0.1 },
+          { id: 'it2', sku: 'ECIG-010', name: 'E-Cig Device', qty: 2, unit_price: 3999, line_tax_rate: 0.1 }
+        ]
+      : [
+          { id: 'it3', sku: 'PAP-100', name: 'Paper Wraps', qty: 20, unit_price: 199, line_tax_rate: 0.07 }
+        ],
+    subtotal: 0,
+    tax_il_otp: il_otp,
+    tax_other: 0,
+    shipping: 999,
+    discount: id === 'ORD-1002' ? 200 : 0,
+    total: 0,
+    paid: 0,
+    balance: 0,
+    status: id === 'ORD-1001' ? 'NEW' : 'PAID',
+    created_at: now,
+    updated_at: now,
+    shipments: [],
+    payments: []
+  });
+
+  DB.orders.set('ORD-1001', mk('ORD-1001', 4500));
+  DB.orders.set('ORD-1002', mk('ORD-1002', 0));
+}

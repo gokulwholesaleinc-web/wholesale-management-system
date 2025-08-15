@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { useOrders } from '../../hooks/useNewOrders';
+import { useOrders } from '../../hooks/useOrders';
 import { StatusPill } from './StatusPill';
 import { OrderDrawer } from './OrderDrawer';
 
@@ -84,6 +84,25 @@ export function NewOrderList() {
           </button>
         ))}
       </div>
+
+      {/* Seed Button for Development */}
+      <button
+        onClick={async () => {
+          await fetch('/api/orders/_seed', { method: 'POST' });
+          window.location.reload();
+        }}
+        style={{ 
+          marginTop: 16, 
+          marginLeft: 8, 
+          padding: '6px 10px', 
+          borderRadius: 8, 
+          border: '1px solid #e5e7eb',
+          background: '#f3f4f6',
+          fontSize: 12
+        }}
+      >
+        Seed Sample Orders
+      </button>
 
       {/* Drawer */}
       {selectedId && <OrderDrawer id={selectedId} onClose={() => setSelectedId(undefined)} />}
