@@ -23,6 +23,19 @@ backups/
 *.sqlite
 *.db
 
+# Debug and development files
+fix-duplicate-endpoints.mjs
+*final*.mjs
+*debug*.js
+*test*.js
+*cleanup*.sh
+archive/
+
+# Additional cleanup
+*.md.backup
+*temp*
+*tmp*
+
 # Logs
 *.log
 logs/
