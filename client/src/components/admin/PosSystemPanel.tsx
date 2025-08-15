@@ -148,7 +148,7 @@ export function PosSystemPanel() {
         <h4 style={{ fontSize: 14, fontWeight: 600, marginBottom: 8 }}>POS Management</h4>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           <a 
-            href="/pos-direct" 
+            href="/pos" 
             target="_blank"
             style={{
               padding: '6px 12px',

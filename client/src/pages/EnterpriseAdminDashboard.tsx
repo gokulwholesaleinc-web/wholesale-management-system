@@ -6,30 +6,54 @@ import {
 import { DataTable } from '../components/admin/DataTable';
 import { PosSystemPanel } from '../components/admin/PosSystemPanel';
 
-type Tab = 'overview'|'users'|'keys'|'flags'|'jobs'|'audit'|'pos'|'settings';
+// Import traditional admin components for consolidated interface
+import AdminDashboard from './AdminDashboard';
+import AdminOrdersPage from './AdminOrdersPage';
+import AdminProductManagement from './AdminProductManagement';
+import EnhancedUserManagement from './EnhancedUserManagement';
+
+type Tab = 'overview'|'users'|'keys'|'flags'|'jobs'|'audit'|'pos'|'settings'|'dashboard'|'orders'|'products'|'customers';
 
 export default function EnterpriseAdminDashboard() {
   const [tab, setTab] = useState<Tab>('overview');
 
   return (
     <div style={{ padding: 16 }}>
-      <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 12 }}>Enterprise Admin Dashboard</h2>
-      <div style={{ display:'flex', gap:8, marginBottom:12 }}>
-        {(['overview','users','keys','flags','jobs','audit','pos','settings'] as Tab[]).map(t=>(
+      <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 12 }}>Gokul Wholesale - Admin Dashboard</h2>
+      
+      {/* Main Navigation Tabs */}
+      <div style={{ display:'flex', gap:4, marginBottom:12, flexWrap: 'wrap' }}>
+        {(['overview','dashboard','orders','products','customers','pos','users','keys','flags','jobs','audit','settings'] as Tab[]).map(t=>(
           <button key={t} onClick={()=>setTab(t)}
-            style={{ padding:'8px 12px', borderRadius:8, border:'1px solid #e5e7eb', background: tab===t ? '#111827' : 'white', color: tab===t ? 'white' : 'black' }}>
-            {t.toUpperCase()}
+            style={{ 
+              padding:'8px 12px', 
+              borderRadius:6, 
+              border:'1px solid #e5e7eb', 
+              background: tab===t ? '#111827' : 'white', 
+              color: tab===t ? 'white' : 'black',
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: 'pointer'
+            }}>
+            {t.charAt(0).toUpperCase() + t.slice(1)}
           </button>
         ))}
       </div>
 
+      {/* Business Operations */}
       {tab==='overview' && <OverviewTab/>}
+      {tab==='dashboard' && <div><AdminDashboard /></div>}
+      {tab==='orders' && <div><AdminOrdersPage /></div>}
+      {tab==='products' && <div><AdminProductManagement /></div>}
+      {tab==='customers' && <div><EnhancedUserManagement /></div>}
+      {tab==='pos' && <PosTab/>}
+      
+      {/* Enterprise Management */}
       {tab==='users' && <UsersTab/>}
       {tab==='keys' && <KeysTab/>}
       {tab==='flags' && <FlagsTab/>}
       {tab==='jobs' && <JobsTab/>}
       {tab==='audit' && <AuditTab/>}
-      {tab==='pos' && <PosTab/>}
       {tab==='settings' && <SettingsTab/>}
     </div>
   );

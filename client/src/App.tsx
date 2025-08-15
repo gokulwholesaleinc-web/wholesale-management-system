@@ -199,6 +199,11 @@ function App() {
           <Route path="/admin/enterprise">
             <AdminProtectedRoute component={EnterpriseAdminDashboard} />
           </Route>
+          
+          {/* Consolidated Admin Routes - Enterprise becomes the main admin interface */}
+          <Route path="/admin">
+            <AdminProtectedRoute component={EnterpriseAdminDashboard} />
+          </Route>
 
           <Route path="/admin/purchase-orders">
             <AdminProtectedRoute component={AdminProductManagement} />
@@ -245,16 +250,17 @@ function App() {
           <Route path="/admin/credit-management">
             <AdminProtectedRoute component={AdminCreditManagement} />
           </Route>
-          {/* In-Store POS System Routes - Completely isolated from main app */}
+          {/* Unified POS System - Consolidating /instore and /pos-direct */}
           <Route path="/instore/:path*">
-            <PosApp />
+            <AdminProtectedRoute component={InStorePOS} />
           </Route>
           <Route path="/instore">
-            <PosApp />
+            <AdminProtectedRoute component={InStorePOS} />
           </Route>
-          
-          {/* Direct POS Interface for Admin/Staff */}
           <Route path="/pos-direct">
+            <AdminProtectedRoute component={InStorePOS} />
+          </Route>
+          <Route path="/pos">
             <AdminProtectedRoute component={InStorePOS} />
           </Route>
           <Route path="/order-details/:orderId">
@@ -312,9 +318,6 @@ function App() {
           </Route>
           <Route path="/admin/new-orders">
             <AdminProtectedRoute component={NewOrdersPage} />
-          </Route>
-          <Route path="/admin">
-            <AdminProtectedRoute component={AdminDashboard} />
           </Route>
           
           {/* Public routes */}
