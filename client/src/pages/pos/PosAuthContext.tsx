@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { apiRequest } from '@/lib/queryClient';
 
 interface PosUser {
   id: string;
@@ -51,19 +52,7 @@ export const PosAuthProvider: React.FC<PosAuthProviderProps> = ({ children }) =>
 
   const verifyPosToken = async (token: string): Promise<PosUser | null> => {
     try {
-      const response = await fetch('/api/pos/auth/verify', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error('Token verification failed');
-      }
-
-      const userData = await response.json();
+      const userData = await apiRequest('POST', '/api/pos/auth/verify');
       return userData.user;
     } catch (error) {
       console.error('POS token verification failed:', error);

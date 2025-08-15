@@ -180,20 +180,7 @@ export default function PosSystem() {
   // Create transaction mutation
   const createTransactionMutation = useMutation({
     mutationFn: async (transactionData: any) => {
-      const response = await fetch('/api/pos/transactions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(transactionData)
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to create transaction');
-      }
-      
-      return response.json();
+      return await apiRequest('POST', '/api/pos/transactions', transactionData);
     },
     onSuccess: (data) => {
       setCurrentReceiptData(data);
@@ -223,16 +210,7 @@ export default function PosSystem() {
   // Hold transaction mutation
   const holdTransactionMutation = useMutation({
     mutationFn: async (holdData: any) => {
-      const response = await fetch('/api/pos/held-transactions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(holdData)
-      });
-      
-      return response.json();
+      return await apiRequest('POST', '/api/pos/held-transactions', holdData);
     },
     onSuccess: () => {
       clearCart();
@@ -249,18 +227,7 @@ export default function PosSystem() {
   // Recall held transaction mutation
   const recallTransactionMutation = useMutation({
     mutationFn: async (heldTransactionId: number) => {
-      const response = await fetch(`/api/pos/held-transactions/${heldTransactionId}/recall`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to recall transaction');
-      }
-      
-      return response.json();
+      return await apiRequest('POST', `/api/pos/held-transactions/${heldTransactionId}/recall`);
     },
     onSuccess: (data) => {
       // Clear current cart first
@@ -391,14 +358,8 @@ export default function PosSystem() {
 
     try {
       // Search for product by barcode
-      const response = await fetch(`/api/pos/product-lookup?barcode=${barcode}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      
-      if (response.ok) {
-        const product = await response.json();
+      try {
+        const product = await apiRequest(`/api/pos/product-lookup?barcode=${barcode}`);
         addToCart(product);
         
         // Check for pricing memory
@@ -448,14 +409,8 @@ export default function PosSystem() {
         cleanSearchTerm = multiplierMatch[2].trim();
       }
       
-      const response = await fetch(`/api/products/search?q=${encodeURIComponent(cleanSearchTerm)}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      
-      if (response.ok) {
-        const results = await response.json();
+      try {
+        const results = await apiRequest(`/api/products/search?q=${encodeURIComponent(cleanSearchTerm)}`);
         setSearchResults(results);
         
         // If there's a quantity multiplier and only one result, add it directly
@@ -464,7 +419,7 @@ export default function PosSystem() {
           setProductSearch('');
           setSearchResults([]);
         }
-      } else {
+      } catch (error) {
         toast({
           title: "Search failed",
           description: "Failed to search products.",
@@ -473,11 +428,6 @@ export default function PosSystem() {
       }
     } catch (error) {
       console.error('Error searching products:', error);
-      toast({
-        title: "Error",
-        description: "Failed to search products.",
-        variant: "destructive",
-      });
     }
   };
 
@@ -546,26 +496,13 @@ export default function PosSystem() {
   const handleViewItemDetails = async (item: CartItem) => {
     try {
       // Fetch full product details including pricing history  
-      const response = await fetch(`/api/products/${item.productId}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+      const productDetails = await apiRequest(`/api/products/${item.productId}`);
+      setSelectedProductForDetails({
+        ...productDetails,
+        ...item, // Merge cart item data
       });
-      
-      if (response.ok) {
-        const productDetails = await response.json();
-        setSelectedProductForDetails({
-          ...productDetails,
-          ...item, // Merge cart item data
-        });
-        setIsProductDetailsOpen(true);
-      } else {
-        // Fallback to cart item data
-        setSelectedProductForDetails(item);
-        setIsProductDetailsOpen(true);
-      }
+      setIsProductDetailsOpen(true);
     } catch (error) {
-      console.error('Error fetching product details:', error);
       // Fallback to cart item data
       setSelectedProductForDetails(item);
       setIsProductDetailsOpen(true);
@@ -854,6 +791,14 @@ export default function PosSystem() {
           <div>
             <h1 className="text-3xl font-bold tracking-tight">POS System</h1>
             <p className="text-muted-foreground">Point of Sale with advanced features</p>
+            {/* DEPRECATION NOTICE */}
+            <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+              <p className="text-sm text-yellow-800">
+                <AlertTriangle className="h-4 w-4 inline mr-1" />
+                <strong>Notice:</strong> This legacy POS interface is deprecated. 
+                Please use the new modular POS system at <a href="/instore" className="text-blue-600 underline">/instore</a> for the latest features and improvements.
+              </p>
+            </div>
           </div>
           <div className="flex gap-2">
             <Button onClick={clearCart} variant="outline">
