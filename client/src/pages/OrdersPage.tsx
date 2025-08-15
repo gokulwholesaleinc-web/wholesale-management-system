@@ -85,24 +85,30 @@ export default function OrdersPage() {
         ))}
       </div>
 
-      {/* Seed Button for Development */}
-      <button
-        onClick={async () => {
-          await fetch('/api/orders/_seed', { method: 'POST' });
-          window.location.reload();
-        }}
-        style={{ 
-          marginTop: 16, 
-          marginLeft: 8, 
-          padding: '6px 10px', 
-          borderRadius: 8, 
-          border: '1px solid #e5e7eb',
-          background: '#f3f4f6',
-          fontSize: 12
-        }}
-      >
-        Seed Sample Orders
-      </button>
+      {/* Development Tools - Remove for production */}
+      {process.env.NODE_ENV === 'development' && (
+        <button
+          onClick={async () => {
+            const token = localStorage.getItem('authToken');
+            await fetch('/api/orders/_seed', { 
+              method: 'POST',
+              headers: token ? { Authorization: `Bearer ${token}` } : {}
+            });
+            window.location.reload();
+          }}
+          style={{ 
+            marginTop: 16, 
+            marginLeft: 8, 
+            padding: '6px 10px', 
+            borderRadius: 8, 
+            border: '1px solid #e5e7eb',
+            background: '#f3f4f6',
+            fontSize: 12
+          }}
+        >
+          Seed Sample Orders (Dev)
+        </button>
+      )}
 
       {/* Drawer */}
       {selectedId && <OrderDrawer id={selectedId} onClose={() => setSelectedId(undefined)} />}
