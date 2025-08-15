@@ -1,0 +1,21 @@
+ReferenceError: useUnifiedOrders is not defined
+
+
+EnhancedPosSale@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/pages/pos/EnhancedPosSale.tsx:45:27
+div
+PosRouter@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/pages/pos/PosApp.tsx:51:27
+PosAuthProvider@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/pages/pos/PosAuthContext.tsx:30:32
+QueryClientProvider@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=7af567d5:2932:27
+PosApp
+Route@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=7af567d5:206:13
+Switch@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=7af567d5:262:14
+ErrorBoundary@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/components/ui/error-boundary.tsx:10:5
+InitialNotificationOptinProvider@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/contexts/InitialNotificationOptinContext.tsx:33:49
+PrivacyPolicyProvider@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/contexts/PrivacyPolicyContext.tsx:33:38
+Provider@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-OXZDJRWN.js?v=7af567d5:38:47
+TooltipProvider@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=7af567d5:70:7
+App@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/App.tsx?v=oRGkYAZwwUHlG7JWOify8:106:31
+Router@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=7af567d5:161:14
+QueryClientProvider@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=7af567d5:2932:27
+AppWithProviders
+
