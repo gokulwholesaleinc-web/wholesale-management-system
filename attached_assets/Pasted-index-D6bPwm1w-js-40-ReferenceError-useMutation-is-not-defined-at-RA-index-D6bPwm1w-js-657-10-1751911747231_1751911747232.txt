@@ -1,0 +1,77 @@
+index-D6bPwm1w.js:40  ReferenceError: useMutation is not defined
+    at RA (index-D6bPwm1w.js:657:109786)
+    at gh (index-D6bPwm1w.js:38:17874)
+    at nO (index-D6bPwm1w.js:40:45184)
+    at J3 (index-D6bPwm1w.js:40:40742)
+    at fK (index-D6bPwm1w.js:40:40670)
+    at u0 (index-D6bPwm1w.js:40:40523)
+    at K2 (index-D6bPwm1w.js:40:36776)
+    at Q3 (index-D6bPwm1w.js:40:37588)
+    at U (index-D6bPwm1w.js:38:3266)
+    at index-D6bPwm1w.js:40:35080
+O2 @ index-D6bPwm1w.js:40
+index-D6bPwm1w.js:946  Error caught by ErrorBoundary: ReferenceError: useMutation is not defined
+    at RA (index-D6bPwm1w.js:657:109786)
+    at gh (index-D6bPwm1w.js:38:17874)
+    at nO (index-D6bPwm1w.js:40:45184)
+    at J3 (index-D6bPwm1w.js:40:40742)
+    at fK (index-D6bPwm1w.js:40:40670)
+    at u0 (index-D6bPwm1w.js:40:40523)
+    at K2 (index-D6bPwm1w.js:40:36776)
+    at Q3 (index-D6bPwm1w.js:40:37588)
+    at U (index-D6bPwm1w.js:38:3266)
+    at index-D6bPwm1w.js:40:35080 Object
+componentDidCatch @ index-D6bPwm1w.js:946
+index-D6bPwm1w.js:40  ReferenceError: useMutation is not defined
+    at RA (index-D6bPwm1w.js:657:109786)
+    at gh (index-D6bPwm1w.js:38:17874)
+    at nO (index-D6bPwm1w.js:40:45184)
+    at J3 (index-D6bPwm1w.js:40:40742)
+    at fK (index-D6bPwm1w.js:40:40670)
+    at u0 (index-D6bPwm1w.js:40:40523)
+    at K2 (index-D6bPwm1w.js:40:36776)
+    at Q3 (index-D6bPwm1w.js:40:37588)
+    at U (index-D6bPwm1w.js:38:3266)
+    at index-D6bPwm1w.js:40:35080
+O2 @ index-D6bPwm1w.js:40
+index-D6bPwm1w.js:946  Error caught by ErrorBoundary: ReferenceError: useMutation is not defined
+    at RA (index-D6bPwm1w.js:657:109786)
+    at gh (index-D6bPwm1w.js:38:17874)
+    at nO (index-D6bPwm1w.js:40:45184)
+    at J3 (index-D6bPwm1w.js:40:40742)
+    at fK (index-D6bPwm1w.js:40:40670)
+    at u0 (index-D6bPwm1w.js:40:40523)
+    at K2 (index-D6bPwm1w.js:40:36776)
+    at Q3 (index-D6bPwm1w.js:40:37588)
+    at U (index-D6bPwm1w.js:38:3266)
+    at index-D6bPwm1w.js:40:35080 Object
+componentDidCatch @ index-D6bPwm1w.js:946
+index-D6bPwm1w.js:40  ReferenceError: useMutation is not defined
+    at RA (index-D6bPwm1w.js:657:109786)
+    at gh (index-D6bPwm1w.js:38:17874)
+    at nO (index-D6bPwm1w.js:40:45184)
+    at J3 (index-D6bPwm1w.js:40:40742)
+    at fK (index-D6bPwm1w.js:40:40670)
+    at u0 (index-D6bPwm1w.js:40:40523)
+    at K2 (index-D6bPwm1w.js:40:36776)
+    at Q3 (index-D6bPwm1w.js:40:37588)
+    at U (index-D6bPwm1w.js:38:3266)
+    at index-D6bPwm1w.js:40:35080
+O2 @ index-D6bPwm1w.js:40
+index-D6bPwm1w.js:946  Error caught by ErrorBoundary: ReferenceError: useMutation is not defined
+    at RA (index-D6bPwm1w.js:657:109786)
+    at gh (index-D6bPwm1w.js:38:17874)
+    at nO (index-D6bPwm1w.js:40:45184)
+    at J3 (index-D6bPwm1w.js:40:40742)
+    at fK (index-D6bPwm1w.js:40:40670)
+    at u0 (index-D6bPwm1w.js:40:40523)
+    at K2 (index-D6bPwm1w.js:40:36776)
+    at Q3 (index-D6bPwm1w.js:40:37588)
+    at U (index-D6bPwm1w.js:38:3266)
+    at index-D6bPwm1w.js:40:35080 Object
+componentDidCatch @ index-D6bPwm1w.js:946
+[NEW] Explain Console errors by using Copilot in Edge: click
+         
+         to explain an error. 
+        Learn more
+        Don't show again

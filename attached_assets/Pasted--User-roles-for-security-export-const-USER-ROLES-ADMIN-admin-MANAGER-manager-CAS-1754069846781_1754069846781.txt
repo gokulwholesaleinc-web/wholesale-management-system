@@ -1,0 +1,157 @@
+// User roles for security
+export const USER_ROLES = {
+  ADMIN: 'admin',
+  MANAGER: 'manager',
+  CASHIER: 'cashier',
+  INVENTORY: 'inventory'
+} as const;
+
+// Users table
+export const users = pgTable("users", {
+  id: serial("id").primaryKey(),
+  username: varchar("username", { length: 50 }).notNull().unique(),
+  email: varchar("email", { length: 100 }).unique(),
+  passwordHash: varchar("password_hash", { length: 255 }).notNull(),
+  firstName: varchar("first_name", { length: 100 }),
+  lastName: varchar("last_name", { length: 100 }),
+  profileImageUrl: varchar("profile_image_url"),
+  role: varchar("role", { length: 20 }).notNull().default(USER_ROLES.CASHIER),
+  active: boolean("active").notNull().default(true),
+  lastLogin: timestamp("last_login"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// Customer table
+export const customers = pgTable("customers", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  email: text("email"),
+  phone: text("phone"),
+  address: text("address"),
+  creditLimit: decimal("credit_limit", { precision: 10, scale: 2 }).default("0").notNull(),
+  creditBalance: decimal("credit_balance", { precision: 10, scale: 2 }).default("0").notNull(),
+  paymentTerms: integer("payment_terms").default(30),
+  nextReminder: date("next_reminder"),
+  reminderFrequency: integer("reminder_frequency").default(30),
+  notes: text("notes"),
+});
+
+// Product/Inventory table
+export const products = pgTable("products", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  sku: text("sku").notNull().unique(),
+  barcode: text("barcode").unique(),
+  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  costPrice: decimal("cost_price", { precision: 10, scale: 2 }),
+  stockQuantity: integer("stock_quantity").default(0).notNull(),
+  lowStockThreshold: integer("low_stock_threshold").default(10),
+  category: text("category"),
+});
+
+// Transaction table for sales and invoices
+export const transactions = pgTable("transactions", {
+  id: serial("id").primaryKey(),
+  customerId: integer("customer_id").references(() => customers.id),
+  userId: integer("user_id").references(() => users.id),
+  userName: text("user_name"),
+  total: decimal("total", { precision: 10, scale: 2 }).notNull(),
+  tax: decimal("tax", { precision: 10, scale: 2 }).default("0"),
+  status: text("status").notNull(), // Completed, Processing, On Credit, Cancelled
+  paymentMethod: text("payment_method"), // Credit Card, Cash, Bank Transfer, On Credit
+  invoiceNumber: text("invoice_number"),
+  dueDate: date("due_date"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  notes: text("notes"),
+  isPrinted: boolean("is_printed").default(false),
+  isVoided: boolean("is_voided").default(false),
+  voidReason: text("void_reason"),
+  voidedAt: timestamp("voided_at"),
+  voidedBy: integer("voided_by").references(() => users.id),
+  voidedByName: text("voided_by_name"),
+  managerOverride: boolean("manager_override").default(false),
+  managerApprovalBy: integer("manager_approval_by").references(() => users.id),
+  voidType: text("void_type").default("full"),
+  partialVoidAmount: decimal("partial_void_amount", { precision: 10, scale: 2 }),
+  originalTransactionId: integer("original_transaction_id").references(() => transactions.id),
+  isReturn: boolean("is_return").default(false),
+});
+
+// Transaction items (line items)
+export const transactionItems = pgTable("transaction_items", {
+  id: serial("id").primaryKey(),
+  transactionId: integer("transaction_id").references(() => transactions.id).notNull(),
+  productId: integer("product_id").references(() => products.id).notNull(),
+  quantity: integer("quantity").notNull(),
+  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  originalPrice: decimal("original_price", { precision: 10, scale: 2 }),
+  taxRate: decimal("tax_rate", { precision: 5, scale: 2 }),
+  taxAmount: decimal("tax_amount", { precision: 10, scale: 2 }),
+  isTaxExempt: boolean("is_tax_exempt").default(false),
+  subtotal: decimal("subtotal", { precision: 10, scale: 2 }).notNull(),
+  notes: text("notes"),
+  isReturned: boolean("is_returned").default(false),
+  originalItemId: integer("original_item_id").references(() => transactionItems.id),
+});
+
+// Payments table
+export const payments = pgTable("payments", {
+  id: serial("id").primaryKey(),
+  customerId: integer("customer_id").references(() => customers.id).notNull(),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  paymentMethod: text("payment_method").notNull(),
+  transactionId: integer("transaction_id").references(() => transactions.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  notes: text("notes"),
+  idempotencyKey: varchar("idempotency_key", { length: 255 }).unique()
+});
+
+// Settings table for business info and app settings
+export const settings = pgTable("settings", {
+  id: serial("id").primaryKey(),
+  businessName: text("business_name").notNull(),
+  businessAddress: text("business_address"),
+  businessPhone: text("business_phone"),
+  businessEmail: text("business_email"),
+  taxRate: decimal("tax_rate", { precision: 5, scale: 2 }).default("0"),
+  receiptFooter: text("receipt_footer"),
+  receiptHeader: text("receipt_header"),
+  logoUrl: text("logo_url"),
+  invoicePrefix: text("invoice_prefix").default("INV-"),
+  nextInvoiceNumber: integer("next_invoice_number").default(1001),
+  defaultPaymentTerms: integer("default_payment_terms").default(30),
+  defaultReminderDays: integer("default_reminder_days").default(45),
+  dailyReminderAfter: integer("daily_reminder_after").default(45),
+  printerSettings: jsonb("printer_settings"),
+});
+
+// Held Transactions table (for transactions on hold)
+export const heldTransactions = pgTable("held_transactions", {
+  id: serial("id").primaryKey(),
+  customerId: integer("customer_id").references(() => customers.id),
+  userId: integer("user_id").references(() => users.id),
+  userName: text("user_name"),
+  items: jsonb("items").notNull(), // Stored cart items as JSON
+  name: text("name"), // Optional friendly name for the held transaction
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  notes: text("notes")
+});
+
+// Audit Logs for security
+export const auditLogs = pgTable("audit_logs", {
+  id: serial("id").primaryKey(),
+  timestamp: timestamp("timestamp").notNull().defaultNow(),
+  userId: integer("user_id"),
+  username: varchar("username", { length: 255 }),
+  ipAddress: varchar("ip_address", { length: 45 }).notNull(),
+  userAgent: text("user_agent"),
+  actionType: varchar("action_type", { length: 50 }).notNull(),
+  eventType: varchar("event_type", { length: 50 }).notNull(),
+  resourceType: varchar("resource_type", { length: 50 }).notNull(),
+  resourceId: varchar("resource_id", { length: 100 }),
+  details: text("details").notNull(),
+  level: varchar("level", { length: 20 }).notNull(),
+  success: boolean("success").notNull()
+});

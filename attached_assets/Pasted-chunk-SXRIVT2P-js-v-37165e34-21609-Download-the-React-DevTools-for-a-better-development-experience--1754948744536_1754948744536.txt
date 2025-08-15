@@ -1,0 +1,49 @@
+chunk-SXRIVT2P.js?v=37165e34:21609 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+cacheManager.ts:31 Initializing cache management system...
+cacheManager.ts:37 Cache management system initialized
+App.tsx:133 Production cache management initialized automatically
+sessionManager.ts:32 Initializing session timeout system
+sessionManager.ts:38 Regular user - standard session timeout (8 hours)
+sessionManager.ts:77 Session manager initialized with timeout of 8 hours
+App.tsx:137 Session management initialized
+instore:133 App can be installed, showing install button...
+instore#/instore/sale:1 Banner not shown: beforeinstallpromptevent.preventDefault() called. The page must call beforeinstallpromptevent.prompt() to show the banner.
+PosLogin.tsx:79 Device status: trusted=true, fingerprint=53g414
+main.tsx:38 Navigating to: /instore/login
+main.tsx:38 Navigating to: /instore/login
+main.tsx:38 Navigating to: /instore/login
+PosLogin.tsx:79 Device status: trusted=true, fingerprint=53g414
+main.tsx:38 Navigating to: /instore/dashboard
+PosLogin.tsx:79 Device status: trusted=true, fingerprint=53g414
+PosLogin.tsx:79 Device status: trusted=true, fingerprint=53g414
+queryClient.ts:224 [queryFn] Using POS auth token: pos-admin_49rzcl0p-1...
+queryClient.ts:253 [queryFn] Added auth headers for /api/products with token: pos-admin_49rzcl0p-1...
+queryClient.ts:224 [queryFn] Using POS auth token: pos-admin_49rzcl0p-1...
+queryClient.ts:253 [queryFn] Added auth headers for /api/pos/todays-sales with token: pos-admin_49rzcl0p-1...
+queryClient.ts:264 [queryFn] Response status for /api/pos/todays-sales: 200
+queryClient.ts:264 [queryFn] Response status for /api/products: 200
+main.tsx:38 Navigating to: /instore/sale
+queryClient.ts:224 [queryFn] Using POS auth token: pos-admin_49rzcl0p-1...
+queryClient.ts:253 [queryFn] Added auth headers for /api/users with token: pos-admin_49rzcl0p-1...
+queryClient.ts:224 [queryFn] Using POS auth token: pos-admin_49rzcl0p-1...
+queryClient.ts:253 [queryFn] Added auth headers for /api/categories with token: pos-admin_49rzcl0p-1...
+queryClient.ts:224 [queryFn] Using POS auth token: pos-admin_49rzcl0p-1...
+queryClient.ts:253 [queryFn] Added auth headers for /api/pos/held-transactions with token: pos-admin_49rzcl0p-1...
+queryClient.ts:224 [queryFn] Using POS auth token: pos-admin_49rzcl0p-1...
+queryClient.ts:253 [queryFn] Added auth headers for /api/orders with token: pos-admin_49rzcl0p-1...
+queryClient.ts:264 [queryFn] Response status for /api/categories: 200
+queryClient.ts:264 [queryFn] Response status for /api/orders: 200
+queryClient.ts:264 [queryFn] Response status for /api/pos/held-transactions: 200
+printerService.ts:312 ActiveX OPOS not available: TypeError: window.ActiveXObject is not a constructor
+    at PrinterService.tryOPOSDrawer (printerService.ts:300:29)
+    at PrinterService.openCashDrawer (printerService.ts:259:22)
+    at handleOpenCashDrawer (EnhancedPosSale.tsx:753:43)
+    at HTMLUnknownElement.callCallback2 (chunk-SXRIVT2P.js?v=37165e34:3680:22)
+    at Object.invokeGuardedCallbackDev (chunk-SXRIVT2P.js?v=37165e34:3705:24)
+    at invokeGuardedCallback (chunk-SXRIVT2P.js?v=37165e34:3739:39)
+    at invokeGuardedCallbackAndCatchFirstError (chunk-SXRIVT2P.js?v=37165e34:3742:33)
+    at executeDispatch (chunk-SXRIVT2P.js?v=37165e34:7046:11)
+    at processDispatchQueueItemsInOrder (chunk-SXRIVT2P.js?v=37165e34:7066:15)
+    at processDispatchQueue (chunk-SXRIVT2P.js?v=37165e34:7075:13)
+api/pos/open-drawer:1  Failed to load resource: the server responded with a status of 404 (Not Found)
+queryClient.ts:264 [queryFn] Response status for /api/users: 200

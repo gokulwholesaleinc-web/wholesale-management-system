@@ -1,0 +1,73 @@
+{
+  "name": "duplication-prevention-hooks",
+  "description": "Pre-commit and CI/CD hooks to prevent route and component duplication",
+  "hooks": {
+    "pre-commit": [
+      {
+        "name": "route-duplication-check",
+        "script": "node scripts/route-duplication-detector.mjs",
+        "description": "Detects route and component duplication before commit",
+        "failOnError": true,
+        "runOn": ["client/src/App.tsx", "client/src/pages/**/*.tsx"]
+      },
+      {
+        "name": "endpoint-registry-validation",
+        "script": "node scripts/endpoint-registry-enforcer.mjs",
+        "description": "Validates endpoint consistency between frontend and backend",
+        "failOnError": true,
+        "runOn": ["server/**/*.ts", "client/src/**/*.tsx"]
+      }
+    ],
+    "pre-push": [
+      {
+        "name": "comprehensive-duplication-audit",
+        "script": "npm run audit:duplications",
+        "description": "Full duplication audit before pushing to remote",
+        "failOnError": true
+      }
+    ],
+    "ci-cd": [
+      {
+        "name": "architectural-compliance-check",
+        "script": "npm run validate:architecture",
+        "description": "Ensures architectural standards are maintained",
+        "failOnError": true,
+        "stage": "test"
+      }
+    ]
+  },
+  "package-json-additions": {
+    "scripts": {
+      "audit:duplications": "node scripts/route-duplication-detector.mjs && node scripts/endpoint-registry-enforcer.mjs",
+      "validate:architecture": "npm run audit:duplications && npm run test:integration",
+      "fix:duplications": "echo 'Run the duplication detector and follow recommendations' && node scripts/route-duplication-detector.mjs",
+      "registry:update": "node scripts/endpoint-registry-enforcer.mjs",
+      "pre-commit": "npm run audit:duplications"
+    },
+    "husky": {
+      "hooks": {
+        "pre-commit": "npm run pre-commit",
+        "pre-push": "npm run audit:duplications"
+      }
+    }
+  },
+  "implementation": {
+    "setup": [
+      "npm install husky --save-dev",
+      "npx husky install",
+      "npx husky add .husky/pre-commit 'npm run pre-commit'",
+      "npx husky add .husky/pre-push 'npm run audit:duplications'"
+    ],
+    "vscode-settings": {
+      "files.watcherExclude": {
+        "**/endpoint-registry-report.json": true
+      },
+      "eslint.validate": [
+        "javascript",
+        "typescript",
+        "typescriptreact"
+      ],
+      "typescript.preferences.includePackageJsonAutoImports": "off"
+    }
+  }
+}

@@ -1,0 +1,58 @@
+C:\Users\user\Desktop>node verify-tm-t88v-connection.js
+🔍 TM-T88V Connection Verification
+==================================
+
+📋 Test 1: Driver Installation Check
+No EPSON/TM-T88V drivers detected
+
+📋 Test 2: Device Manager Check
+Could not enumerate EPSON devices
+
+📋 Test 3: USB Device Check
+Could not check USB devices
+
+📋 Test 4: Physical Print Test
+🔄 Testing: print /d:"TM-T88V" "C:\Users\user\AppData\Local\Temp\connection_test_1754944637990.txt"
+✅ Command completed: print /d:"TM-T88V" "C:\Users\user\AppData\Local\Temp\connection_test_1754944637990.txt"
+📄 Check if anything printed on your TM-T88V
+🔄 Testing: print /d:"EPSON TM-T88V" "C:\Users\user\AppData\Local\Temp\connection_test_1754944637990.txt"
+✅ Command completed: print /d:"EPSON TM-T88V" "C:\Users\user\AppData\Local\Temp\connection_test_1754944637990.txt"
+📄 Check if anything printed on your TM-T88V
+🔄 Testing: print /d:"Epson TM-T88V Receipt" "C:\Users\user\AppData\Local\Temp\connection_test_1754944637990.txt"
+✅ Command completed: print /d:"Epson TM-T88V Receipt" "C:\Users\user\AppData\Local\Temp\connection_test_1754944637990.txt"
+📄 Check if anything printed on your TM-T88V
+🔄 Testing: copy /b "C:\Users\user\AppData\Local\Temp\connection_test_1754944637990.txt" PRN
+❌ Failed: Command failed: copy /b "C:\Users\user\AppData\Local\Temp\connection_test_1754944637990.txt" PRN
+The system cannot find the file specified.
+
+
+📋 Test 5: Print Spooler Status
+Print Spooler Status:
+
+SERVICE_NAME: spooler
+        TYPE               : 110  WIN32_OWN_PROCESS  (interactive)
+        STATE              : 4  RUNNING
+                                (STOPPABLE, NOT_PAUSABLE, IGNORES_SHUTDOWN)
+        WIN32_EXIT_CODE    : 0  (0x0)
+        SERVICE_EXIT_CODE  : 0  (0x0)
+        CHECKPOINT         : 0x0
+        WAIT_HINT          : 0x0
+
+
+🎯 DIAGNOSIS:
+=============
+If NO text printed on your TM-T88V, the issue is:
+1. TM-T88V driver not properly installed
+2. USB connection issue
+3. TM-T88V not set as default printer
+4. Windows not recognizing the hardware
+
+If text DID print, then the drawer issue is:
+1. Drawer cable connection between MMF and TM-T88V
+2. MMF drawer power or lock settings
+3. Need different ESC/POS drawer commands
+
+Next: Run RMH and verify it can actually print receipts
+Then use capture-rmh-commands.js to see what RMH does differently
+
+C:\Users\user\Desktop>

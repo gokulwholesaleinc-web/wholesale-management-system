@@ -1,0 +1,8 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" fill="#4f46e5"/>
+  <text x="256" y="296" font-family="Arial, sans-serif" font-size="90" font-weight="bold" fill="white" text-anchor="middle">GW</text>
+  <path d="M150 130 L362 130 L412 220 L412 382 L100 382 L100 220 L150 130" stroke="white" stroke-width="12" fill="none"/>
+  <path d="M180 130 L180 220 L330 220 L330 130" stroke="white" stroke-width="8" fill="none"/>
+  <circle cx="160" cy="330" r="25" fill="white"/>
+  <circle cx="352" cy="330" r="25" fill="white"/>
+</svg>

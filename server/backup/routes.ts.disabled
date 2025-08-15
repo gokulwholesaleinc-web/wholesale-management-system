@@ -1,0 +1,961 @@
+import express, { type Express } from "express";
+import { createServer, type Server } from "http";
+import { storage } from "./storage";
+import userRoutes from "./routes/users";
+import { z } from "zod";
+import {
+  insertCartItemSchema,
+  insertOrderSchema,
+  insertOrderItemSchema,
+  products
+} from "@shared/schema";
+import { db } from "./db";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
+import { sql } from "drizzle-orm";
+import cookieParser from "cookie-parser";
+import { requireAuth, requireAdmin, createAuthToken } from "./simpleAuth";
+
+export async function registerRoutes(app: Express): Promise<Server> {
+  // Set up our cookie parser for auth tokens
+  app.use(cookieParser());
+  
+  // Serve static files from the uploads directory
+  const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
+  // Create directory if it doesn't exist
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+  app.use('/uploads', express.static(uploadsDir));
+  
+  // We will handle client-side routing in index.ts
+  
+  // Configure multer storage for file uploads
+  const fileStorage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      const uploadDir = path.join(process.cwd(), 'public', 'uploads');
+      // Create directory if it doesn't exist
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+      cb(null, uploadDir);
+    },
+    filename: (req, file, cb) => {
+      // Create unique filename with original extension
+      const uniqueName = `${Date.now()}-${Math.round(Math.random() * 1E9)}${path.extname(file.originalname)}`;
+      cb(null, uniqueName);
+    }
+  });
+  
+  // Set up multer upload middleware
+  const upload = multer({ 
+    storage: fileStorage,
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+    fileFilter: (req, file, cb) => {
+      // Only allow image files
+      const filetypes = /jpeg|jpg|png|gif|webp/;
+      const mimetype = filetypes.test(file.mimetype);
+      const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+      
+      if (mimetype && extname) {
+        return cb(null, true);
+      }
+      
+      cb(new Error("Only image files are allowed"));
+    }
+  });
+  
+  // Use user routes
+  app.use('/api/users', userRoutes);
+
+  // Auth routes
+  app.get('/api/auth/user', requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const user = await storage.getUser(userId);
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  // Categories routes
+  app.get("/api/categories", async (req, res) => {
+    try {
+      const categories = await storage.getCategories();
+      res.json(categories);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      res.status(500).json({ message: "Failed to fetch categories" });
+    }
+  });
+
+  // Products routes
+  app.get("/api/products", async (req, res) => {
+    try {
+      const categoryId = req.query.categoryId ? parseInt(req.query.categoryId as string) : undefined;
+      console.log("Fetching products for categoryId:", categoryId);
+      
+      const products = await storage.getProducts(categoryId);
+      console.log(`Fetched ${products.length} products from database`);
+      
+      // Transform products to ensure consistent field naming
+      const transformedProducts = products.map(product => {
+        // Make sure imageUrl field is consistently named and available
+        return {
+          ...product,
+          // Ensure imageUrl is always available
+          imageUrl: product.imageUrl || 
+                   // Use any image URL properties that might come from database
+                   (product as any).image_url || 
+                   // Default fallback to ensure there's always something
+                   '',
+          // Transform pricing fields for consistency 
+          priceLevel1: product.price1 || product.price,
+          priceLevel2: product.price2 || product.price * 0.97,
+          priceLevel3: product.price3 || product.price * 0.95,
+          priceLevel4: product.price4 || product.price * 0.93,
+          priceLevel5: product.price5 || product.price * 0.90
+        };
+      });
+      
+      // Log sample product after transformation
+      if (transformedProducts.length > 0) {
+        console.log("Sample product:", JSON.stringify(transformedProducts[0]).substring(0, 200) + "...");
+      }
+      
+      res.json(transformedProducts);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      res.status(500).json({ message: "Failed to fetch products" });
+    }
+  });
+  
+  // API endpoint for personalized product recommendations
+  app.get("/api/recommendations", requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+      
+      // Get user's purchase history from orders
+      const orders = await storage.getOrdersByUser(userId);
+      
+      // Extract product IDs from order history
+      const purchasedProductIds = new Set<number>();
+      const purchasedCategoryIds = new Set<number>();
+      
+      orders.forEach(order => {
+        order.items.forEach((item: any) => {
+          purchasedProductIds.add(item.productId);
+          if (item.product && item.product.categoryId) {
+            purchasedCategoryIds.add(item.product.categoryId);
+          }
+        });
+      });
+      
+      // Fetch all products with valid images
+      const allProducts = await storage.getProducts();
+      
+      // Logic for recommendations:
+      // 1. Prioritize products from categories the user has purchased from
+      // 2. Filter out products the user has already purchased
+      // 3. Ensure products have valid images
+      // 4. Prioritize featured products
+      
+      const filteredProducts = allProducts
+        .filter(product => 
+          // Must have a valid image URL
+          product.imageUrl && 
+          product.imageUrl.length > 10 &&
+          // Filter out products already purchased
+          !purchasedProductIds.has(product.id)
+        )
+        .sort((a, b) => {
+          // Prioritize featured products
+          if (a.featured && !b.featured) return -1;
+          if (!a.featured && b.featured) return 1;
+          
+          // Prioritize products from categories the user has purchased from
+          const aInPurchasedCategory = a.categoryId && purchasedCategoryIds.has(a.categoryId);
+          const bInPurchasedCategory = b.categoryId && purchasedCategoryIds.has(b.categoryId);
+          
+          if (aInPurchasedCategory && !bInPurchasedCategory) return -1;
+          if (!aInPurchasedCategory && bInPurchasedCategory) return 1;
+          
+          // Prioritize products with higher stock
+          return b.stock - a.stock;
+        });
+      
+      // Transform products for consistent field naming
+      const recommendations = filteredProducts.slice(0, limit).map(product => {
+        return {
+          ...product,
+          priceLevel1: product.price1 || product.price,
+          priceLevel2: product.price2 || product.price * 0.97,
+          priceLevel3: product.price3 || product.price * 0.95,
+          priceLevel4: product.price4 || product.price * 0.93,
+          priceLevel5: product.price5 || product.price * 0.90
+        };
+      });
+      
+      // If we don't have enough recommendations or user has no history, add some popular products
+      if (recommendations.length < limit) {
+        const popularProducts = allProducts
+          .filter(product => 
+            // Must have a valid image URL
+            product.imageUrl && 
+            product.imageUrl.length > 10 &&
+            // Not already in recommendations
+            !recommendations.some(rec => rec.id === product.id)
+          )
+          .sort((a, b) => {
+            // Sort by featured status and then by stock (proxy for popularity)
+            if (a.featured && !b.featured) return -1;
+            if (!a.featured && b.featured) return 1;
+            return b.stock - a.stock;
+          })
+          .slice(0, limit - recommendations.length)
+          .map(product => ({
+            ...product,
+            priceLevel1: product.price1 || product.price,
+            priceLevel2: product.price2 || product.price * 0.97,
+            priceLevel3: product.price3 || product.price * 0.95,
+            priceLevel4: product.price4 || product.price * 0.93,
+            priceLevel5: product.price5 || product.price * 0.90
+          }));
+        
+        recommendations.push(...popularProducts);
+      }
+      
+      // Add a field to indicate recommendation reason
+      const recommendationsWithReason = recommendations.map(product => {
+        let reason = 'Popular product';
+        
+        if (product.featured) {
+          reason = 'Featured product';
+        } else if (product.categoryId && purchasedCategoryIds.has(product.categoryId)) {
+          reason = 'Based on your previous purchases';
+        }
+        
+        return {
+          ...product,
+          recommendationReason: reason
+        };
+      });
+      
+      res.json(recommendationsWithReason);
+    } catch (error) {
+      console.error("Error fetching recommendations:", error);
+      res.status(500).json({ message: "Failed to fetch recommendations" });
+    }
+  });
+
+  app.get("/api/products/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const product = await storage.getProductById(id);
+      
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+      
+      res.json(product);
+    } catch (error) {
+      console.error("Error fetching product:", error);
+      res.status(500).json({ message: "Failed to fetch product" });
+    }
+  });
+  
+  // Admin product management routes
+  app.get("/api/admin/products", requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user?.isAdmin) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+      
+      // Get all products for admin (no category filter)
+      const products = await storage.getProducts();
+      
+      // Transform products to ensure consistent field naming
+      const transformedProducts = products.map(product => {
+        return {
+          ...product,
+          imageUrl: product.imageUrl || '',
+          priceLevel1: product.price1 || product.priceLevel1 || product.price,
+          priceLevel2: product.price2 || product.priceLevel2 || product.price * 0.97,
+          priceLevel3: product.price3 || product.priceLevel3 || product.price * 0.95,
+          priceLevel4: product.price4 || product.priceLevel4 || product.price * 0.93,
+          priceLevel5: product.price5 || product.priceLevel5 || product.price * 0.90
+        };
+      });
+      
+      res.json(transformedProducts);
+    } catch (error) {
+      console.error("Error fetching admin products:", error);
+      res.status(500).json({ message: "Failed to fetch products" });
+    }
+  });
+  
+  // Endpoint to update product category (for merging SODA into FOOD & BEVERAGE)
+  app.post("/api/admin/categories/merge", requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user?.isAdmin) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+      
+      const { sourceCategory, targetCategory } = req.body;
+      
+      if (!sourceCategory || !targetCategory) {
+        return res.status(400).json({ message: "Source and target category IDs are required" });
+      }
+      
+      // Get all products from source category
+      const products = await storage.getProducts(sourceCategory);
+      
+      // Update each product to the target category
+      for (const product of products) {
+        await storage.updateProduct(product.id, {
+          categoryId: targetCategory
+        });
+      }
+      
+      res.json({ 
+        message: `Successfully moved ${products.length} products from category ${sourceCategory} to ${targetCategory}`,
+        count: products.length
+      });
+    } catch (error) {
+      console.error("Error merging categories:", error);
+      res.status(500).json({ message: "Failed to merge categories" });
+    }
+  });
+  
+  app.post("/api/admin/products", requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user?.isAdmin) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+      
+      const productData = req.body;
+      
+      // Basic validation
+      if (!productData.name || !productData.price) {
+        return res.status(400).json({ message: "Name and price are required" });
+      }
+      
+      // If price is provided as a string, convert to number
+      if (typeof productData.price === 'string') {
+        productData.price = parseFloat(productData.price);
+      }
+      
+      // Same for stock
+      if (typeof productData.stock === 'string') {
+        productData.stock = parseInt(productData.stock);
+      }
+      
+      const product = await storage.createProduct(productData);
+      res.status(201).json(product);
+    } catch (error) {
+      console.error("Error creating product:", error);
+      res.status(500).json({ message: "Failed to create product" });
+    }
+  });
+  
+  app.put("/api/admin/products/:id", requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user?.isAdmin) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+      
+      const id = parseInt(req.params.id);
+      const productData = req.body;
+      
+      // If price is provided as a string, convert to number
+      if (typeof productData.price === 'string') {
+        productData.price = parseFloat(productData.price);
+      }
+      
+      // Same for stock
+      if (typeof productData.stock === 'string') {
+        productData.stock = parseInt(productData.stock);
+      }
+      
+      const product = await storage.updateProduct(id, productData);
+      
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+      
+      res.json(product);
+    } catch (error) {
+      console.error("Error updating product:", error);
+      res.status(500).json({ message: "Failed to update product" });
+    }
+  });
+  
+  // Admin routes - update product image specifically
+  app.patch("/api/admin/products/:id/image", requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user?.isAdmin) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+      
+      const id = parseInt(req.params.id);
+      const { imageUrl } = req.body;
+      
+      if (!imageUrl) {
+        return res.status(400).json({ message: "Image URL is required" });
+      }
+      
+      // Update only the image URL field
+      const product = await storage.updateProduct(id, { imageUrl });
+      
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+      
+      res.json(product);
+    } catch (error) {
+      console.error("Error updating product image:", error);
+      res.status(500).json({ message: "Failed to update product image" });
+    }
+  });
+  
+  // Admin routes - upload product image file
+  app.post("/api/admin/products/:id/upload", requireAuth, upload.single('image'), async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user?.isAdmin) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+      
+      const id = parseInt(req.params.id);
+      
+      if (!req.file) {
+        return res.status(400).json({ message: "No image file uploaded" });
+      }
+      
+      // Create URL for the uploaded file
+      const baseUrl = `${req.protocol}://${req.get('host')}`;
+      const imageUrl = `${baseUrl}/uploads/${req.file.filename}`;
+      
+      // Update product with the new image URL
+      const product = await storage.updateProduct(id, { imageUrl });
+      
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+      
+      res.json({ 
+        success: true, 
+        imageUrl, 
+        product 
+      });
+    } catch (error: any) {
+      console.error("Error uploading product image:", error);
+      res.status(500).json({ 
+        message: "Failed to upload product image",
+        error: error.message 
+      });
+    }
+  });
+  
+  app.delete("/api/admin/products/:id", requireEmployeeOrAdmin, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      const id = parseInt(req.params.id);
+      
+      await storage.deleteProduct(id);
+      res.json({ message: "Product deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      res.status(500).json({ message: "Failed to delete product" });
+    }
+  });
+  
+  // Endpoint to delete products by name pattern (for cleanup)
+  app.post("/api/admin/products/delete-by-pattern", requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user?.isAdmin) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+      
+      const { pattern } = req.body;
+      
+      if (!pattern) {
+        return res.status(400).json({ message: "Pattern is required" });
+      }
+      
+      // Find products matching the pattern
+      const matchingProducts = await db.select()
+        .from(products)
+        .where(sql`name LIKE ${`%${pattern}%`}`);
+      
+      if (matchingProducts.length === 0) {
+        return res.json({ 
+          message: "No products found matching the pattern",
+          deletedCount: 0 
+        });
+      }
+      
+      // Delete the products
+      for (const product of matchingProducts) {
+        await storage.deleteProduct(product.id);
+      }
+      
+      res.json({ 
+        message: `Successfully deleted ${matchingProducts.length} products matching pattern: ${pattern}`,
+        deletedCount: matchingProducts.length,
+        deletedProducts: matchingProducts.map(p => p.name)
+      });
+    } catch (error) {
+      console.error("Error deleting products by pattern:", error);
+      res.status(500).json({ message: "Failed to delete products" });
+    }
+  });
+
+  // Cart routes - all protected
+  app.get("/api/cart", requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const cartItems = await storage.getCartItems(userId);
+      res.json(cartItems);
+    } catch (error) {
+      console.error("Error fetching cart:", error);
+      res.status(500).json({ message: "Failed to fetch cart" });
+    }
+  });
+
+  app.post("/api/cart", requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const validatedData = insertCartItemSchema.parse({
+        ...req.body,
+        userId
+      });
+      
+      // Verify the product exists and has enough stock
+      const product = await storage.getProductById(validatedData.productId);
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+      
+      if (product.stock < validatedData.quantity) {
+        return res.status(400).json({ message: "Not enough stock available" });
+      }
+      
+      const cartItem = await storage.addToCart(validatedData);
+      res.status(201).json(cartItem);
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid cart data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to add to cart" });
+    }
+  });
+
+  app.put("/api/cart/:productId", requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const productId = parseInt(req.params.productId);
+      const { quantity } = req.body;
+      
+      if (typeof quantity !== 'number' || isNaN(quantity)) {
+        return res.status(400).json({ message: "Invalid quantity" });
+      }
+      
+      // If quantity is 0 or less, remove from cart
+      if (quantity <= 0) {
+        await storage.removeFromCart(userId, productId);
+        return res.json({ message: "Item removed from cart" });
+      }
+      
+      // Verify the product exists and has enough stock
+      const product = await storage.getProductById(productId);
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+      
+      if (product.stock < quantity) {
+        return res.status(400).json({ message: "Not enough stock available" });
+      }
+      
+      const updatedItem = await storage.updateCartItem(userId, productId, quantity);
+      res.json(updatedItem || { message: "Item removed from cart" });
+    } catch (error) {
+      console.error("Error updating cart:", error);
+      res.status(500).json({ message: "Failed to update cart" });
+    }
+  });
+
+  app.delete("/api/cart/:productId", requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const productId = parseInt(req.params.productId);
+      
+      await storage.removeFromCart(userId, productId);
+      res.json({ message: "Item removed from cart" });
+    } catch (error) {
+      console.error("Error removing from cart:", error);
+      res.status(500).json({ message: "Failed to remove from cart" });
+    }
+  });
+
+  app.delete("/api/cart", requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      await storage.clearCart(userId);
+      res.json({ message: "Cart cleared" });
+    } catch (error) {
+      console.error("Error clearing cart:", error);
+      res.status(500).json({ message: "Failed to clear cart" });
+    }
+  });
+
+  // Orders routes
+  app.get("/api/orders", requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const orders = await storage.getOrdersByUser(userId);
+      res.json(orders);
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+      res.status(500).json({ message: "Failed to fetch orders" });
+    }
+  });
+
+  app.get("/api/orders/:id", requireAuth, async (req: any, res) => {
+    try {
+      const orderId = parseInt(req.params.id);
+      const order = await storage.getOrderById(orderId);
+      
+      if (!order) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+      
+      // Ensure the user can only view their own orders
+      const userId = req.user.claims.sub;
+      if (order.userId !== userId && !order.user.isAdmin) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+      
+      res.json(order);
+    } catch (error) {
+      console.error("Error fetching order:", error);
+      res.status(500).json({ message: "Failed to fetch order" });
+    }
+  });
+
+  app.post("/api/orders", requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Get the user's cart first
+      const cartItems = await storage.getCartItems(userId);
+      
+      if (cartItems.length === 0) {
+        return res.status(400).json({ message: "Cart is empty" });
+      }
+      
+      // Validate the order data
+      const { deliveryDate, deliveryTimeSlot } = req.body;
+      
+      // Calculate total from cart items
+      const total = cartItems.reduce((sum, item) => {
+        return sum + (item.quantity * item.product.price);
+      }, 0);
+      
+      const orderData = insertOrderSchema.parse({
+        userId,
+        total,
+        deliveryDate,
+        deliveryTimeSlot,
+        status: "processing"
+      });
+      
+      // Create order items from cart items
+      const orderItems = cartItems.map(item => ({
+        productId: item.productId,
+        quantity: item.quantity,
+        price: item.product.price
+      }));
+      
+      // Create the order with its items
+      const order = await storage.createOrder(orderData, orderItems);
+      
+      // Update product stock for each item
+      for (const item of cartItems) {
+        await storage.updateProductStock(item.productId, -item.quantity);
+      }
+      
+      res.status(201).json(order);
+    } catch (error) {
+      console.error("Error creating order:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid order data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create order" });
+    }
+  });
+
+  // Admin routes - update order status
+  app.put("/api/admin/orders/:id/status", requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user?.isAdmin) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+      
+      const orderId = parseInt(req.params.id);
+      const { status } = req.body;
+      
+      if (!status) {
+        return res.status(400).json({ message: "Status is required" });
+      }
+      
+      const updatedOrder = await storage.updateOrderStatus(orderId, status);
+      
+      if (!updatedOrder) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+      
+      res.json(updatedOrder);
+    } catch (error) {
+      console.error("Error updating order status:", error);
+      res.status(500).json({ message: "Failed to update order status" });
+    }
+  });
+  
+  // Admin routes - user management
+  app.get("/api/admin/users", requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const currentUser = await storage.getUser(userId);
+      
+      if (!currentUser?.isAdmin) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+      
+      const users = await storage.getAllUsers();
+      res.json(users);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+  
+  // Create a new customer account (admin only)
+  app.post("/api/admin/users", requireAuth, async (req: any, res) => {
+    try {
+      const adminId = req.user.claims.sub;
+      const admin = await storage.getUser(adminId);
+      
+      if (!admin?.isAdmin) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+      
+      const { 
+        // Account information
+        username, 
+        firstName, 
+        lastName, 
+        password,
+        // Business details 
+        company,
+        // Address information
+        address,
+        // Customer level for pricing
+        customerLevel,
+        // Admin access
+        isAdmin
+      } = req.body;
+      
+      if (!username || !password) {
+        return res.status(400).json({ message: "Username and password are required" });
+      }
+      
+      const existingUser = await storage.getUserByUsername(username);
+      if (existingUser) {
+        return res.status(400).json({ message: "Username is already taken" });
+      }
+      
+      // Generate a random ID for the customer (since we're not using Replit Auth for them)
+      const customerId = `cust_${Math.random().toString(36).substring(2, 15)}`;
+      
+      // Create the user with a hashed password and all the additional fields
+      const user = await storage.createCustomerUser({
+        id: customerId,
+        username,
+        firstName,
+        lastName,
+        company,
+        address,
+        customerLevel: customerLevel || 1,
+        password,
+        isAdmin: isAdmin || false
+      });
+      
+      // Return the created user (with sensitive information filtered out)
+      res.status(201).json({
+        id: user.id,
+        username: user.username,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        company: user.company,
+        address: user.address,
+        customerLevel: user.customerLevel,
+        isAdmin: user.isAdmin,
+        createdAt: user.createdAt
+      });
+    } catch (error) {
+      console.error("Error creating user:", error);
+      res.status(500).json({ message: "Failed to create user" });
+    }
+  });
+  
+  // Update a user (admin only)
+  app.put("/api/admin/users/:id", requireAuth, async (req: any, res) => {
+    try {
+      const adminId = req.user.claims.sub;
+      const admin = await storage.getUser(adminId);
+      
+      if (!admin?.isAdmin) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+      
+      const userId = req.params.id;
+      const { email, firstName, lastName, company, password } = req.body;
+      
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      const updatedUser = await storage.updateUser({
+        id: userId,
+        email: email || user.email,
+        firstName: firstName || user.firstName,
+        lastName: lastName || user.lastName,
+        company: company || user.company,
+        password: password || undefined,
+        isAdmin: user.isAdmin
+      });
+      
+      res.json({
+        id: updatedUser.id,
+        email: updatedUser.email,
+        firstName: updatedUser.firstName,
+        lastName: updatedUser.lastName,
+        company: updatedUser.company,
+        isAdmin: updatedUser.isAdmin,
+        updatedAt: updatedUser.updatedAt
+      });
+    } catch (error) {
+      console.error("Error updating user:", error);
+      res.status(500).json({ message: "Failed to update user" });
+    }
+  });
+  
+  // Delete a user (admin only)
+  app.delete("/api/admin/users/:id", requireAuth, async (req: any, res) => {
+    try {
+      const adminId = req.user.claims.sub;
+      const admin = await storage.getUser(adminId);
+      
+      if (!admin?.isAdmin) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+      
+      const userId = req.params.id;
+      
+      // Don't allow deleting self
+      if (userId === adminId) {
+        return res.status(400).json({ message: "Cannot delete your own account" });
+      }
+      
+      await storage.deleteUser(userId);
+      res.json({ message: "User deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      res.status(500).json({ message: "Failed to delete user" });
+    }
+  });
+  
+  // Simple customer login route
+  app.post("/api/customer/login", async (req, res) => {
+    try {
+      const { username, password } = req.body;
+      
+      console.log("LOGIN ATTEMPT for username:", username);
+      
+      if (!username || !password) {
+        console.log("Missing username or password");
+        return res.status(400).json({ message: "Username and password required" });
+      }
+      
+      console.log("Authenticating user:", username);
+      const user = await storage.authenticateCustomer(username, password);
+      
+      if (!user) {
+        console.log("Authentication failed for:", username);
+        return res.status(401).json({ message: "Invalid username or password" });
+      }
+      
+      console.log("User authenticated successfully:", user.id);
+      
+      // Create an auth token
+      const token = createAuthToken(user.id);
+      
+      // Set the token as a cookie that expires in 24 hours
+      res.cookie('authToken', token, {
+        httpOnly: true,
+        secure: true,
+        maxAge: 24 * 60 * 60 * 1000,
+        sameSite: 'lax'
+      });
+      
+      // Also return it in the response body for clients that prefer tokens
+      res.json({
+        token,
+        user: {
+          id: user.id,
+          username: user.username,
+          customerLevel: user.customerLevel || 0,
+          isAdmin: user.isAdmin || false
+        }
+      });
+    } catch (error) {
+      console.error("Error during login:", error);
+      res.status(500).json({ message: "An error occurred during login. Please try again." });
+    }
+  });
+
+  const httpServer = createServer(app);
+  return httpServer;
+}

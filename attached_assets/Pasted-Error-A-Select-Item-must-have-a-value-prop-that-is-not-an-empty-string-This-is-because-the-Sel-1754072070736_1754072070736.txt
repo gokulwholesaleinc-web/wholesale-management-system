@@ -1,0 +1,53 @@
+Error: A <Select.Item /> must have a value prop that is not an empty string. This is because the Select value can be set to an empty string to clear the selection and show the placeholder.
+
+
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-select.js?v=d3cfb941:850:7
+    at _c1 (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/components/ui/select.tsx:208:12)
+    at div
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-PY4CUOXA.js?v=d3cfb941:43:13
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-E7TSFT4J.js?v=d3cfb941:79:13
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-E7TSFT4J.js?v=d3cfb941:56:13
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-W2OT6ZD3.js?v=d3cfb941:41:15
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-select.js?v=d3cfb941:761:13
+    at div
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-E7TSFT4J.js?v=d3cfb941:79:13
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-E7TSFT4J.js?v=d3cfb941:56:13
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-W2OT6ZD3.js?v=d3cfb941:41:15
+    at Provider (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-OXZDJRWN.js?v=d3cfb941:38:15)
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-select.js?v=d3cfb941:304:58
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-E7TSFT4J.js?v=d3cfb941:79:13
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-E7TSFT4J.js?v=d3cfb941:56:13
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-PY4CUOXA.js?v=d3cfb941:43:13
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-6NK47TQB.js?v=d3cfb941:262:22
+    at SelectPortal
+    at _c7 (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/components/ui/select.tsx:123:12)
+    at Provider (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-OXZDJRWN.js?v=d3cfb941:38:15)
+    at Provider (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-OXZDJRWN.js?v=d3cfb941:38:15)
+    at CollectionProvider (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-W2OT6ZD3.js?v=d3cfb941:31:13)
+    at Provider (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-OXZDJRWN.js?v=d3cfb941:38:15)
+    at Provider (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-OXZDJRWN.js?v=d3cfb941:38:15)
+    at Popper (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-FCL4SQ6I.js?v=d3cfb941:1937:11)
+    at Select (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-select.js?v=d3cfb941:90:5)
+    at div
+    at _c9 (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/components/ui/card.tsx:114:12)
+    at div
+    at _c (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/components/ui/card.tsx:20:11)
+    at div
+    at div
+    at div
+    at div
+    at main
+    at div
+    at AppLayout (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/layout/AppLayout.tsx:49:3)
+    at PosSystem (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/pages/PosSystem.tsx:35:20)
+    at StaffProtectedRoute (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/components/StaffProtectedRoute.tsx:22:50)
+    at Route (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=d3cfb941:206:16)
+    at Switch (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=d3cfb941:262:17)
+    at ErrorBoundary (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/components/ui/error-boundary.tsx:10:5)
+    at Provider (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-OXZDJRWN.js?v=d3cfb941:38:15)
+    at TooltipProvider (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=d3cfb941:65:5)
+    at App (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/App.tsx?v=rEfEHDhHolF9BGAbjb04f:79:3)
+    at Router (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=d3cfb941:161:17)
+    at QueryClientProvider (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=d3cfb941:2933:3)
+    at AppWithProviders
+Ret

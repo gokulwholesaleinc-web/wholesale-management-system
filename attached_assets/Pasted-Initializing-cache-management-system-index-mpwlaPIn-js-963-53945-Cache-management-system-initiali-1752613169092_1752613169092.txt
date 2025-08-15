@@ -1,0 +1,274 @@
+Initializing cache management system... index-mpwlaPIn.js:963:53945
+Cache management system initialized index-mpwlaPIn.js:963:54050
+[queryFn] Added auth headers for /api/auth/user with token: user-1749840876105-1... index-mpwlaPIn.js:40:104365
+Production cache management initialized automatically index-mpwlaPIn.js:976:614
+Initializing session timeout system index-mpwlaPIn.js:963:52339
+Admin user detected - extended session timeout (8 hours) index-mpwlaPIn.js:963:52396
+Session manager initialized with timeout of 8 hours index-mpwlaPIn.js:963:52923
+Session management initialized index-mpwlaPIn.js:976:704
+[queryFn] Response status for /api/auth/user: 200 index-mpwlaPIn.js:40:104602
+Using simpleCart instead of the old CartProvider index-mpwlaPIn.js:674:21412
+Products state: 
+Object { isArray: true, length: 0, products: [] }
+index-mpwlaPIn.js:690:3295
+Filtered products: 0 index-mpwlaPIn.js:690:4511
+Fetching cart items from database... index-mpwlaPIn.js:668:13577
+[apiRequest] Using unified auth token: user-1749840876105-1... index-mpwlaPIn.js:40:100308
+[apiRequest] ✅ Token found and will be sent: user-1749840876105-1... index-mpwlaPIn.js:40:101558
+[apiRequest] ✅ Auth token added for GET /api/cart (user-1749840876105-1...) index-mpwlaPIn.js:40:102344
+[queryFn] Added auth headers for /api/draft-orders with token: user-1749840876105-1... index-mpwlaPIn.js:40:104365
+[queryFn] Added auth headers for /api/wishlist with token: user-1749840876105-1... index-mpwlaPIn.js:40:104365
+[queryFn] Added auth headers for /api/order-templates with token: user-1749840876105-1... index-mpwlaPIn.js:40:104365
+[queryFn] Added auth headers for /api/notifications with token: user-1749840876105-1... index-mpwlaPIn.js:40:104365
+[apiRequest] Using unified auth token: user-1749840876105-1... index-mpwlaPIn.js:40:100308
+[apiRequest] ✅ Token found and will be sent: user-1749840876105-1... index-mpwlaPIn.js:40:101558
+[apiRequest] ✅ Auth token added for GET /api/products (user-1749840876105-1...) index-mpwlaPIn.js:40:102344
+[queryFn] Added auth headers for /api/categories with token: user-1749840876105-1... index-mpwlaPIn.js:40:104365
+[queryFn] Response status for /api/notifications: 200 index-mpwlaPIn.js:40:104602
+[queryFn] Response status for /api/categories: 200 index-mpwlaPIn.js:40:104602
+Using simpleCart instead of the old CartProvider index-mpwlaPIn.js:674:21412
+Products state: 
+Object { isArray: true, length: 0, products: [] }
+index-mpwlaPIn.js:690:3295
+Filtered products: 0 index-mpwlaPIn.js:690:4511
+[apiRequest] Response status: 200 index-mpwlaPIn.js:40:102701
+Using simpleCart instead of the old CartProvider index-mpwlaPIn.js:674:21412
+Products state: 
+Object { isArray: true, length: 0, products: [] }
+index-mpwlaPIn.js:690:3295
+Filtered products: 0 index-mpwlaPIn.js:690:4511
+[queryFn] Response status for /api/wishlist: 200 index-mpwlaPIn.js:40:104602
+[queryFn] Response status for /api/draft-orders: 200 index-mpwlaPIn.js:40:104602
+[queryFn] Response status for /api/order-templates: 200 index-mpwlaPIn.js:40:104602
+[apiRequest] Success response received for GET /api/cart index-mpwlaPIn.js:40:103012
+Cart items retrieved: 0 items index-mpwlaPIn.js:668:13665
+Cart is empty from database index-mpwlaPIn.js:668:13912
+Using simpleCart instead of the old CartProvider index-mpwlaPIn.js:674:21412
+Products state: 
+Object { isArray: true, length: 0, products: [] }
+index-mpwlaPIn.js:690:3295
+Filtered products: 0 index-mpwlaPIn.js:690:4511
+[apiRequest] Response status: 200 index-mpwlaPIn.js:40:102701
+[apiRequest] Success response received for GET /api/products index-mpwlaPIn.js:40:103012
+API Response: 
+Array(286) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, … ]
+index-mpwlaPIn.js:690:2695
+Mapped Products: 
+Array(286) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, … ]
+index-mpwlaPIn.js:690:3185
+Products state: 
+Object { isArray: true, length: 286, products: (286) […] }
+index-mpwlaPIn.js:690:3295
+Filtered products: 286 index-mpwlaPIn.js:690:4511
+Cookie warnings 2
+[apiRequest] Using unified auth token: user-1749840876105-1... index-mpwlaPIn.js:40:100308
+[apiRequest] ✅ Token found and will be sent: user-1749840876105-1... index-mpwlaPIn.js:40:101558
+[apiRequest] ✅ Auth token added for POST /api/cart/add (user-1749840876105-1...) index-mpwlaPIn.js:40:102344
+Products state: 
+Object { isArray: true, length: 286, products: (286) […] }
+index-mpwlaPIn.js:690:3295
+Filtered products: 286 index-mpwlaPIn.js:690:4511
+[apiRequest] Response status: 400 index-mpwlaPIn.js:40:102701
+Failed to add product to cart: Error: 400: {"message":"Unexpected token '\"', \"\"{\\\"produc\"... is not valid JSON"}
+    cF https://shopgokul.com/assets/index-mpwlaPIn.js:40
+index-mpwlaPIn.js:690:5178
+Using simpleCart instead of the old CartProvider index-mpwlaPIn.js:674:21412
+Products state: 
+Object { isArray: true, length: 286, products: (286) […] }
+index-mpwlaPIn.js:690:3295
+Filtered products: 286 index-mpwlaPIn.js:690:4511
+[apiRequest] Using unified auth token: user-1749840876105-1... index-mpwlaPIn.js:40:100308
+[apiRequest] ✅ Token found and will be sent: user-1749840876105-1... index-mpwlaPIn.js:40:101558
+[apiRequest] ✅ Auth token added for POST /api/cart/add (user-1749840876105-1...) index-mpwlaPIn.js:40:102344
+Products state: 
+Object { isArray: true, length: 286, products: (286) […] }
+index-mpwlaPIn.js:690:3295
+Filtered products: 286 index-mpwlaPIn.js:690:4511
+[apiRequest] Response status: 400 index-mpwlaPIn.js:40:102701
+Failed to add product to cart: Error: 400: {"message":"Unexpected token '\"', \"\"{\\\"produc\"... is not valid JSON"}
+    cF https://shopgokul.com/assets/index-mpwlaPIn.js:40
+index-mpwlaPIn.js:690:5178
+Using simpleCart instead of the old CartProvider index-mpwlaPIn.js:674:21412
+Products state: 
+Object { isArray: true, length: 286, products: (286) […] }
+index-mpwlaPIn.js:690:3295
+Filtered products: 286 index-mpwlaPIn.js:690:4511
+[apiRequest] Using unified auth token: user-1749840876105-1... index-mpwlaPIn.js:40:100308
+[apiRequest] ✅ Token found and will be sent: user-1749840876105-1... index-mpwlaPIn.js:40:101558
+[apiRequest] ✅ Auth token added for POST /api/cart/add (user-1749840876105-1...) index-mpwlaPIn.js:40:102344
+Products state: 
+Object { isArray: true, length: 286, products: (286) […] }
+index-mpwlaPIn.js:690:3295
+Filtered products: 286 index-mpwlaPIn.js:690:4511
+[apiRequest] Response status: 400 index-mpwlaPIn.js:40:102701
+Failed to add product to cart: Error: 400: {"message":"Unexpected token '\"', \"\"{\\\"produc\"... is not valid JSON"}
+    cF https://shopgokul.com/assets/index-mpwlaPIn.js:40
+index-mpwlaPIn.js:690:5178
+Using simpleCart instead of the old CartProvider index-mpwlaPIn.js:674:21412
+Products state: 
+Object { isArray: true, length: 286, products: (286) […] }
+index-mpwlaPIn.js:690:3295
+Filtered products: 286 index-mpwlaPIn.js:690:4511
+[apiRequest] Using unified auth token: user-1749840876105-1... index-mpwlaPIn.js:40:100308
+[apiRequest] ✅ Token found and will be sent: user-1749840876105-1... index-mpwlaPIn.js:40:101558
+[apiRequest] ✅ Auth token added for POST /api/cart/add (user-1749840876105-1...) index-mpwlaPIn.js:40:102344
+Products state: 
+Object { isArray: true, length: 286, products: (286) […] }
+index-mpwlaPIn.js:690:3295
+Filtered products: 286 index-mpwlaPIn.js:690:4511
+[apiRequest] Response status: 400 index-mpwlaPIn.js:40:102701
+Failed to add product to cart: Error: 400: {"message":"Unexpected token '\"', \"\"{\\\"produc\"... is not valid JSON"}
+    cF https://shopgokul.com/assets/index-mpwlaPIn.js:40
+index-mpwlaPIn.js:690:5178
+Using simpleCart instead of the old CartProvider index-mpwlaPIn.js:674:21412
+Products state: 
+Object { isArray: true, length: 286, products: (286) […] }
+index-mpwlaPIn.js:690:3295
+Filtered products: 286 index-mpwlaPIn.js:690:4511
+[apiRequest] Using unified auth token: user-1749840876105-1... index-mpwlaPIn.js:40:100308
+[apiRequest] ✅ Token found and will be sent: user-1749840876105-1... index-mpwlaPIn.js:40:101558
+[apiRequest] ✅ Auth token added for POST /api/cart/add (user-1749840876105-1...) index-mpwlaPIn.js:40:102344
+Products state: 
+Object { isArray: true, length: 286, products: (286) […] }
+index-mpwlaPIn.js:690:3295
+Filtered products: 286 index-mpwlaPIn.js:690:4511
+[apiRequest] Response status: 400 index-mpwlaPIn.js:40:102701
+Failed to add product to cart: Error: 400: {"message":"Unexpected token '\"', \"\"{\\\"produc\"... is not valid JSON"}
+    cF https://shopgokul.com/assets/index-mpwlaPIn.js:40
+index-mpwlaPIn.js:690:5178
+Using simpleCart instead of the old CartProvider index-mpwlaPIn.js:674:21412
+Products state: 
+Object { isArray: true, length: 286, products: (286) […] }
+index-mpwlaPIn.js:690:3295
+Filtered products: 286 index-mpwlaPIn.js:690:4511
+[apiRequest] Using unified auth token: user-1749840876105-1... index-mpwlaPIn.js:40:100308
+[apiRequest] ✅ Token found and will be sent: user-1749840876105-1... index-mpwlaPIn.js:40:101558
+[apiRequest] ✅ Auth token added for POST /api/cart/add (user-1749840876105-1...) index-mpwlaPIn.js:40:102344
+Products state: 
+Object { isArray: true, length: 286, products: (286) […] }
+index-mpwlaPIn.js:690:3295
+Filtered products: 286 index-mpwlaPIn.js:690:4511
+[apiRequest] Response status: 400 index-mpwlaPIn.js:40:102701
+Failed to add product to cart: Error: 400: {"message":"Unexpected token '\"', \"\"{\\\"produc\"... is not valid JSON"}
+    cF https://shopgokul.com/assets/index-mpwlaPIn.js:40
+index-mpwlaPIn.js:690:5178
+Using simpleCart instead of the old CartProvider index-mpwlaPIn.js:674:21412
+Products state: 
+Object { isArray: true, length: 286, products: (286) […] }
+index-mpwlaPIn.js:690:3295
+Filtered products: 286 index-mpwlaPIn.js:690:4511
+[apiRequest] Using unified auth token: user-1749840876105-1... index-mpwlaPIn.js:40:100308
+[apiRequest] ✅ Token found and will be sent: user-1749840876105-1... index-mpwlaPIn.js:40:101558
+[apiRequest] ✅ Auth token added for POST /api/cart/add (user-1749840876105-1...) index-mpwlaPIn.js:40:102344
+Products state: 
+Object { isArray: true, length: 286, products: (286) […] }
+index-mpwlaPIn.js:690:3295
+Filtered products: 286 index-mpwlaPIn.js:690:4511
+[apiRequest] Response status: 400 index-mpwlaPIn.js:40:102701
+Failed to add product to cart: Error: 400: {"message":"Unexpected token '\"', \"\"{\\\"produc\"... is not valid JSON"}
+    cF https://shopgokul.com/assets/index-mpwlaPIn.js:40
+index-mpwlaPIn.js:690:5178
+Using simpleCart instead of the old CartProvider index-mpwlaPIn.js:674:21412
+Products state: 
+Object { isArray: true, length: 286, products: (286) […] }
+index-mpwlaPIn.js:690:3295
+Filtered products: 286 index-mpwlaPIn.js:690:4511
+[apiRequest] Using unified auth token: user-1749840876105-1... index-mpwlaPIn.js:40:100308
+[apiRequest] ✅ Token found and will be sent: user-1749840876105-1... index-mpwlaPIn.js:40:101558
+[apiRequest] ✅ Auth token added for POST /api/cart/add (user-1749840876105-1...) index-mpwlaPIn.js:40:102344
+Products state: 
+Object { isArray: true, length: 286, products: (286) […] }
+index-mpwlaPIn.js:690:3295
+Filtered products: 286 index-mpwlaPIn.js:690:4511
+[apiRequest] Response status: 400 index-mpwlaPIn.js:40:102701
+Failed to add product to cart: Error: 400: {"message":"Unexpected token '\"', \"\"{\\\"produc\"... is not valid JSON"}
+    cF https://shopgokul.com/assets/index-mpwlaPIn.js:40
+index-mpwlaPIn.js:690:5178
+Using simpleCart instead of the old CartProvider index-mpwlaPIn.js:674:21412
+Products state: 
+Object { isArray: true, length: 286, products: (286) […] }
+index-mpwlaPIn.js:690:3295
+Filtered products: 286 index-mpwlaPIn.js:690:4511
+Using simpleCart instead of the old CartProvider index-mpwlaPIn.js:674:21412
+Products state: 
+Object { isArray: true, length: 286, products: (286) […] }
+index-mpwlaPIn.js:690:3295
+Filtered products: 286 index-mpwlaPIn.js:690:4511
+Using simpleCart instead of the old CartProvider index-mpwlaPIn.js:674:21412
+Products state: 
+Object { isArray: true, length: 286, products: (286) […] }
+index-mpwlaPIn.js:690:3295
+Filtered products: 286 index-mpwlaPIn.js:690:4511
+Using simpleCart instead of the old CartProvider index-mpwlaPIn.js:674:21412
+Products state: 
+Object { isArray: true, length: 286, products: (286) […] }
+index-mpwlaPIn.js:690:3295
+Filtered products: 286 index-mpwlaPIn.js:690:4511
+Using simpleCart instead of the old CartProvider index-mpwlaPIn.js:674:21412
+Products state: 
+Object { isArray: true, length: 286, products: (286) […] }
+index-mpwlaPIn.js:690:3295
+Filtered products: 286 index-mpwlaPIn.js:690:4511
+Using simpleCart instead of the old CartProvider index-mpwlaPIn.js:674:21412
+Products state: 
+Object { isArray: true, length: 286, products: (286) […] }
+index-mpwlaPIn.js:690:3295
+Filtered products: 286 index-mpwlaPIn.js:690:4511
+Using simpleCart instead of the old CartProvider index-mpwlaPIn.js:674:21412
+Products state: 
+Object { isArray: true, length: 286, products: (286) […] }
+index-mpwlaPIn.js:690:3295
+Filtered products: 286 index-mpwlaPIn.js:690:4511
+Using simpleCart instead of the old CartProvider index-mpwlaPIn.js:674:21412
+Products state: 
+Object { isArray: true, length: 286, products: (286) […] }
+index-mpwlaPIn.js:690:3295
+Filtered products: 286 index-mpwlaPIn.js:690:4511
+[apiRequest] Using unified auth token: user-1749840876105-1... index-mpwlaPIn.js:40:100308
+[apiRequest] ✅ Token found and will be sent: user-1749840876105-1... index-mpwlaPIn.js:40:101558
+[apiRequest] ✅ Auth token added for POST /api/cart/add (user-1749840876105-1...) index-mpwlaPIn.js:40:102344
+Products state: 
+Object { isArray: true, length: 286, products: (286) […] }
+index-mpwlaPIn.js:690:3295
+Filtered products: 286 index-mpwlaPIn.js:690:4511
+XHRPOST
+https://shopgokul.com/api/cart/add
+[HTTP/3 400  66ms]
+
+[apiRequest] Response status: 400 index-mpwlaPIn.js:40:102701
+Failed to add product to cart: Error: 400: {"message":"Unexpected token '\"', \"\"{\\\"produc\"... is not valid JSON"}
+    cF https://shopgokul.com/assets/index-mpwlaPIn.js:40
+    Ze https://shopgokul.com/assets/index-mpwlaPIn.js:40
+    mutationFn https://shopgokul.com/assets/index-mpwlaPIn.js:690
+    fn https://shopgokul.com/assets/index-mpwlaPIn.js:40
+    y https://shopgokul.com/assets/index-mpwlaPIn.js:40
+    start https://shopgokul.com/assets/index-mpwlaPIn.js:40
+    execute https://shopgokul.com/assets/index-mpwlaPIn.js:40
+    mutate https://shopgokul.com/assets/index-mpwlaPIn.js:40
+    i https://shopgokul.com/assets/index-mpwlaPIn.js:40
+    k https://shopgokul.com/assets/index-mpwlaPIn.js:690
+    onClick https://shopgokul.com/assets/index-mpwlaPIn.js:690
+    qr https://shopgokul.com/assets/index-mpwlaPIn.js:37
+    Ya https://shopgokul.com/assets/index-mpwlaPIn.js:37
+    Qa https://shopgokul.com/assets/index-mpwlaPIn.js:37
+    mf https://shopgokul.com/assets/index-mpwlaPIn.js:37
+    pf https://shopgokul.com/assets/index-mpwlaPIn.js:37
+    xf https://shopgokul.com/assets/index-mpwlaPIn.js:37
+    Zj https://shopgokul.com/assets/index-mpwlaPIn.js:40
+    Cs https://shopgokul.com/assets/index-mpwlaPIn.js:37
+    xf https://shopgokul.com/assets/index-mpwlaPIn.js:37
+    dc https://shopgokul.com/assets/index-mpwlaPIn.js:37
+    uu https://shopgokul.com/assets/index-mpwlaPIn.js:37
+index-mpwlaPIn.js:690:5178
+Using simpleCart instead of the old CartProvider index-mpwlaPIn.js:674:21412
+Products state: 
+Object { isArray: true, length: 286, products: (286) […] }
+index-mpwlaPIn.js:690:3295
+Filtered products: 286 index-mpwlaPIn.js:690:4511
+Using simpleCart instead of the old CartProvider index-mpwlaPIn.js:674:21412
+Products state: 
+Object { isArray: true, length: 286, products: (286) […] }
+index-mpwlaPIn.js:690:3295
+Filtered products: 286 index-mpwlaPIn.js:690:4511
+[queryFn] Added auth headers for /api/notifications with token: user-1749840876105-1... index-mpwlaPIn.js:40:104365
+[queryFn] Response status for /api/notifications: 200 index-mpwlaPIn.js:40:104602

@@ -1,0 +1,62 @@
+{/* Delivery/Pickup options */}
+<div className="border rounded-lg p-4">
+  <h2 className="font-medium mb-3">Delivery Options</h2>
+
+  <RadioGroup
+    value={orderType}
+    onValueChange={(value) => setOrderType(value as 'delivery' | 'pickup')}
+    className="space-y-2"
+  >
+    <div className="flex items-center space-x-2">
+      <RadioGroupItem value="delivery" id="delivery" />
+      <Label htmlFor="delivery" className="cursor-pointer">Delivery (within 7 days)</Label>
+    </div>
+    <div className="flex items-center space-x-2">
+      <RadioGroupItem value="pickup" id="pickup" />
+      <Label htmlFor="pickup" className="cursor-pointer">Store Pickup (choose date)</Label>
+    </div>
+  </RadioGroup>
+
+  {orderType === 'pickup' && (
+    <div className="mt-3 grid grid-cols-2 gap-3">
+      <div>
+        <Label htmlFor="pickup-date">Pickup Date</Label>
+        <Input
+          id="pickup-date"
+          type="date"
+          value={pickupDate}
+          onChange={(e) => setPickupDate(e.target.value)}
+          className="mt-1"
+          min={new Date().toISOString().split('T')[0]}
+        />
+      </div>
+      <div>
+        <Label htmlFor="pickup-time">Preferred Time</Label>
+        <select
+          id="pickup-time"
+          value={pickupTime || ''}
+          onChange={(e) => setPickupTime(e.target.value)}
+          className="w-full mt-1 rounded-md border border-input px-3 py-2"
+        >
+          <option value="">Select time</option>
+          <option value="morning">Morning (9AM - 12PM)</option>
+          <option value="afternoon">Afternoon (12PM - 5PM)</option>
+          <option value="evening">Evening (5PM - 8PM)</option>
+        </select>
+      </div>
+    </div>
+  )}
+
+  {orderType === 'delivery' && (
+    <div className="mt-3">
+      <Label htmlFor="delivery-note">Delivery Notes</Label>
+      <Textarea
+        id="delivery-note"
+        placeholder="Add any special delivery instructions"
+        className="mt-1"
+        value={deliveryNote}
+        onChange={(e) => setDeliveryNote(e.target.value)}
+      />
+    </div>
+  )}
+</div>

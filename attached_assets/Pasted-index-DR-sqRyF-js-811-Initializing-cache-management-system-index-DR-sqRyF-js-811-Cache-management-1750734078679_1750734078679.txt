@@ -1,0 +1,35 @@
+index-DR_sqRyF.js:811 Initializing cache management system...
+index-DR_sqRyF.js:811 Cache management system initialized
+index-DR_sqRyF.js:824 Production cache management initialized automatically
+index-DR_sqRyF.js:811 Initializing session timeout system
+index-DR_sqRyF.js:811 Admin user detected - extended session timeout (8 hours)
+index-DR_sqRyF.js:811 Session manager initialized with timeout of 8 hours
+index-DR_sqRyF.js:824 Session management initialized
+orders:52 App can be installed, showing install button...
+orders#/orders:1 Banner not shown: beforeinstallpromptevent.preventDefault() called. The page must call beforeinstallpromptevent.prompt() to show the banner.
+index-DR_sqRyF.js:533 Using simpleCart instead of the old CartProvider
+index-DR_sqRyF.js:493 Fetching cart items...
+index-DR_sqRyF.js:40 [apiRequest] Using unified auth token: user-1750354461611-1...
+index-DR_sqRyF.js:40 [apiRequest] ✅ Token found and will be sent: user-1750354461611-1...
+index-DR_sqRyF.js:40 [apiRequest] ✅ Auth token added for GET /api/cart (user-1750354461611-1...)
+api/order-settings/minimum:1 
+            
+            
+           Failed to load resource: the server responded with a status of 401 ()
+index-DR_sqRyF.js:40 [apiRequest] Response status: 200 
+index-DR_sqRyF.js:40 [apiRequest] Success response received for GET /api/cart
+index-DR_sqRyF.js:493 Cart response: Array(0)
+index-DR_sqRyF.js:533 Using simpleCart instead of the old CartProvider
+index-DR_sqRyF.js:533 Using simpleCart instead of the old CartProvider
+index-DR_sqRyF.js:533 Using simpleCart instead of the old CartProvider
+index-DR_sqRyF.js:824 Navigating to: /orders/97
+index-DR_sqRyF.js:40 [apiRequest] Using unified auth token: user-1750354461611-1...
+index-DR_sqRyF.js:40 [apiRequest] ✅ Token found and will be sent: user-1750354461611-1...
+index-DR_sqRyF.js:40 [apiRequest] ✅ Auth token added for GET /api/orders/97 (user-1750354461611-1...)
+index-DR_sqRyF.js:40 [apiRequest] Using unified auth token: user-1750354461611-1...
+index-DR_sqRyF.js:40 [apiRequest] ✅ Token found and will be sent: user-1750354461611-1...
+index-DR_sqRyF.js:40 [apiRequest] ✅ Auth token added for GET /api/auth/user (user-1750354461611-1...)
+index-DR_sqRyF.js:40 [apiRequest] Response status: 200 
+index-DR_sqRyF.js:40 [apiRequest] Success response received for GET /api/auth/user
+index-DR_sqRyF.js:40 [apiRequest] Response status: 200 
+index-DR_sqRyF.js:40 [apiRequest] Success response received for GET /api/orders/97

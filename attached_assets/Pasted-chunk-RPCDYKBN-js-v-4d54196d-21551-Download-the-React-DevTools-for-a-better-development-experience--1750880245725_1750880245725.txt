@@ -1,0 +1,41 @@
+chunk-RPCDYKBN.js?v=4d54196d:21551 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+cacheManager.ts:31 Initializing cache management system...
+cacheManager.ts:37 Cache management system initialized
+queryClient.ts:197 [queryFn] Added auth headers for /api/auth/user with token: cust_mbpxj6vffmc-175...
+App.tsx:92 Production cache management initialized automatically
+sessionManager.ts:32 Initializing session timeout system
+sessionManager.ts:38 Regular user - standard session timeout (8 hours)
+sessionManager.ts:77 Session manager initialized with timeout of 8 hours
+App.tsx:96 Session management initialized
+cart:100 App can be installed, showing install button...
+cart#/cart:1 Banner not shown: beforeinstallpromptevent.preventDefault() called. The page must call beforeinstallpromptevent.prompt() to show the banner.
+queryClient.ts:208 [queryFn] Response status for /api/auth/user: 200
+queryClient.ts:197 [queryFn] Added auth headers for /api/cart with token: cust_mbpxj6vffmc-175...
+queryClient.ts:197 [queryFn] Added auth headers for /api/order-settings/minimum with token: cust_mbpxj6vffmc-175...
+queryClient.ts:208 [queryFn] Response status for /api/order-settings/minimum: 200
+queryClient.ts:208 [queryFn] Response status for /api/cart: 200
+CartItemSimple.tsx:101 Removing item 52 from cart
+api/simple-remove-from-cart:1 
+            
+            
+           Failed to load resource: the server responded with a status of 404 (Not Found)
+CartItemSimple.tsx:192 Error removing cart item: Error: Failed to remove cart item
+    at removeItem (CartItemSimple.tsx:180:15)
+removeItem @ CartItemSimple.tsx:192
+CartItemSimple.tsx:101 Removing item 61 from cart
+api/simple-remove-from-cart:1 
+            
+            
+           Failed to load resource: the server responded with a status of 404 (Not Found)
+CartItemSimple.tsx:192 Error removing cart item: Error: Failed to remove cart item
+    at removeItem (CartItemSimple.tsx:180:15)
+removeItem @ CartItemSimple.tsx:192
+useClearCart.ts:18 Initiating cart clear for user: cust_mbpxj6vffmc
+queryClient.ts:40 [apiRequest] Using unified auth token: cust_mbpxj6vffmc-175...
+queryClient.ts:95 [apiRequest] ✅ Token found and will be sent: cust_mbpxj6vffmc-175...
+queryClient.ts:103 [apiRequest] ✅ Auth token added for DELETE /api/cart/clear (cust_mbpxj6vffmc-175...)
+queryClient.ts:118 [apiRequest] Response status: 200 OK
+queryClient.ts:130 [apiRequest] Success response received for DELETE /api/cart/clear
+useClearCart.ts:46 Cart clearing error: TypeError: response.json is not a function
+    at clearCart (useClearCart.ts:42:42)
+clearCart @ useClearCart.ts:46

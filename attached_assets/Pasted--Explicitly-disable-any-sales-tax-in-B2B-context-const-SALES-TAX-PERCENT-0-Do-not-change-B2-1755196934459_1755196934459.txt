@@ -1,0 +1,93 @@
+// Explicitly disable any sales tax in B2B context
+const SALES_TAX_PERCENT = 0; // Do not change; B2B = no sales tax
+
+// ... (types stay the same as before)
+
+export function calculateOrder(input: OrderInput, customer: Customer): OrderResult {
+  const lines: CalcLine[] = [];
+
+  // 1) Items subtotal by tier
+  let itemsSubtotalC = 0;
+  for (const it of input.items) {
+    const unitPrice = it.tierPrices[customer.tier] ?? 0;
+    const lineTotalC = Math.round(unitPrice * it.qty * 100);
+    itemsSubtotalC += lineTotalC;
+
+    lines.push({
+      kind: "item",
+      name: it.name,
+      qty: it.qty,
+      unitPrice,
+      lineTotal: lineTotalC / 100,
+    });
+  }
+
+  // 2) Flat tax lines only (no percent-based sales tax ever)
+  let flatTaxTotalC = 0;
+  if (customer.hasFlatTax) {
+    for (const it of input.items) {
+      if (it.hasFlatTax && it.flatTaxPerItem && it.flatTaxPerItem > 0) {
+        const label = it.flatTaxLabel ?? "Flat Tax";
+        const amountC = Math.round(it.flatTaxPerItem * it.qty * 100);
+        flatTaxTotalC += amountC;
+        lines.push({ kind: "flatTax", label, amount: amountC / 100 });
+      }
+    }
+  }
+
+  // 3) Loyalty-eligible subtotal: exclude taxes + tobacco
+  let loyaltyEligibleC = 0;
+  for (const it of input.items) {
+    if (it.category !== "tobacco") {
+      const unitPrice = it.tierPrices[customer.tier] ?? 0;
+      loyaltyEligibleC += Math.round(unitPrice * it.qty * 100);
+    }
+  }
+
+  const pointsEarned = Math.floor((loyaltyEligibleC / 100) * customer.loyalty.earnRatePerDollar);
+
+  // 4) Subtotals
+  const subtotalBeforeDeliveryC = itemsSubtotalC + flatTaxTotalC;
+
+  // 5) Delivery (pickup => $0)
+  const deliveryFeeC = input.isDelivery ? Math.round((input.deliveryFee ?? 0) * 100) : 0;
+  if (deliveryFeeC > 0) lines.push({ kind: "delivery", amount: deliveryFeeC / 100 });
+  const subtotalBeforeRedemptionC = subtotalBeforeDeliveryC + deliveryFeeC;
+
+  // 6) Loyalty redemption last
+  const requestedPoints = input.redeemPoints ?? 0;
+  const availablePoints = customer.loyalty.availablePoints ?? 0;
+  const redeemValuePerPoint = customer.loyalty.redeemValuePerPoint;
+
+  let pointsToUse = Math.min(requestedPoints, availablePoints);
+
+  if (customer.loyalty.maxRedeemPercent && customer.loyalty.maxRedeemPercent > 0) {
+    const capC = Math.floor((subtotalBeforeRedemptionC * customer.loyalty.maxRedeemPercent) / 100);
+    const maxByPercent = Math.floor((capC / 100) / redeemValuePerPoint);
+    pointsToUse = Math.min(pointsToUse, maxByPercent);
+  }
+
+  const maxBySubtotal = Math.floor((subtotalBeforeRedemptionC / 100) / redeemValuePerPoint);
+  pointsToUse = Math.max(0, Math.min(pointsToUse, maxBySubtotal));
+
+  const redeemValueC = Math.round(pointsToUse * redeemValuePerPoint * 100);
+  if (redeemValueC > 0) {
+    lines.push({ kind: "loyaltyRedeem", pointsUsed: pointsToUse, amount: redeemValueC / 100 });
+  }
+
+  const totalC = subtotalBeforeRedemptionC - redeemValueC;
+
+  return {
+    lines,
+    itemsSubtotal: itemsSubtotalC / 100,
+    flatTaxTotal: flatTaxTotalC / 100,
+    subtotalBeforeDelivery: subtotalBeforeDeliveryC / 100,
+    deliveryFee: deliveryFeeC / 100,
+    subtotalBeforeRedemption: subtotalBeforeRedemptionC / 100,
+    loyaltyEligibleSubtotal: loyaltyEligibleC / 100,
+    pointsEarned,
+    pointsRedeemed: pointsToUse,
+    loyaltyRedeemValue: redeemValueC / 100,
+    total: totalC / 100,
+  };
+}

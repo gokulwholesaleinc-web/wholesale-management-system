@@ -1,0 +1,31 @@
+    }
+  });
+
+
+
+  // Product image upload endpoint
+  app.post('/api/admin/products/:id/upload-image', requireEmployeeOrAdmin, upload.single('image'), async (req: any, res) => {
+    try {
+      const productId = parseInt(req.params.id);
+
+      if (!req.file) {
+        return res.status(400).json({ message: 'No image file provided' });
+      }
+
+      const imageUrl = `/uploads/${req.file.filename}`;
+      console.log(`Uploading image for product ${productId}: ${imageUrl}`);
+
+      const updatedProduct = await storage.updateProduct(productId, { imageUrl });
+
+      if (!updatedProduct) {
+        fs.unlink(req.file.path, (err) => {
+          if (err) console.error('Error deleting uploaded file:', err);
+        });
+        return res.status(404).json({ message: 'Product not found' });
+      }
+
+      // Log image upload activity
+      await storage.addActivityLog({
+        userId: req.user.id,
+        username: req.user.username,
+        action: 'PRODUCT_IMAGE_UPLOADED',

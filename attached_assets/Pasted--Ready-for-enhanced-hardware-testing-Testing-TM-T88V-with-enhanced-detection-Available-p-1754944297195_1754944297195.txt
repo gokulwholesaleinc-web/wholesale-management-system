@@ -1,0 +1,92 @@
+
+🚀 Ready for enhanced hardware testing!
+
+🖨️ Testing TM-T88V with enhanced detection...
+Available printers for testing:
+  - HP OfficeJet Pro 8710 via LogMeIn  0             3                         DESKTOP-85AB9LR
+  - Microsoft XPS Document Writer      0             3                         DESKTOP-85AB9LR
+  - Microsoft Print to PDF             0             3                         DESKTOP-85AB9LR
+  - http://[fe80::a28c:fdff:fe54:10b8%7]:3911/                  HP5410B8 (HP OfficeJet Pro 8710)   0             3                         DESKTOP-85AB9LR
+  - Fax                                0             3                         DESKTOP-85AB9LR
+  - Brother MFC-L2710DW series         0             3                         DESKTOP-85AB9LR
+  - http://[fe80::aa93:4aff:fe35:e4f0%7]:80/WebServices/Device  Brother HL-L2395DW series Printer  0             3                         DESKTOP-85AB9LR
+🔄 Trying print method: print /d:"TM-T88V" "C:\Users\user\AppData\Local\Temp\test_1754944230910.txt"
+✅ Print SUCCESS: print /d:"TM-T88V" "C:\Users\user\AppData\Local\Temp\test_1754944230910.txt"
+🔓 Testing MMF drawer using successful print method...
+
+🔧 Testing Standard Pin 2 (25ms): 1B 70 00 19 19
+   🔄 Trying: print /d:"TM-T88V" "C:\Users\user\AppData\Local\Temp\drawer_test_1754944241889.bin"
+   ✅ COMMAND SENT! Testing Standard Pin 2 (25ms) via: print /d:"TM-T88V" "C:\Users\user\AppData\Local\Temp\drawer_test_1754944241889.bin"
+   ⏳ Waiting 3 seconds - WATCH YOUR DRAWER!
+   📋 Standard Pin 2 (25ms) test complete via print /d:"TM-T88V" "C:\Users\user\AppData\Local\Temp\drawer_test_1754944241889.bin"
+
+
+🔧 Testing Standard Pin 5 (25ms): 1B 70 01 19 19
+   🔄 Trying: print /d:"TM-T88V" "C:\Users\user\AppData\Local\Temp\drawer_test_1754944244931.bin"
+   ✅ COMMAND SENT! Testing Standard Pin 5 (25ms) via: print /d:"TM-T88V" "C:\Users\user\AppData\Local\Temp\drawer_test_1754944244931.bin"
+   ⏳ Waiting 3 seconds - WATCH YOUR DRAWER!
+   📋 Standard Pin 5 (25ms) test complete via print /d:"TM-T88V" "C:\Users\user\AppData\Local\Temp\drawer_test_1754944244931.bin"
+
+
+🔧 Testing Extended Pin 2 (50ms): 1B 70 00 32 32
+   🔄 Trying: print /d:"TM-T88V" "C:\Users\user\AppData\Local\Temp\drawer_test_1754944247973.bin"
+   ✅ COMMAND SENT! Testing Extended Pin 2 (50ms) via: print /d:"TM-T88V" "C:\Users\user\AppData\Local\Temp\drawer_test_1754944247973.bin"
+   ⏳ Waiting 3 seconds - WATCH YOUR DRAWER!
+   📋 Extended Pin 2 (50ms) test complete via print /d:"TM-T88V" "C:\Users\user\AppData\Local\Temp\drawer_test_1754944247973.bin"
+
+
+🔧 Testing Extended Pin 5 (50ms): 1B 70 01 32 32
+   🔄 Trying: print /d:"TM-T88V" "C:\Users\user\AppData\Local\Temp\drawer_test_1754944251007.bin"
+   ✅ COMMAND SENT! Testing Extended Pin 5 (50ms) via: print /d:"TM-T88V" "C:\Users\user\AppData\Local\Temp\drawer_test_1754944251007.bin"
+   ⏳ Waiting 3 seconds - WATCH YOUR DRAWER!
+   📋 Extended Pin 5 (50ms) test complete via print /d:"TM-T88V" "C:\Users\user\AppData\Local\Temp\drawer_test_1754944251007.bin"
+
+
+🔧 Testing Long pulse Pin 2 (100ms): 1B 70 00 64 64
+   🔄 Trying: print /d:"TM-T88V" "C:\Users\user\AppData\Local\Temp\drawer_test_1754944254035.bin"
+   ✅ COMMAND SENT! Testing Long pulse Pin 2 (100ms) via: print /d:"TM-T88V" "C:\Users\user\AppData\Local\Temp\drawer_test_1754944254035.bin"
+   ⏳ Waiting 3 seconds - WATCH YOUR DRAWER!
+   📋 Long pulse Pin 2 (100ms) test complete via print /d:"TM-T88V" "C:\Users\user\AppData\Local\Temp\drawer_test_1754944254035.bin"
+
+
+🔧 Testing Long pulse Pin 5 (100ms): 1B 70 01 64 64
+   🔄 Trying: print /d:"TM-T88V" "C:\Users\user\AppData\Local\Temp\drawer_test_1754944257063.bin"
+   ✅ COMMAND SENT! Testing Long pulse Pin 5 (100ms) via: print /d:"TM-T88V" "C:\Users\user\AppData\Local\Temp\drawer_test_1754944257063.bin"
+   ⏳ Waiting 3 seconds - WATCH YOUR DRAWER!
+   📋 Long pulse Pin 5 (100ms) test complete via print /d:"TM-T88V" "C:\Users\user\AppData\Local\Temp\drawer_test_1754944257063.bin"
+
+
+🔧 Testing Direct drawer command: 1D 61 00
+   🔄 Trying: print /d:"TM-T88V" "C:\Users\user\AppData\Local\Temp\drawer_test_1754944260091.bin"
+   ✅ COMMAND SENT! Testing Direct drawer command via: print /d:"TM-T88V" "C:\Users\user\AppData\Local\Temp\drawer_test_1754944260091.bin"
+   ⏳ Waiting 3 seconds - WATCH YOUR DRAWER!
+   📋 Direct drawer command test complete via print /d:"TM-T88V" "C:\Users\user\AppData\Local\Temp\drawer_test_1754944260091.bin"
+
+
+🔧 Testing RMH style Pin 2: 1B 70 00 FF FF
+   🔄 Trying: print /d:"TM-T88V" "C:\Users\user\AppData\Local\Temp\drawer_test_1754944263127.bin"
+   ✅ COMMAND SENT! Testing RMH style Pin 2 via: print /d:"TM-T88V" "C:\Users\user\AppData\Local\Temp\drawer_test_1754944263127.bin"
+   ⏳ Waiting 3 seconds - WATCH YOUR DRAWER!
+   📋 RMH style Pin 2 test complete via print /d:"TM-T88V" "C:\Users\user\AppData\Local\Temp\drawer_test_1754944263127.bin"
+
+
+🔧 Testing Alternative Pin 2: 1B 70 00 14 14
+   🔄 Trying: print /d:"TM-T88V" "C:\Users\user\AppData\Local\Temp\drawer_test_1754944266167.bin"
+   ✅ COMMAND SENT! Testing Alternative Pin 2 via: print /d:"TM-T88V" "C:\Users\user\AppData\Local\Temp\drawer_test_1754944266167.bin"
+   ⏳ Waiting 3 seconds - WATCH YOUR DRAWER!
+   📋 Alternative Pin 2 test complete via print /d:"TM-T88V" "C:\Users\user\AppData\Local\Temp\drawer_test_1754944266167.bin"
+
+
+🔧 Testing Cash drawer kick: 07
+   🔄 Trying: print /d:"TM-T88V" "C:\Users\user\AppData\Local\Temp\drawer_test_1754944269211.bin"
+   ✅ COMMAND SENT! Testing Cash drawer kick via: print /d:"TM-T88V" "C:\Users\user\AppData\Local\Temp\drawer_test_1754944269211.bin"
+   ⏳ Waiting 3 seconds - WATCH YOUR DRAWER!
+   📋 Cash drawer kick test complete via print /d:"TM-T88V" "C:\Users\user\AppData\Local\Temp\drawer_test_1754944269211.bin"
+
+
+🏁 All MMF drawer tests completed!
+📋 SUMMARY: All drawer commands sent using successful print method.
+🔍 If drawer did not open with any command, we may need:
+   - Different command sequences (like RMH uses)
+   - Hardware-specific driver integration
+   - Alternative communication method

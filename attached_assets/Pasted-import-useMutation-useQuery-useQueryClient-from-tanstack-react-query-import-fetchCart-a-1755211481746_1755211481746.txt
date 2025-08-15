@@ -1,0 +1,75 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { fetchCart, addToCart, CART_KEY } from "@/lib/cartApi";
+import { useToast } from "@/hooks/use-toast";
+import { useRef } from "react";
+
+type CartItem = { productId: number; quantity: number };
+
+function usePerProductQueue() {
+  const inflight = useRef(new Set<number>());
+  return {
+    isInflight: (id: number) => inflight.current.has(id),
+    start: (id: number) => inflight.current.add(id),
+    end: (id: number) => inflight.current.delete(id),
+  };
+}
+
+export function useCart() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const queue = usePerProductQueue();
+
+  // Keep cart loaded
+  useQuery({ queryKey: CART_KEY, queryFn: fetchCart, staleTime: 30_000 });
+
+  const addToCartMutation = useMutation({
+    mutationFn: ({ productId, quantity }: { productId: number; quantity: number }) =>
+      addToCart(productId, quantity),
+
+    onMutate: async ({ productId, quantity }) => {
+      if (queue.isInflight(productId)) return;
+      queue.start(productId);
+
+      await queryClient.cancelQueries({ queryKey: CART_KEY });
+      const prev = queryClient.getQueryData<any>(CART_KEY);
+      const items: CartItem[] = Array.isArray(prev) ? prev : prev?.items ?? [];
+
+      const nextItems = (() => {
+        const idx = items.findIndex((it) => it.productId === productId);
+        if (idx >= 0) {
+          const copy = items.slice();
+          copy[idx] = { ...copy[idx], quantity: copy[idx].quantity + quantity };
+          return copy;
+        }
+        return [...items, { productId, quantity }];
+      })();
+
+      if (Array.isArray(prev)) {
+        queryClient.setQueryData(CART_KEY, nextItems);
+      } else {
+        queryClient.setQueryData(CART_KEY, { ...(prev ?? {}), items: nextItems });
+      }
+
+      toast({ title: "Added to cart", description: "Item added instantly" });
+
+      return { prev };
+    },
+
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.prev !== undefined) {
+        queryClient.setQueryData(CART_KEY, ctx.prev);
+      }
+    },
+
+    onSettled: (_data, _error, vars) => {
+      queue.end(vars?.productId);
+      queryClient.invalidateQueries({ queryKey: CART_KEY });
+    },
+  });
+
+  return {
+    addToCart: (productId: number, quantity = 1) =>
+      addToCartMutation.mutate({ productId, quantity }),
+    adding: addToCartMutation.isPending,
+  };
+}

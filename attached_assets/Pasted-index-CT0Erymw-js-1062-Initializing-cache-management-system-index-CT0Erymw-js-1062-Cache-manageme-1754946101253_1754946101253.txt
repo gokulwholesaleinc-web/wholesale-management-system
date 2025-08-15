@@ -1,0 +1,58 @@
+index-CT0Erymw.js:1062 Initializing cache management system...
+index-CT0Erymw.js:1062 Cache management system initialized
+index-CT0Erymw.js:1075 Production cache management initialized automatically
+index-CT0Erymw.js:1062 Initializing session timeout system
+index-CT0Erymw.js:1062 Regular user - standard session timeout (8 hours)
+index-CT0Erymw.js:1062 Session manager initialized with timeout of 8 hours
+index-CT0Erymw.js:1075 Session management initialized
+index-CT0Erymw.js:1062 Device status: trusted=false, fingerprint=53g414
+index-CT0Erymw.js:1075 Navigating to: /instore/login
+index-CT0Erymw.js:1075 Navigating to: /instore/login
+index-CT0Erymw.js:1075 Navigating to: /instore/login
+index-CT0Erymw.js:1075 Navigating to: /instore/login
+index-CT0Erymw.js:1075 Navigating to: /instore/dashboard
+index-CT0Erymw.js:40 [queryFn] Using POS auth token: pos-admin_49rzcl0p-1...
+index-CT0Erymw.js:40 [queryFn] Added auth headers for /api/products with token: pos-admin_49rzcl0p-1...
+index-CT0Erymw.js:40 [queryFn] Using POS auth token: pos-admin_49rzcl0p-1...
+index-CT0Erymw.js:40 [queryFn] Added auth headers for /api/pos/todays-sales with token: pos-admin_49rzcl0p-1...
+index-CT0Erymw.js:40 [queryFn] Response status for /api/pos/todays-sales: 200
+index-CT0Erymw.js:40 [queryFn] Response status for /api/products: 200
+index-CT0Erymw.js:1075 Navigating to: /instore/hardware-test
+localhost:8080/health:1  Failed to load resource: net::ERR_CONNECTION_REFUSED
+index-CT0Erymw.js:1062 [SERVICE] Health check failed: TypeError: Failed to fetch
+    at j (index-CT0Erymw.js:1062:119520)
+    at index-CT0Erymw.js:1062:119479
+    at Kp (index-CT0Erymw.js:40:24827)
+    at zm (index-CT0Erymw.js:40:43499)
+    at QT (index-CT0Erymw.js:40:42214)
+    at wh (index-CT0Erymw.js:40:41236)
+    at z2 (index-CT0Erymw.js:40:37734)
+    at B (index-CT0Erymw.js:38:3266)
+    at index-CT0Erymw.js:40:35079
+j @ index-CT0Erymw.js:1062
+localhost:8080/drawer/open:1  Failed to load resource: net::ERR_CONNECTION_REFUSED
+index-CT0Erymw.js:1062 [DRAWER ERROR]: TypeError: Failed to fetch
+    at w (index-CT0Erymw.js:1062:120868)
+    at Object.jr (index-CT0Erymw.js:37:9846)
+    at Na (index-CT0Erymw.js:37:10006)
+    at Wn (index-CT0Erymw.js:37:10066)
+    at ch (index-CT0Erymw.js:37:31490)
+    at dh (index-CT0Erymw.js:37:31934)
+    at index-CT0Erymw.js:37:37173
+    at ry (index-CT0Erymw.js:40:37805)
+    at Ws (index-CT0Erymw.js:37:8979)
+    at hh (index-CT0Erymw.js:37:33261)
+w @ index-CT0Erymw.js:1062
+localhost:8080/test:1  Failed to load resource: net::ERR_CONNECTION_REFUSED
+index-CT0Erymw.js:1062 [PRINTER ERROR]: TypeError: Failed to fetch
+    at C (index-CT0Erymw.js:1062:120059)
+    at Object.jr (index-CT0Erymw.js:37:9846)
+    at Na (index-CT0Erymw.js:37:10006)
+    at Wn (index-CT0Erymw.js:37:10066)
+    at ch (index-CT0Erymw.js:37:31490)
+    at dh (index-CT0Erymw.js:37:31934)
+    at index-CT0Erymw.js:37:37173
+    at ry (index-CT0Erymw.js:40:37805)
+    at Ws (index-CT0Erymw.js:37:8979)
+    at hh (index-CT0Erymw.js:37:33261)
+C @ index-CT0Erymw.js:1062

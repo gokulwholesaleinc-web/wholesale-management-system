@@ -1,0 +1,3119 @@
+Looking for product 49 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 205 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 207 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 42 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 27 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 135 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 390 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 404 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 217 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 385 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 394 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 398 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 415 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 136 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 61 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 420 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 140 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 52 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 97 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 296 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 98 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 145 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 141 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 406 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 417 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 371 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 377 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 357 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 395 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 138 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 94 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 399 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 56 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 34 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 428 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 386 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 158 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 91 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 350 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 353 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 351 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 349 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 348 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 352 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 392 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 216 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 89 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 436 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 142 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 421 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 425 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 397 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 148 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 36 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 147 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 419 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 434 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 373 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 29 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 59 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 178 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 146 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 184 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 41 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 194 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 198 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 199 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 195 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 185 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 190 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 196 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 197 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 192 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 37 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 191 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 193 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 200 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 188 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 189 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 186 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 31 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 363 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 379 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 38 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 370 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 32 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 378 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 369 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 387 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 87 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 104 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 362 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 367 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 376 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 48 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 208 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 209 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 210 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 60 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 361 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 83 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 82 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 85 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 84 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 102 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 55 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 39 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 23 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 418 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 388 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 232 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 95 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 212 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 103 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 414 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 233 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 149 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 250 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 391 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 422 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 396 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 43 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 35 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 137 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 380 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 177 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 364 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 239 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 275 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 294 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 51 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 306 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 105 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 107 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 108 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 106 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 57 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 442 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 445 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 441 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 450 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 453 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 160 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 440 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 448 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 452 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 454 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 451 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 122 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 449 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 455 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 444 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 443 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 447 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 121 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 446 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 110 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 456 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 424 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 429 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 174 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 173 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 115 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 171 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 116 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 58 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 114 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 172 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 176 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 117 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 169 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 170 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 46 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 374 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 423 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 383 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 400 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 402 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 403 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 416 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 375 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 358 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 355 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 389 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 230 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 229 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 151 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 152 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 150 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 215 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 214 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+[queryFn] Response status for /api/wishlist: 200 queryClient.ts:174:11
+[queryFn] Response status for /api/draft-orders: 200 queryClient.ts:174:11
+[apiRequest] Response status: 200 OK queryClient.ts:107:11
+[queryFn] Response status for /api/order-templates: 200 queryClient.ts:174:11
+[apiRequest] Success response received for GET /api/cart queryClient.ts:115:11
+Cart items retrieved: 8 items simpleCart.ts:23:17
+Cart contains: 5-HOUR EXTRA ULTIMATE CITRUS  12CT (qty: 1), 5-HOUR ENERGY WATERMELON 12ct (qty: 1), 5-HOUR ENERGY BERRY 12CT (qty: 1), Dole Pineapple 8oz (24 Pack) (qty: 1), Coca Cola Cherry 20oz (24 Pack) (qty: 1), ALKA SLETZER PLUS 72CT (qty: 1), 5-HOUR EXTRA STRAWBERRY BANANA 12CT (qty: 1), DURACELL AA 4PK BATTERY (qty: 1) simpleCart.ts:26:19
+Using simpleCart instead of the old CartProvider useCart.tsx:21:11
+Products state: 
+Object { isArray: true, length: 241, products: (241) […] }
+ProductGrid.tsx:129:11
+Filtered products: 241 ProductGrid.tsx:189:11
+Looking for product 393 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 329 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 45 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 340 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 339 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 21 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 124 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 22 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 342 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 343 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 335 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 347 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 344 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 341 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 346 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 331 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 336 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 333 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 360 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 435 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 433 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 405 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 366 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 359 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 381 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 354 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 365 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 33 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 157 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 384 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 426 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 382 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 368 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 372 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 427 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 180 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 182 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 181 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 183 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 179 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 437 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 99 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 401 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 431 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 430 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 432 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 50 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 118 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 101 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 175 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 49 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 205 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 207 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 42 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 27 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 135 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 390 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 404 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 217 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 385 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 394 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 398 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 415 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 136 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 61 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 420 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 140 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 52 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 97 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 296 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 98 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 145 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 141 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 406 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 417 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 371 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 377 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 357 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 395 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 138 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 94 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 399 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 56 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 34 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 428 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 386 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 158 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 91 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 350 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 353 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 351 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 349 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 348 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 352 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 392 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 216 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 89 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 436 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 142 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 421 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 425 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 397 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 148 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 36 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 147 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 419 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 434 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 373 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 29 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 59 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 178 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 146 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 184 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 41 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 194 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 198 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 199 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 195 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 185 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 190 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 196 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 197 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 192 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 37 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 191 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 193 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 200 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 188 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 189 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 186 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 31 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 363 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 379 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 38 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 370 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 32 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 378 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 369 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 387 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 87 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 104 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 362 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 367 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 376 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 48 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 208 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 209 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 210 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 60 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 361 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 83 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 82 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 85 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 84 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 102 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 55 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 39 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 23 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 418 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 388 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 232 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 95 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 212 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 103 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 414 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 233 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 149 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 250 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 391 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 422 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 396 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 43 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 35 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 137 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 380 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 177 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 364 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 239 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 275 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 294 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 51 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 306 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 105 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 107 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 108 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 106 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 57 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 442 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 445 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 441 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 450 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 453 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 160 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 440 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 448 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 452 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 454 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 451 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 122 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 449 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 455 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 444 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 443 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 447 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 121 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 446 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 110 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 456 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 424 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 429 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 174 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 173 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 115 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 171 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 116 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 58 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 114 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 172 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 176 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 117 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 169 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 170 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 46 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 374 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 423 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 383 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 400 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 402 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 403 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 416 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 375 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 358 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 355 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 389 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 230 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 229 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 151 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 152 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 150 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 215 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 214 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Using simpleCart instead of the old CartProvider useCart.tsx:21:11
+Products state: 
+Object { isArray: true, length: 241, products: (241) […] }
+ProductGrid.tsx:129:11
+Filtered products: 241 ProductGrid.tsx:189:11
+Looking for product 393 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 329 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 45 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 340 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 339 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 21 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 124 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 22 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 342 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 343 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 335 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 347 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 344 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 341 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 346 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 331 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 336 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 333 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 360 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 435 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 433 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 405 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 366 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 359 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 381 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 354 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 365 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 33 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 157 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 384 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 426 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 382 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 368 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 372 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 427 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 180 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 182 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 181 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 183 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 179 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 437 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 99 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 401 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 431 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 430 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 432 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 50 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 118 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 101 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 175 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 49 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 205 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 207 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 42 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 27 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 135 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 390 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 404 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 217 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 385 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 394 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 398 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 415 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 136 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 61 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 420 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 140 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 52 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 97 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 296 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 98 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 145 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 141 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 406 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 417 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 371 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 377 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 357 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 395 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 138 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 94 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 399 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 56 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 34 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 428 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 386 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 158 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 91 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 350 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 353 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 351 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 349 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 348 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 352 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 392 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 216 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 89 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 436 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 142 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 421 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 425 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 397 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 148 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 36 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 147 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 419 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 434 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 373 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 29 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 59 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 178 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 146 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 184 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 41 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 194 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 198 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 199 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 195 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 185 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 190 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 196 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 197 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 192 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 37 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 191 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 193 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 200 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 188 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 189 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 186 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 31 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 363 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 379 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 38 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 370 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 32 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 378 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 369 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 387 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 87 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 104 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 362 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 367 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 376 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 48 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 208 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 209 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 210 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 60 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 361 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 83 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 82 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 85 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 84 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 102 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 55 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 39 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 23 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 418 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 388 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 232 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 95 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 212 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 103 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 414 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 233 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 149 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 250 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 391 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 422 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 396 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 43 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 35 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 137 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 380 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 177 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 364 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 239 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 275 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 294 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 51 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 306 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 105 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 107 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 108 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 106 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 57 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 442 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 445 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 441 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 450 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 453 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 160 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 440 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 448 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 452 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 454 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 451 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 122 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 449 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 455 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 444 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 443 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 447 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 121 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 446 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 110 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 456 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 424 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 429 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 174 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 173 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 115 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 171 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 116 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 58 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 114 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 172 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 176 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 117 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 169 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 170 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 46 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 374 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 423 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 383 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 400 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 402 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 403 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 416 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 375 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 358 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 355 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 389 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 230 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 229 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 151 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 152 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 150 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 215 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 214 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Data version changed, clearing all cache for fresh data cacheManager.ts:158:15
+All cache cleared cacheManager.ts:100:13
+[vite] hot updated: /src/components/cart/MultiStepCheckoutPopup.tsx client:883:32
+[vite] hot updated: /src/index.css?v=hjl_kAClR6nrx_w_Bfl09 client:883:32
+Fetching cart items from database... simpleCart.ts:21:17
+[apiRequest] Using unified auth token: cust_mbpxj6vffmc-175... queryClient.ts:41:19
+[apiRequest] ✅ Token found and will be sent: cust_mbpxj6vffmc-175... queryClient.ts:89:15
+[apiRequest] ✅ Auth token added for GET /api/cart (cust_mbpxj6vffmc-175...) queryClient.ts:94:15
+[apiRequest] Response status: 200 OK queryClient.ts:107:11
+[apiRequest] Success response received for GET /api/cart queryClient.ts:115:11
+Cart items retrieved: 8 items simpleCart.ts:23:17
+Cart contains: 5-HOUR EXTRA ULTIMATE CITRUS  12CT (qty: 1), 5-HOUR ENERGY WATERMELON 12ct (qty: 1), 5-HOUR ENERGY BERRY 12CT (qty: 1), Dole Pineapple 8oz (24 Pack) (qty: 1), Coca Cola Cherry 20oz (24 Pack) (qty: 1), ALKA SLETZER PLUS 72CT (qty: 1), 5-HOUR EXTRA STRAWBERRY BANANA 12CT (qty: 1), DURACELL AA 4PK BATTERY (qty: 1) simpleCart.ts:26:19
+[queryFn] Added auth headers for /api/notifications with token: cust_mbpxj6vffmc-175... queryClient.ts:165:13
+[queryFn] Response status for /api/notifications: 200 queryClient.ts:174:11
+Warning: React has detected a change in the order of Hooks called by MultiStepCheckoutPopup. This will lead to bugs and errors if not fixed. For more information, read the Rules of Hooks: https://reactjs.org/link/rules-of-hooks
+
+   Previous render            Next render
+   ------------------------------------------------------
+1. useState                   useState
+2. useState                   useState
+3. useState                   useState
+4. useState                   useState
+5. useState                   useState
+6. useState                   useState
+7. useEffect                  useEffect
+8. useState                   useState
+9. useContext                 useContext
+10. useContext                useContext
+11. useContext                useContext
+12. useEffect                 useEffect
+13. useState                  useState
+14. useCallback               useCallback
+15. useSyncExternalStore      useSyncExternalStore
+16. useEffect                 useEffect
+17. useContext                useContext
+18. useState                  useState
+19. useEffect                 useEffect
+20. useCallback               useCallback
+21. useSyncExternalStore      useSyncExternalStore
+22. useCallback               useCallback
+23. useContext                useContext
+24. useState                  useState
+25. useEffect                 useEffect
+26. useCallback               useCallback
+27. useSyncExternalStore      useSyncExternalStore
+28. useCallback               useCallback
+29. useContext                useContext
+30. useState                  useState
+31. useEffect                 useEffect
+32. useCallback               useCallback
+33. useSyncExternalStore      useSyncExternalStore
+34. useCallback               useCallback
+35. useContext                useContext
+36. useState                  useState
+37. useEffect                 useEffect
+38. useCallback               useCallback
+39. useSyncExternalStore      useSyncExternalStore
+40. useCallback               useCallback
+41. useState                  useState
+42. useEffect                 useEffect
+43. useContext                useContext
+44. useContext                useContext
+45. useContext                useContext
+46. useContext                useContext
+47. useEffect                 useEffect
+48. useState                  useState
+49. useCallback               useCallback
+50. useSyncExternalStore      useSyncExternalStore
+51. useEffect                 useEffect
+52. useContext                useContext
+53. useContext                useContext
+54. useContext                useContext
+55. useEffect                 useEffect
+56. useState                  useState
+57. useCallback               useCallback
+58. useSyncExternalStore      useSyncExternalStore
+59. useEffect                 useEffect
+60. useContext                useContext
+61. useContext                useContext
+62. useContext                useContext
+63. useEffect                 useEffect
+64. useState                  useState
+65. useCallback               useCallback
+66. useSyncExternalStore      useSyncExternalStore
+67. useEffect                 useEffect
+68. useContext                useContext
+69. useContext                useContext
+70. useContext                useContext
+71. useEffect                 useEffect
+72. useState                  useState
+73. useCallback               useCallback
+74. useSyncExternalStore      useSyncExternalStore
+75. useEffect                 useEffect
+76. useContext                useContext
+77. useState                  useState
+78. useEffect                 useEffect
+79. useCallback               useCallback
+80. useSyncExternalStore      useSyncExternalStore
+81. useCallback               useCallback
+82. useContext                useContext
+83. useState                  useState
+84. useEffect                 useEffect
+85. useCallback               useCallback
+86. useSyncExternalStore      useSyncExternalStore
+87. useCallback               useCallback
+88. useContext                useContext
+89. useState                  useState
+90. useEffect                 useEffect
+91. useCallback               useCallback
+92. useSyncExternalStore      useSyncExternalStore
+93. useCallback               useCallback
+94. useEffect                 useEffect
+95. useEffect                 useEffect
+96. useContext                useContext
+97. useContext                useContext
+98. useContext                useContext
+99. useEffect                 useEffect
+100. useState                 useState
+101. useCallback              useCallback
+102. useSyncExternalStore     useSyncExternalStore
+103. useEffect                useEffect
+104. useContext               useContext
+105. useContext               useContext
+106. useContext               useContext
+107. useEffect                useEffect
+108. useState                 useState
+109. useCallback              useCallback
+110. useSyncExternalStore     useSyncExternalStore
+111. useEffect                useEffect
+112. useContext               useContext
+113. useContext               useContext
+114. useContext               useContext
+115. useEffect                useEffect
+116. useState                 useState
+117. useCallback              useCallback
+118. useSyncExternalStore     useSyncExternalStore
+119. useEffect                useEffect
+120. useContext               useContext
+121. useState                 useState
+122. useEffect                useEffect
+123. useCallback              useCallback
+124. useSyncExternalStore     useSyncExternalStore
+125. useCallback              useCallback
+126. useContext               useContext
+127. useState                 useState
+128. useEffect                useEffect
+129. useCallback              useCallback
+130. useSyncExternalStore     useSyncExternalStore
+131. useCallback              useCallback
+132. useContext               useContext
+133. useState                 useState
+134. useEffect                useEffect
+135. useCallback              useCallback
+136. useSyncExternalStore     useSyncExternalStore
+137. useCallback              useCallback
+138. useContext               useContext
+139. useState                 useState
+140. useEffect                useEffect
+141. useCallback              useCallback
+142. useSyncExternalStore     useSyncExternalStore
+143. useCallback              useCallback
+144. useContext               useContext
+145. useState                 useState
+146. useEffect                useEffect
+147. useCallback              useCallback
+148. useSyncExternalStore     useSyncExternalStore
+149. useCallback              useCallback
+150. useContext               useContext
+151. useState                 useState
+152. useEffect                useEffect
+153. useCallback              useCallback
+154. useSyncExternalStore     useSyncExternalStore
+155. useCallback              useCallback
+156. useContext               useContext
+157. useState                 useState
+158. useEffect                useEffect
+159. useCallback              useCallback
+160. useSyncExternalStore     useSyncExternalStore
+161. useCallback              useCallback
+162. useContext               useContext
+163. useState                 useState
+164. useEffect                useEffect
+165. useCallback              useCallback
+166. useSyncExternalStore     useSyncExternalStore
+167. useCallback              useCallback
+168. useContext               useContext
+169. useState                 useState
+170. useEffect                useEffect
+171. useCallback              useCallback
+172. useSyncExternalStore     useSyncExternalStore
+173. useCallback              useCallback
+174. undefined                useState
+   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+MultiStepCheckoutPopup@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/components/cart/MultiStepCheckoutPopup.tsx?t=1751651303061:56:39
+div
+nav
+aside
+Sidebar@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/layout/Sidebar.tsx?t=1751651181886:38:31
+div
+AppLayout@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/layout/AppLayout.tsx?t=1751651181886:48:26
+Products@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/pages/Products.tsx:38:47
+AuthProtectedRoute@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/components/AuthProtectedRoute.tsx:21:35
+Route@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=aa59d291:206:13
+Switch@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=aa59d291:262:14
+ErrorBoundary@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/components/ui/error-boundary.tsx:10:5
+Provider@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-OXZDJRWN.js?v=aa59d291:38:47
+TooltipProvider@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=aa59d291:70:7
+App@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/App.tsx?v=ejqnYPSqfJw-CYDh_fXCk:93:12
+Router@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=aa59d291:161:14
+QueryClientProvider@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=aa59d291:2932:27
+AppWithProviders chunk-SXRIVT2P.js:521:38
+Uncaught Error: Rendered more hooks than during the previous render.
+    React 5
+    renderDeliveryStep MultiStepCheckoutPopup.tsx:1408
+    renderStepContent MultiStepCheckoutPopup.tsx:2664
+    MultiStepCheckoutPopup MultiStepCheckoutPopup.tsx:2827
+    React 13
+chunk-SXRIVT2P.js:11726:21
+Uncaught Error: Rendered more hooks than during the previous render.
+    React 5
+    renderDeliveryStep MultiStepCheckoutPopup.tsx:1408
+    renderStepContent MultiStepCheckoutPopup.tsx:2664
+    MultiStepCheckoutPopup MultiStepCheckoutPopup.tsx:2827
+    React 14
+chunk-SXRIVT2P.js:11726:21
+The above error occurred in the <MultiStepCheckoutPopup> component:
+
+MultiStepCheckoutPopup@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/components/cart/MultiStepCheckoutPopup.tsx?t=1751651303061:56:39
+div
+nav
+aside
+Sidebar@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/layout/Sidebar.tsx?t=1751651181886:38:31
+div
+AppLayout@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/layout/AppLayout.tsx?t=1751651181886:48:26
+Products@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/pages/Products.tsx:38:47
+AuthProtectedRoute@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/components/AuthProtectedRoute.tsx:21:35
+Route@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=aa59d291:206:13
+Switch@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=aa59d291:262:14
+ErrorBoundary@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/components/ui/error-boundary.tsx:10:5
+Provider@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-OXZDJRWN.js?v=aa59d291:38:47
+TooltipProvider@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=aa59d291:70:7
+App@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/App.tsx?v=ejqnYPSqfJw-CYDh_fXCk:93:12
+Router@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=aa59d291:161:14
+QueryClientProvider@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=aa59d291:2932:27
+AppWithProviders
+
+React will try to recreate this component tree from scratch using the error boundary you provided, ErrorBoundary. chunk-SXRIVT2P.js:14080:23
+Error caught by ErrorBoundary: Error: Rendered more hooks than during the previous render.
+    React 5
+    renderDeliveryStep MultiStepCheckoutPopup.tsx:1408
+    renderStepContent MultiStepCheckoutPopup.tsx:2664
+    MultiStepCheckoutPopup MultiStepCheckoutPopup.tsx:2827
+    React 11
+ 
+Object { componentStack: "\nMultiStepCheckoutPopup@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/components/cart/MultiStepCheckoutPopup.tsx?t=1751651303061:56:39\ndiv\nnav\naside\nSidebar@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/layout/Sidebar.tsx?t=1751651181886:38:31\ndiv\nAppLayout@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/layout/AppLayout.tsx?t=1751651181886:48:26\nProducts@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/pages/Products.tsx:38:47\nAuthProtectedRoute@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/components/AuthProtectedRoute.tsx:21:35\nRoute@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=aa59d291:206:13\nSwitch@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=aa59d291:262:14\nErrorBoundary@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/components/ui/error-boundary.tsx:10:5\nProvider@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-OXZDJRWN.js?v=aa59d291:38:47\nTooltipProvider@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=aa59d291:70:7\nApp@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/App.tsx?v=ejqnYPSqfJw-CYDh_fXCk:93:12\nRouter@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=aa59d291:161:14\nQueryClientProvider@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=aa59d291:2932:27\nAppWithProviders" }
+error-boundary.tsx:32:13
+[vite] hot updated: /src/components/cart/MultiStepCheckoutPopup.tsx client:883:32
+[vite] hot updated: /src/index.css?v=hjl_kAClR6nrx_w_Bfl09 client:883:32
+Using simpleCart instead of the old CartProvider useCart.tsx:21:11
+Products state: 
+Object { isArray: true, length: 241, products: (241) […] }
+ProductGrid.tsx:129:11
+Filtered products: 241 ProductGrid.tsx:189:11
+Looking for product 393 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 329 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 45 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 340 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 339 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 21 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 124 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 22 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 342 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 343 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 335 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 347 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 344 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 341 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 346 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 331 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 336 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 333 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 360 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 435 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 433 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 405 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 366 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 359 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 381 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 354 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 365 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 33 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 157 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 384 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 426 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 382 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 368 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 372 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 427 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 180 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 182 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 181 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 183 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 179 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 437 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 99 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 401 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 431 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 430 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 432 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 50 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 118 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 101 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 175 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 49 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 205 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 207 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 42 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 27 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 135 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 390 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 404 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 217 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 385 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 394 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 398 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 415 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 136 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 61 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 420 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 140 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 52 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 97 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 296 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 98 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 145 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 141 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 406 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 417 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 371 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 377 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 357 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 395 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 138 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 94 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 399 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 56 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 34 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 428 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 386 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 158 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 91 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 350 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 353 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 351 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 349 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 348 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 352 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 392 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 216 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 89 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 436 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 142 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 421 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 425 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 397 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 148 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 36 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 147 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 419 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 434 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 373 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 29 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 59 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 178 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 146 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 184 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 41 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 194 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 198 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 199 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 195 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 185 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 190 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 196 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 197 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 192 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 37 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 191 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 193 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 200 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 188 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 189 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 186 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 31 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 363 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 379 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 38 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 370 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 32 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 378 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 369 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 387 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 87 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 104 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 362 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 367 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 376 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 48 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 208 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 209 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 210 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 60 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 361 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 83 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 82 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 85 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 84 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 102 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 55 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 39 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 23 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 418 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 388 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 232 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 95 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 212 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 103 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 414 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 233 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 149 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 250 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 391 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 422 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 396 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 43 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 35 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 137 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 380 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 177 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 364 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 239 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 275 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 294 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 51 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 306 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 105 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 107 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 108 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 106 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 57 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 442 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 445 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 441 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 450 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 453 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 160 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 440 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 448 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 452 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 454 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 451 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 122 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 449 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 455 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 444 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 443 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 447 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 121 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 446 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 110 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 456 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 424 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 429 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 174 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 173 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 115 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 171 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 116 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 58 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 114 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 172 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 176 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 117 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 169 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 170 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 46 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 374 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 423 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 383 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 400 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 402 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 403 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 416 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 375 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 358 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 355 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 389 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 230 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 229 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 151 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 152 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 150 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 215 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Looking for product 214 in cart: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+ProductGrid.tsx:192:13
+Fetching cart items from database... simpleCart.ts:21:17
+[apiRequest] Using unified auth token: cust_mbpxj6vffmc-175... queryClient.ts:41:19
+[apiRequest] ✅ Token found and will be sent: cust_mbpxj6vffmc-175... queryClient.ts:89:15
+[apiRequest] ✅ Auth token added for GET /api/cart (cust_mbpxj6vffmc-175...) queryClient.ts:94:15
+[queryFn] Added auth headers for /api/draft-orders with token: cust_mbpxj6vffmc-175... queryClient.ts:165:13
+[queryFn] Added auth headers for /api/wishlist with token: cust_mbpxj6vffmc-175... queryClient.ts:165:13
+[queryFn] Added auth headers for /api/order-templates with token: cust_mbpxj6vffmc-175... queryClient.ts:165:13
+[queryFn] Added auth headers for /api/notifications with token: cust_mbpxj6vffmc-175... queryClient.ts:165:13
+[apiRequest] Using unified auth token: cust_mbpxj6vffmc-175... queryClient.ts:41:19
+[apiRequest] ✅ Token found and will be sent: cust_mbpxj6vffmc-175... queryClient.ts:89:15
+[apiRequest] ✅ Auth token added for GET /api/products (cust_mbpxj6vffmc-175...) queryClient.ts:94:15
+[apiRequest] Response status: 200 OK queryClient.ts:107:11
+[apiRequest] Success response received for GET /api/products queryClient.ts:115:11
+API Response: 
+Array(241) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, … ]
+ProductGrid.tsx:99:15
+Mapped Products: 
+Array(241) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, … ]
+ProductGrid.tsx:119:17
+[queryFn] Response status for /api/notifications: 200 queryClient.ts:174:11
+[apiRequest] Response status: 200 OK queryClient.ts:107:11
+[apiRequest] Success response received for GET /api/cart queryClient.ts:115:11
+Cart items retrieved: 8 items simpleCart.ts:23:17
+Cart contains: 5-HOUR EXTRA ULTIMATE CITRUS  12CT (qty: 1), 5-HOUR ENERGY WATERMELON 12ct (qty: 1), 5-HOUR ENERGY BERRY 12CT (qty: 1), Dole Pineapple 8oz (24 Pack) (qty: 1), Coca Cola Cherry 20oz (24 Pack) (qty: 1), ALKA SLETZER PLUS 72CT (qty: 1), 5-HOUR EXTRA STRAWBERRY BANANA 12CT (qty: 1), DURACELL AA 4PK BATTERY (qty: 1) simpleCart.ts:26:19
+[queryFn] Response status for /api/wishlist: 200 queryClient.ts:174:11
+[queryFn] Response status for /api/order-templates: 200 queryClient.ts:174:11
+[queryFn] Response status for /api/draft-orders: 200 queryClient.ts:174:11
+[queryFn] Added auth headers for /api/delivery-addresses with token: cust_mbpxj6vffmc-175... queryClient.ts:165:13
+Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}. chunk-3FZ76GYE.js:340:36
+[queryFn] Response status for /api/delivery-addresses: 200 queryClient.ts:174:11
+[apiRequest] Using unified auth token: cust_mbpxj6vffmc-175... queryClient.ts:41:19
+[apiRequest] ✅ Token found and will be sent: cust_mbpxj6vffmc-175... queryClient.ts:89:15
+[apiRequest] ✅ Auth token added for POST /api/draft-orders/auto-save (cust_mbpxj6vffmc-175...) queryClient.ts:94:15
+[apiRequest] Using unified auth token: cust_mbpxj6vffmc-175... queryClient.ts:41:19
+[apiRequest] ✅ Token found and will be sent: cust_mbpxj6vffmc-175... queryClient.ts:89:15
+[apiRequest] ✅ Auth token added for POST /api/draft-orders/auto-save (cust_mbpxj6vffmc-175...) queryClient.ts:94:15
+[apiRequest] Using unified auth token: cust_mbpxj6vffmc-175... queryClient.ts:41:19
+[apiRequest] ✅ Token found and will be sent: cust_mbpxj6vffmc-175... queryClient.ts:89:15
+[apiRequest] ✅ Auth token added for POST /api/draft-orders/auto-save (cust_mbpxj6vffmc-175...) queryClient.ts:94:15
+[apiRequest] Response status: 200 OK 2 queryClient.ts:107:11
+[apiRequest] Success response received for POST /api/draft-orders/auto-save 2 queryClient.ts:115:11
+[apiRequest] Response status: 200 OK queryClient.ts:107:11
+[apiRequest] Success response received for POST /api/draft-orders/auto-save queryClient.ts:115:11
+Fetching cart items from database... simpleCart.ts:21:17
+[apiRequest] Using unified auth token: cust_mbpxj6vffmc-175... queryClient.ts:41:19
+[apiRequest] ✅ Token found and will be sent: cust_mbpxj6vffmc-175... queryClient.ts:89:15
+[apiRequest] ✅ Auth token added for GET /api/cart (cust_mbpxj6vffmc-175...) queryClient.ts:94:15
+[apiRequest] Response status: 200 OK queryClient.ts:107:11
+[apiRequest] Success response received for GET /api/cart queryClient.ts:115:11
+Cart items retrieved: 8 items simpleCart.ts:23:17
+Cart contains: 5-HOUR EXTRA ULTIMATE CITRUS  12CT (qty: 1), 5-HOUR ENERGY WATERMELON 12ct (qty: 1), 5-HOUR ENERGY BERRY 12CT (qty: 1), Dole Pineapple 8oz (24 Pack) (qty: 1), Coca Cola Cherry 20oz (24 Pack) (qty: 1), ALKA SLETZER PLUS 72CT (qty: 1), 5-HOUR EXTRA STRAWBERRY BANANA 12CT (qty: 1), DURACELL AA 4PK BATTERY (qty: 1) simpleCart.ts:26:19
+Uncaught Error: Rendered more hooks than during the previous render.
+    React 5
+    renderDeliveryStep MultiStepCheckoutPopup.tsx:882
+    renderStepContent MultiStepCheckoutPopup.tsx:1421
+    MultiStepCheckoutPopup MultiStepCheckoutPopup.tsx:1512
+    React 13
+chunk-SXRIVT2P.js:11726:21
+Uncaught Error: Rendered more hooks than during the previous render.
+    React 5
+    renderDeliveryStep MultiStepCheckoutPopup.tsx:882
+    renderStepContent MultiStepCheckoutPopup.tsx:1421
+    MultiStepCheckoutPopup MultiStepCheckoutPopup.tsx:1512
+    React 14
+chunk-SXRIVT2P.js:11726:21
+The above error occurred in the <MultiStepCheckoutPopup> component:
+
+MultiStepCheckoutPopup@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/components/cart/MultiStepCheckoutPopup.tsx?t=1751651365913:56:39
+div
+nav
+aside
+Sidebar@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/layout/Sidebar.tsx?t=1751651181886:38:31
+div
+AppLayout@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/layout/AppLayout.tsx?t=1751651181886:48:26
+Products@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/pages/Products.tsx:38:47
+AuthProtectedRoute@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/components/AuthProtectedRoute.tsx:21:35
+Route@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=aa59d291:206:13
+Switch@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=aa59d291:262:14
+ErrorBoundary@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/components/ui/error-boundary.tsx:10:5
+Provider@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-OXZDJRWN.js?v=aa59d291:38:47
+TooltipProvider@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=aa59d291:70:7
+App@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/App.tsx?v=ejqnYPSqfJw-CYDh_fXCk:93:12
+Router@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=aa59d291:161:14
+QueryClientProvider@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=aa59d291:2932:27
+AppWithProviders
+
+React will try to recreate this component tree from scratch using the error boundary you provided, ErrorBoundary. chunk-SXRIVT2P.js:14080:23
+Error caught by ErrorBoundary: Error: Rendered more hooks than during the previous render.
+    React 5
+    renderDeliveryStep MultiStepCheckoutPopup.tsx:882
+    renderStepContent MultiStepCheckoutPopup.tsx:1421
+    MultiStepCheckoutPopup MultiStepCheckoutPopup.tsx:1512
+    React 11
+ 
+Object { componentStack: "\nMultiStepCheckoutPopup@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/components/cart/MultiStepCheckoutPopup.tsx?t=1751651365913:56:39\ndiv\nnav\naside\nSidebar@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/layout/Sidebar.tsx?t=1751651181886:38:31\ndiv\nAppLayout@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/layout/AppLayout.tsx?t=1751651181886:48:26\nProducts@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/pages/Products.tsx:38:47\nAuthProtectedRoute@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/components/AuthProtectedRoute.tsx:21:35\nRoute@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=aa59d291:206:13\nSwitch@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=aa59d291:262:14\nErrorBoundary@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/components/ui/error-boundary.tsx:10:5\nProvider@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-OXZDJRWN.js?v=aa59d291:38:47\nTooltipProvider@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=aa59d291:70:7\nApp@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/App.tsx?v=ejqnYPSqfJw-CYDh_fXCk:93:12\nRouter@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=aa59d291:161:14\nQueryClientProvider@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=aa59d291:2932:27\nAppWithProviders" }
+error-boundary.tsx:32:13

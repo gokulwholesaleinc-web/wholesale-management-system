@@ -1,0 +1,285 @@
+// ----- Company constants (top of file) -----
+const COMPANY = {
+  name: "Gokul Wholesale Inc.",
+  address: "1141 W Bryn Mawr Ave, Itasca, IL 60143",
+  phone: "(630) 540-9910",
+  email: "sales@gokulwholesaleinc.com",
+  website: "www.shopgokul.com",        // clickable link below
+  tp: "TP# 97239",                      // place under business info
+};
+
+// small money helpers you can keep or remove (if already present)
+const toC = (n: number) => Math.round((n || 0) * 100);
+const fromC = (c: number) => c / 100;
+const USD = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
+const fmt$ = (cents: number) => USD.format(fromC(cents));
+
+/** Always return a Buffer and never swallow errors */
+private async generateReceiptPDF(
+  receiptData: ReceiptData,
+): Promise<Buffer> {
+  const { jsPDF } = await import("jspdf");
+  const fs = await import("fs");
+  const path = await import("path");
+
+  const doc = new jsPDF();
+  const pageWidth = doc.internal.pageSize.width;
+  const pageHeight = doc.internal.pageSize.height;
+
+  // Call premium generator; ensure it returns Buffer
+  const buf = await this.generatePremiumInvoice(doc, receiptData, fs, path, pageWidth, pageHeight);
+  if (!Buffer.isBuffer(buf)) {
+    // defensive fix if someone returns ArrayBuffer in the future
+    return Buffer.from(new Uint8Array((buf as ArrayBuffer) || new ArrayBuffer(0)));
+  }
+  return buf;
+}
+
+/** NEW premium invoice that applies your requested changes */
+private generatePremiumInvoice = async (
+  doc: any,
+  receiptData: ReceiptData,
+  fs: any,
+  path: any,
+  pageWidth: number,
+  pageHeight: number
+): Promise<Buffer> => {
+  // Brand colors
+  const brandBlue = [41, 128, 185] as const;
+  const accentBlue = [52, 152, 219] as const;
+  const darkGray = [44, 62, 80] as const;
+  const lightGray = [236, 240, 241] as const;
+  const successGreen = [39, 174, 96] as const;
+  const alertOrange = [230, 126, 34] as const;
+  const textDark = [33, 37, 41] as const;
+
+  // ==== HEADER STRIP (kept) ====
+  doc.setFillColor(...brandBlue);
+  doc.rect(0, 0, pageWidth, 45, "F");
+  doc.setFillColor(...accentBlue);
+  doc.rect(0, 0, pageWidth, 35, "F");
+
+  // Optional logo (won’t break if missing)
+  try {
+    const logoPath = path.join(process.cwd(), "public", "gokul-logo.png");
+    if (fs.existsSync(logoPath)) {
+      const logoData = fs.readFileSync(logoPath);
+      const logoBase64 = `data:image/png;base64,${logoData.toString("base64")}`;
+      doc.setFillColor(255, 255, 255);
+      doc.circle(30, 22, 15, "F");
+      doc.addImage(logoBase64, "PNG", 18, 10, 24, 24);
+    }
+  } catch {}
+
+  // ==== BUSINESS INFO (updated & moved) ====
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(18);
+  doc.setFont("helvetica", "bold");
+  doc.text(COMPANY.name, 50, 18);
+
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  doc.text(COMPANY.address, 50, 27);
+  doc.text(`${COMPANY.phone}  |  ${COMPANY.email}`, 50, 33);
+
+  // Clickable website (white text on header)
+  const siteText = COMPANY.website;
+  // jsPDF supports either textWithLink or link; fall back gracefully
+  if (typeof doc.textWithLink === "function") {
+    doc.textWithLink(siteText, 50, 39, { url: `https://${COMPANY.website.replace(/^https?:\/\//, "")}` });
+  } else {
+    doc.text(siteText, 50, 39);
+    // click area
+    const w = doc.getTextWidth(siteText);
+    doc.link(50, 35, w, 6, { url: `https://${COMPANY.website.replace(/^https?:\/\//, "")}` });
+  }
+
+  // Right side: Order # and Date (no “WHOLESALE INVOICE” label)
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+  doc.text(`Order #${receiptData.orderNumber ?? receiptData.orderId}`, pageWidth - 20, 18, { align: "right" });
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  doc.text(`Date: ${receiptData.orderDate}`, pageWidth - 20, 27, { align: "right" });
+
+  // Place TP number under business info (as requested)
+  doc.setFontSize(9);
+  doc.text(COMPANY.tp, 50, 45);
+
+  // ==== CUSTOMER CARD ====
+  const customerY = 55;
+  doc.setTextColor(...textDark);
+  doc.setFillColor(...lightGray);
+  doc.rect(15, customerY, pageWidth - 30, 35, "F");
+  doc.setDrawColor(...brandBlue);
+  doc.setLineWidth(0.5);
+  doc.rect(15, customerY, pageWidth - 30, 35);
+
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...darkGray);
+  doc.text("Customer Information", 20, customerY + 8);
+
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  const custName = receiptData.customerBusinessName || receiptData.customerName || "Customer";
+  const phone = receiptData.customerPhone || "";
+  const email = receiptData.customerEmail || "";
+  doc.text(custName, 20, customerY + 18);
+  if (email) doc.text(`Email: ${email}`, pageWidth - 20, customerY + 18, { align: "right" });
+  if (phone) doc.text(`Phone: ${phone}`, pageWidth - 20, customerY + 24, { align: "right" });
+  doc.text(`Order Type: ${receiptData.orderType?.toUpperCase() || ""}`, 20, customerY + 30);
+
+  // ==== ITEMS TABLE ====
+  let y = customerY + 50;
+
+  doc.setFillColor(...brandBlue);
+  doc.rect(15, y, pageWidth - 30, 12, "F");
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  doc.text("Item Description", 20, y + 8);
+  doc.text("Qty", pageWidth - 80, y + 8, { align: "center" });
+  doc.text("Unit Price", pageWidth - 55, y + 8, { align: "center" });
+  doc.text("Total", pageWidth - 25, y + 8, { align: "right" });
+  y += 12;
+
+  doc.setTextColor(...textDark);
+  const items = receiptData.items ?? [];
+  items.forEach((it, idx) => {
+    const rowH = 15;
+    if (y + rowH > pageHeight - 30) {
+      doc.addPage();
+      y = 20;
+    }
+    if (idx % 2 === 0) {
+      doc.setFillColor(248, 249, 250);
+      doc.rect(15, y, pageWidth - 30, rowH, "F");
+    }
+    const qty = it.quantity || 1;
+    const unitC = toC(it.price || 0);
+    const lineC = unitC * qty;
+
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    const name = (it.name || "Item").slice(0, 64);
+    doc.text(name, 20, y + 8);
+    doc.text(String(qty), pageWidth - 80, y + 8, { align: "center" });
+    doc.text(fmt$(unitC), pageWidth - 55, y + 8, { align: "center" });
+    doc.text(fmt$(lineC), pageWidth - 25, y + 8, { align: "right" });
+
+    y += rowH;
+  });
+
+  // ==== SUMMARY ====
+  const summaryX = pageWidth - 90;
+  const summaryW = 85;
+  if (y + 80 > pageHeight - 30) {
+    doc.addPage();
+    y = 20;
+  }
+
+  doc.setFillColor(...lightGray);
+  doc.rect(summaryX - 10, y, summaryW, 80, "F");
+  doc.setDrawColor(...brandBlue);
+  doc.rect(summaryX - 10, y, summaryW, 80);
+
+  let sy = y + 12;
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+
+  // Subtotal
+  const subtotalC = toC(receiptData.subtotal ?? 0);
+  doc.text("Items Subtotal:", summaryX, sy);
+  doc.text(USD.format(fromC(subtotalC)), pageWidth - 25, sy, { align: "right" });
+  sy += 8;
+
+  // Flat taxes
+  if (Array.isArray(receiptData.flatTaxBreakdown) && receiptData.flatTaxBreakdown.length > 0) {
+    receiptData.flatTaxBreakdown.forEach((ft) => {
+      doc.setTextColor(...alertOrange);
+      doc.text(`${ft.name}:`, summaryX, sy);
+      doc.text(USD.format(ft.amount || 0), pageWidth - 25, sy, { align: "right" });
+      sy += 7;
+    });
+    doc.setTextColor(...textDark);
+  }
+
+  // Delivery fee (if any)
+  const deliveryC = toC(receiptData.deliveryFee || 0);
+  if (deliveryC > 0) {
+    doc.text("Delivery Fee:", summaryX, sy);
+    doc.text(USD.format(fromC(deliveryC)), pageWidth - 25, sy, { align: "right" });
+    sy += 8;
+  }
+
+  // Loyalty redeemed (if any)
+  const redeemC = toC(receiptData.loyaltyPointsValue || 0);
+  if (redeemC > 0) {
+    doc.text("Loyalty Redeemed:", summaryX, sy);
+    doc.text(`-${USD.format(fromC(redeemC))}`, pageWidth - 25, sy, { align: "right" });
+    sy += 8;
+  }
+
+  // Total
+  doc.setDrawColor(...brandBlue);
+  doc.setLineWidth(1);
+  doc.line(summaryX, sy, pageWidth - 25, sy);
+  sy += 6;
+
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...brandBlue);
+  const totalC = toC(receiptData.total || 0);
+  doc.text("TOTAL:", summaryX, sy);
+  doc.text(USD.format(fromC(totalC)), pageWidth - 25, sy, { align: "right" });
+  doc.setTextColor(...textDark);
+
+  // Loyalty earned banner (optional)
+  if (receiptData.loyaltyPointsEarned && receiptData.loyaltyPointsEarned > 0) {
+    const ly = sy + 18;
+    doc.setFillColor(...successGreen);
+    doc.rect(15, ly, pageWidth - 30, 15, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.text(`LOYALTY POINTS EARNED: ${receiptData.loyaltyPointsEarned} POINTS`, 20, ly + 10);
+    doc.setTextColor(...textDark);
+  }
+
+  // ==== ALWAYS show IL tobacco tax compliance message ====
+  const bannerY = pageHeight - 48;
+  doc.setDrawColor(...alertOrange);
+  doc.setLineWidth(1.5);
+  doc.rect(15, bannerY, pageWidth - 30, 12);
+  doc.setTextColor(...alertOrange);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.text("✓ 45% IL TOBACCO TAX PAID", pageWidth / 2, bannerY + 8, { align: "center" });
+  doc.setTextColor(...textDark);
+
+  // ==== FOOTER ====
+  const footerY = pageHeight - 30;
+  doc.setFillColor(...brandBlue);
+  doc.rect(0, footerY, pageWidth, 30, "F");
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  doc.text("Thank you for your business!", pageWidth / 2, footerY + 10, { align: "center" });
+
+  // Clickable website in footer
+  const linkText = COMPANY.website;
+  if (typeof doc.textWithLink === "function") {
+    doc.textWithLink(linkText, pageWidth / 2, footerY + 18, {
+      url: `https://${COMPANY.website.replace(/^https?:\/\//, "")}`,
+      align: "center",
+    });
+  } else {
+    doc.text(linkText, pageWidth / 2, footerY + 18, { align: "center" });
+  }
+
+  // ==== Return real Buffer ====
+  const ab = doc.output("arraybuffer");
+  const buf = Buffer.from(new Uint8Array(ab));
+  return buf;
+};

@@ -1,0 +1,110 @@
+select.tsx:1278  Uncaught Error: A <Select.Item /> must have a value prop that is not an empty string. This is because the Select value can be set to an empty string to clear the selection and show the placeholder.
+    at select.tsx:1278:13
+    at renderWithHooks (react-dom.development.js:15486:18)
+    at updateForwardRef (react-dom.development.js:19245:20)
+    at beginWork (react-dom.development.js:21675:16)
+    at HTMLUnknownElement.callCallback2 (react-dom.development.js:4164:14)
+    at Object.invokeGuardedCallbackDev (react-dom.development.js:4213:16)
+    at invokeGuardedCallback (react-dom.development.js:4277:31)
+    at beginWork$1 (react-dom.development.js:27490:7)
+    at performUnitOfWork (react-dom.development.js:26596:12)
+    at workLoopSync (react-dom.development.js:26505:5)
+select.tsx:1278  Uncaught Error: A <Select.Item /> must have a value prop that is not an empty string. This is because the Select value can be set to an empty string to clear the selection and show the placeholder.
+    at select.tsx:1278:13
+    at renderWithHooks (react-dom.development.js:15486:18)
+    at updateForwardRef (react-dom.development.js:19245:20)
+    at beginWork (react-dom.development.js:21675:16)
+    at HTMLUnknownElement.callCallback2 (react-dom.development.js:4164:14)
+    at Object.invokeGuardedCallbackDev (react-dom.development.js:4213:16)
+    at invokeGuardedCallback (react-dom.development.js:4277:31)
+    at beginWork$1 (react-dom.development.js:27490:7)
+    at performUnitOfWork (react-dom.development.js:26596:12)
+    at workLoopSync (react-dom.development.js:26505:5)
+react-dom.development.js:18704  The above error occurred in the <SelectItem> component:
+
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-select.js?v=66b86a7b:848:7
+    at _c1 (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/components/ui/select.tsx:208:12)
+    at div
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-PY4CUOXA.js?v=66b86a7b:43:13
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-E7TSFT4J.js?v=66b86a7b:79:13
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-E7TSFT4J.js?v=66b86a7b:56:13
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-GWFQETYR.js?v=66b86a7b:41:15
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-select.js?v=66b86a7b:759:13
+    at div
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-E7TSFT4J.js?v=66b86a7b:79:13
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-E7TSFT4J.js?v=66b86a7b:56:13
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-GWFQETYR.js?v=66b86a7b:41:15
+    at Provider (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-U27FYV5Z.js?v=66b86a7b:38:15)
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-select.js?v=66b86a7b:302:58
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-E7TSFT4J.js?v=66b86a7b:79:13
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-E7TSFT4J.js?v=66b86a7b:56:13
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-PY4CUOXA.js?v=66b86a7b:43:13
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-NEYIQOGF.js?v=66b86a7b:262:22
+    at SelectPortal
+    at _c7 (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/components/ui/select.tsx:123:12)
+    at Provider (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-U27FYV5Z.js?v=66b86a7b:38:15)
+    at Provider (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-U27FYV5Z.js?v=66b86a7b:38:15)
+    at CollectionProvider (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-GWFQETYR.js?v=66b86a7b:31:13)
+    at Provider (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-U27FYV5Z.js?v=66b86a7b:38:15)
+    at Provider (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-U27FYV5Z.js?v=66b86a7b:38:15)
+    at Popper (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-Q73UER4E.js?v=66b86a7b:1935:11)
+    at Select (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-select.js?v=66b86a7b:88:5)
+    at div
+    at div
+    at form
+    at div
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-PY4CUOXA.js?v=66b86a7b:43:13
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-NEYIQOGF.js?v=66b86a7b:63:7
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-E7TSFT4J.js?v=66b86a7b:79:13
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-E7TSFT4J.js?v=66b86a7b:56:13
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-PY4CUOXA.js?v=66b86a7b:43:13
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-BCQR5QVC.js?v=66b86a7b:29:5
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-VFAX25AX.js?v=66b86a7b:236:13
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-VFAX25AX.js?v=66b86a7b:159:58
+    at Presence (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-NZP5GMFF.js?v=66b86a7b:24:11)
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-VFAX25AX.js?v=66b86a7b:150:64
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-E7TSFT4J.js?v=66b86a7b:79:13
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-E7TSFT4J.js?v=66b86a7b:56:13
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-PY4CUOXA.js?v=66b86a7b:43:13
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-NEYIQOGF.js?v=66b86a7b:262:22
+    at Presence (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-NZP5GMFF.js?v=66b86a7b:24:11)
+    at Provider (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-U27FYV5Z.js?v=66b86a7b:38:15)
+    at DialogPortal (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-VFAX25AX.js?v=66b86a7b:112:11)
+    at _c3 (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/components/ui/dialog.tsx:52:12)
+    at Provider (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-U27FYV5Z.js?v=66b86a7b:38:15)
+    at Dialog (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-VFAX25AX.js?v=66b86a7b:52:5)
+    at div
+    at main
+    at div
+    at AppLayout (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/components/AppLayout.tsx:17:37)
+    at StaffProductManagement (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/pages/StaffProductManagement.tsx:53:37)
+    at StaffProtectedRoute (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/components/StaffProtectedRoute.tsx:22:50)
+    at Route (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=66b86a7b:206:16)
+    at Switch (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=66b86a7b:262:17)
+    at ErrorBoundary (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/components/ui/error-boundary.tsx:10:5)
+    at Provider (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-U27FYV5Z.js?v=66b86a7b:38:15)
+    at TooltipProvider (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=66b86a7b:64:5)
+    at App (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/App.tsx?v=K-U8bh3epmh6Z0xatvXiJ:93:3)
+    at Router (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=66b86a7b:161:17)
+    at QueryClientProvider (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=66b86a7b:2933:3)
+    at AppWithProviders
+
+React will try to recreate this component tree from scratch using the error boundary you provided, ErrorBoundary.
+logCapturedError @ react-dom.development.js:18704
+error-boundary.tsx:36  Error caught by ErrorBoundary: Error: A <Select.Item /> must have a value prop that is not an empty string. This is because the Select value can be set to an empty string to clear the selection and show the placeholder.
+    at select.tsx:1278:13
+    at renderWithHooks (react-dom.development.js:15486:18)
+    at updateForwardRef (react-dom.development.js:19245:20)
+    at beginWork (react-dom.development.js:21675:16)
+    at beginWork$1 (react-dom.development.js:27465:14)
+    at performUnitOfWork (react-dom.development.js:26596:12)
+    at workLoopSync (react-dom.development.js:26505:5)
+    at renderRootSync (react-dom.development.js:26473:7)
+    at recoverFromConcurrentError (react-dom.development.js:25889:20)
+    at performSyncWorkOnRoot (react-dom.development.js:26135:20) Object
+componentDidCatch @ error-boundary.tsx:36
+[NEW] Explain Console errors by using Copilot in Edge: click
+         
+         to explain an error. 
+        Learn more
+        Don't show again

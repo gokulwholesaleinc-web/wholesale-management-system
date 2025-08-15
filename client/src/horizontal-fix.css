@@ -1,0 +1,23 @@
+/* Fix for horizontal scrolling issues on product page */
+.product-grid {
+  overflow-x: hidden;
+}
+
+/* Prevent container overflow */
+.container {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Fix for mobile view */
+@media (max-width: 768px) {
+  body {
+    overflow-x: hidden;
+  }
+  main {
+    overflow-x: hidden;
+  }
+  .layout-container {
+    overflow-x: hidden;
+  }
+}

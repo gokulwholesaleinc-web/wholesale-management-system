@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="300" height="60" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Rectangle with rounded corners -->
+  <rect width="300" height="60" rx="10" fill="#f8f9fa" stroke="#e9ecef" stroke-width="1"/>
+  
+  <!-- Gokul Text -->
+  <text x="30" y="38" font-family="Arial, sans-serif" font-size="26" font-weight="700" fill="#343a40">Gokul</text>
+  
+  <!-- Wholesale Text -->
+  <text x="110" y="38" font-family="Arial, sans-serif" font-size="24" font-weight="400" fill="#495057">Wholesale</text>
+</svg>

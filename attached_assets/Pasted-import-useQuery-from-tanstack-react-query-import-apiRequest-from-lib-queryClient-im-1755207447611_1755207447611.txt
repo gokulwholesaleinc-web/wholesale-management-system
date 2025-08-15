@@ -1,0 +1,117 @@
+import { useQuery } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Clock, FileText } from 'lucide-react';
+import { fmtUSD } from '@/lib/credit';
+
+type TxType = 'charge' | 'payment' | 'adjustment';
+
+interface CreditTransaction {
+  id: number;
+  customerId: string;
+  orderId?: number;
+  invoicePaymentId?: number;
+  transactionType: TxType;
+  amount: number;
+  description: string;
+  processedBy: string;
+  createdAt: string;
+}
+
+export function CreditTransactionHistory({ customerId }: { customerId: string }) {
+  const { data: transactions = [], isLoading, error } = useQuery<CreditTransaction[]>({
+    queryKey: ['/api/admin/customers', customerId, 'credit-transactions'],
+    queryFn: () => apiRequest('GET', `/api/admin/customers/${customerId}/credit-transactions`),
+    enabled: !!customerId,
+  });
+
+  const formatDate = (dateString: string) => {
+    const d = new Date(dateString);
+    return Number.isNaN(d.getTime()) ? dateString || 'N/A' : d.toLocaleString('en-US', {
+      month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit',
+    });
+  };
+
+  const typeVariant = (type: TxType) =>
+    type === 'payment' ? 'default' : type === 'charge' ? 'destructive' : 'secondary';
+
+  const amountClass = (type: TxType) =>
+    type === 'payment' ? 'text-green-600' : type === 'charge' ? 'text-red-600' : 'text-gray-600';
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader><CardTitle className="flex items-center gap-2"><Clock className="h-5 w-5" />Transaction History</CardTitle></CardHeader>
+        <CardContent>Loading transactions...</CardContent>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card>
+        <CardHeader><CardTitle className="flex items-center gap-2"><Clock className="h-5 w-5" />Transaction History</CardTitle></CardHeader>
+        <CardContent><div className="text-red-600">Error loading transaction history</div></CardContent>
+      </Card>
+    );
+  }
+
+  if (transactions.length === 0) {
+    return (
+      <Card>
+        <CardHeader><CardTitle className="flex items-center gap-2"><Clock className="h-5 w-5" />Transaction History</CardTitle></CardHeader>
+        <CardContent>
+          <div className="flex flex-col items-center justify-center py-8 space-y-4">
+            <FileText className="h-12 w-12 text-gray-400" />
+            <div className="text-center">
+              <p className="text-lg font-medium text-gray-900">No Transaction History</p>
+              <p className="text-sm text-gray-500">This customer has no credit transactions yet</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Clock className="h-5 w-5" /> Transaction History ({transactions.length} transactions)
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="max-h-96 overflow-y-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Date</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Amount</TableHead>
+                <TableHead>Description</TableHead>
+                <TableHead>Processed By</TableHead>
+                <TableHead>Order ID</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {transactions.map((t) => (
+                <TableRow key={t.id}>
+                  <TableCell className="font-mono text-sm">{formatDate(t.createdAt)}</TableCell>
+                  <TableCell><Badge variant={typeVariant(t.transactionType)}>{t.transactionType}</Badge></TableCell>
+                  <TableCell className={amountClass(t.transactionType)}>
+                    {t.transactionType === 'payment' ? '+' : '-'}{fmtUSD(Math.abs(t.amount))}
+                  </TableCell>
+                  <TableCell className="max-w-xs truncate">{t.description || '—'}</TableCell>
+                  <TableCell className="text-sm text-gray-600">{t.processedBy}</TableCell>
+                  <TableCell>{t.orderId ? <span className="text-blue-600 font-mono">#{t.orderId}</span> : <span className="text-gray-400">-</span>}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

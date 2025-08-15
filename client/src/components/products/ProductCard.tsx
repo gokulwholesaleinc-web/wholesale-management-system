@@ -1,0 +1,397 @@
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { ShoppingCart, ImageOff, LogIn, BarChart3, Archive, ArchiveRestore } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { useState, useRef, useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
+import { SalesAnalyticsModal } from "./SalesAnalyticsModal";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+
+interface ProductProps {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  imageUrl?: string;
+  stock: number;
+  categoryId: number;
+  // Required pricing properties
+  priceLevel1: number;
+  priceLevel2: number;
+  priceLevel3: number;
+  priceLevel4: number;
+  priceLevel5: number;
+  // Other optional properties
+  sku?: string;
+  upcCode?: string;
+  basePrice?: number;
+  // Allow any additional properties that may come from the API
+  [key: string]: any;
+}
+
+interface ProductCardProps {
+  product: ProductProps;
+  category?: string;
+}
+
+export function ProductCard({ product, category }: ProductCardProps) {
+  const auth = useAuth();
+  const { toast } = useToast();
+  const { user, isAuthenticated } = auth;
+  
+  // Create a default addToCart function in case the context isn't available
+  let addToCart: (productId: number, quantity: number) => Promise<void> = async (productId, quantity) => {
+    console.log('Cart functionality not available - redirecting to login');
+    window.location.href = '/login';
+  };
+  
+  // Use proper authenticated API request to add to cart
+  if (isAuthenticated) {
+    addToCart = async (productId, quantity) => {
+      try {
+        await apiRequest('/api/cart/add', {
+          method: 'POST',
+          body: { productId, quantity }
+        });
+        
+        toast({
+          title: "Added to cart",
+          description: `${product.name} added to your cart`,
+        });
+        
+        // Force refresh cart by invalidating cart query
+        if (window.refreshCart) {
+          window.refreshCart();
+        }
+      } catch (error) {
+        console.error('Error adding to cart:', error);
+        toast({
+          title: "Error",
+          description: "Could not add item to cart. Please try again.",
+          variant: "destructive",
+        });
+      }
+    };
+  }
+  
+  // Determine stock status - simplified to only show in stock (green) or out of stock (red)
+  const getStockStatus = () => {
+    if (product.stock <= 0) {
+      return { text: "Out of Stock", variant: "destructive" as const };
+    } else {
+      return { text: "In Stock", variant: "default" as const };
+    }
+  };
+  
+  const stockStatus = getStockStatus();
+  
+  // Format price to 2 decimal places - no tiered pricing
+  const formattedPrice = (typeof product.price === 'number' && !isNaN(product.price)) 
+    ? product.price.toFixed(2) 
+    : "0.00";
+
+  // State for quantity selector and image loading
+  const [quantity, setQuantity] = useState(1);
+  const [imageError, setImageError] = useState(false);
+  const [showSalesAnalytics, setShowSalesAnalytics] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
+  const queryClient = useQueryClient();
+
+  // Archive/unarchive mutations
+  const archiveMutation = useMutation({
+    mutationFn: (productId: number) => 
+      apiRequest(`/api/admin/products/${productId}/archive`, {
+        method: 'POST'
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/products'] });
+      toast({
+        title: "Success",
+        description: "Product archived successfully",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to archive product",
+        variant: "destructive",
+      });
+    }
+  });
+
+  const unarchiveMutation = useMutation({
+    mutationFn: (productId: number) => 
+      apiRequest(`/api/admin/products/${productId}/unarchive`, {
+        method: 'POST'
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/products'] });
+      toast({
+        title: "Success",
+        description: "Product unarchived successfully",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to unarchive product",
+        variant: "destructive",
+      });
+    }
+  });
+  
+  // Handle quantity change
+  const handleQuantityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newQuantity = parseInt(e.target.value);
+    setQuantity(newQuantity);
+  };
+
+  // Handle add to cart with proper authentication check
+  const handleAddToCart = async () => {
+    if (product.stock > 0) {
+      if (isAuthenticated) {
+        try {
+          await addToCart(product.id, quantity);
+        } catch (error) {
+          console.error("Error adding to cart:", error);
+        }
+      } else {
+        // Redirect to login
+        window.location.href = '/login';
+      }
+    }
+  };
+  
+  // Get category name
+  const getCategoryName = (categoryId: number): string => {
+    switch(categoryId) {
+      case 18: return "TOBACCO";
+      case 19: return "FOOD & BEVERAGE";
+      case 20: return "MEDS/DAILY CARE";
+      case 21: return "PAPER GOODS";
+      case 22: return "LIQUOR SUPPLIES";
+      case 23: return "AUTOMOTIVE";
+      case 25: return "ENERGY DRINK";
+      case 27: return "SMOKE TOBACCO";
+      case 28: return "SMOKELESS";
+      case 29: return "SODA";
+      default: return "PRODUCT";
+    }
+  };
+  
+  // Get gradient colors based on category
+  const getGradient = (categoryId: number): string => {
+    switch(categoryId) {
+      case 18: // TOBACCO
+      case 27: // SMOKE TOBACCO
+      case 28: // SMOKELESS
+        return "linear-gradient(135deg, #8B4513 0%, #A0522D 100%)";
+      case 19: // FOOD & BEVERAGE
+        return "linear-gradient(135deg, #2E8B57 0%, #3CB371 100%)";
+      case 20: // MEDS/DAILY CARE
+        return "linear-gradient(135deg, #4682B4 0%, #6495ED 100%)";
+      case 21: // PLASTIC/PAPER GOODS
+        return "linear-gradient(135deg, #708090 0%, #A9A9A9 100%)";
+      case 22: // LIQUOR SUPPLIES
+        return "linear-gradient(135deg, #9370DB 0%, #BA55D3 100%)";
+      case 23: // AUTOMOTIVE
+        return "linear-gradient(135deg, #4F4F4F 0%, #778899 100%)";
+      case 25: // ENERGY DRINK
+        return "linear-gradient(135deg, #CD5C5C 0%, #F08080 100%)";
+      case 29: // SODA
+        return "linear-gradient(135deg, #20B2AA 0%, #48D1CC 100%)";
+      default:
+        return "linear-gradient(135deg, #1E90FF 0%, #6495ED 100%)";
+    }
+  };
+  
+  // Format for display
+  const displayName = product.name.length > 16 ? 
+    product.name.substring(0, 16) + "..." : 
+    product.name;
+    
+  const categoryName = getCategoryName(product.categoryId);
+  
+  return (
+    <Card className="overflow-hidden hover:shadow-md transition-shadow">
+      <div className="w-full h-48 relative overflow-hidden">
+        {/* Image container with fallback handling */}
+        <div className="relative w-full h-full">
+          {/* Always try to show the image */}
+          {!imageError ? (
+            <img 
+              ref={imgRef}
+              src={product.imageUrl} 
+              alt={product.name}
+              className="w-full h-full object-cover"
+              onError={() => setImageError(true)}
+            />
+          ) : (
+            <div 
+              className="w-full h-full flex flex-col items-center justify-center text-center"
+              style={{ background: getGradient(product.categoryId) }}
+            >
+              <div className="text-white px-4 py-2">
+                <div className="font-bold text-xl mb-1">{product.name}</div>
+                <div className="text-sm opacity-90">{product.description.substring(0, 40)}{product.description.length > 40 ? "..." : ""}</div>
+                {/* Only show SKU if available */}
+                {product.sku && (
+                  <div className="text-xs mt-1 opacity-75">SKU: {product.sku}</div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+        
+        {/* Category badge that appears on all product items */}
+        <div className="absolute top-2 left-2 bg-black bg-opacity-60 px-2 py-1 rounded text-xs text-white z-10">
+          {categoryName}
+        </div>
+
+        {/* Admin only: Sales Analytics and Archive buttons */}
+        {user && (user.isAdmin || user.is_admin) && (
+          <div className="absolute top-2 right-2 flex gap-2">
+            <Button
+              size="sm"
+              variant="secondary"
+              className="h-8 w-8 p-0 bg-white bg-opacity-90 hover:bg-opacity-100"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowSalesAnalytics(true);
+              }}
+              title="View Sales Analytics"
+            >
+              <BarChart3 className="h-4 w-4" />
+            </Button>
+            
+            <Button
+              size="sm"
+              variant="secondary"
+              className="h-8 w-8 p-0 bg-white bg-opacity-90 hover:bg-opacity-100"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (product.archived) {
+                  unarchiveMutation.mutate(product.id);
+                } else {
+                  archiveMutation.mutate(product.id);
+                }
+              }}
+              title={product.archived ? "Unarchive Product" : "Archive Product"}
+              disabled={archiveMutation.isPending || unarchiveMutation.isPending}
+            >
+              {product.archived ? (
+                <ArchiveRestore className="h-4 w-4" />
+              ) : (
+                <Archive className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+        )}
+      </div>
+      <CardContent className="p-4">
+        <div className="flex justify-between items-start">
+          <div>
+            <h3 className={`font-semibold text-lg ${product.archived ? 'text-gray-500' : ''}`}>
+              {product.name}
+            </h3>
+            <p className="text-slate-600 text-sm">{category}</p>
+            {product.sku && (
+              <p className="text-slate-500 text-xs mt-1">SKU: {product.sku}</p>
+            )}
+            {product.archived && (
+              <Badge variant="outline" className="mt-1 text-xs border-gray-400 text-gray-600">
+                <Archive className="h-3 w-3 mr-1" />
+                Archived
+              </Badge>
+            )}
+          </div>
+          <StockBadge status={stockStatus.text} variant={stockStatus.variant} />
+        </div>
+        <div className="mt-3 flex justify-between items-center">
+          <div>
+            <p className="text-slate-500 text-sm">Price per unit</p>
+            <p className="text-xl font-bold">${formattedPrice}</p>
+          </div>
+          {product.stock > 0 ? (
+            <div className="flex flex-col space-y-2">
+              <div className="flex items-center">
+                <span className="text-sm mr-2">Qty:</span>
+                <select 
+                  value={quantity}
+                  onChange={handleQuantityChange}
+                  className="border rounded px-2 py-1 text-sm bg-white"
+                >
+                  {[...Array(Math.min(10, product.stock))].map((_, i) => (
+                    <option key={i + 1} value={i + 1}>{i + 1}</option>
+                  ))}
+                </select>
+              </div>
+              
+              {isAuthenticated ? (
+                <Button 
+                  onClick={handleAddToCart} 
+                  className="flex items-center justify-center"
+                >
+                  <ShoppingCart className="mr-1 h-4 w-4" />
+                  Add to Cart
+                </Button>
+              ) : (
+                <Button 
+                  onClick={() => window.location.href = '/login'} 
+                  className="flex items-center justify-center"
+                  variant="outline"
+                >
+                  <LogIn className="mr-1 h-4 w-4" />
+                  Login to Add
+                </Button>
+              )}
+            </div>
+          ) : (
+            <Button 
+              variant="secondary" 
+              className="flex items-center text-slate-600" 
+              disabled
+            >
+              <ShoppingCart className="mr-1 h-4 w-4" />
+              Unavailable
+            </Button>
+          )}
+        </div>
+      </CardContent>
+    
+      {/* Sales Analytics Modal */}
+      <SalesAnalyticsModal 
+        product={product}
+        isOpen={showSalesAnalytics}
+        onClose={() => setShowSalesAnalytics(false)}
+      />
+    </Card>
+  );
+}
+
+// Stock status badge component
+function StockBadge({ 
+  status, 
+  variant 
+}: { 
+  status: string; 
+  variant: 'success' | 'warning' | 'destructive'; 
+}) {
+  let className = "text-xs px-2 py-1 rounded-full font-medium ";
+
+  switch (variant) {
+    case 'success':
+      className += "bg-emerald-100 text-emerald-800";
+      break;
+    case 'warning':
+      className += "bg-amber-100 text-amber-800";
+      break;
+    case 'destructive':
+      className += "bg-red-100 text-red-800";
+      break;
+  }
+
+  return <span className={className}>{status}</span>;
+}

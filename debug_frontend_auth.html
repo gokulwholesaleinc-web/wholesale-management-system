@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Frontend Authentication Debug</title>
+</head>
+<body>
+    <h1>Frontend Authentication Debug Tool</h1>
+    <div id="results"></div>
+    
+    <script>
+        async function debugAuth() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<h2>Checking Frontend Authentication State...</h2>';
+            
+            // Check all storage locations
+            const storageCheck = {
+                'sessionStorage.gokul_unified_auth': sessionStorage.getItem('gokul_unified_auth'),
+                'localStorage.gokul_unified_auth': localStorage.getItem('gokul_unified_auth'),
+                'sessionStorage.authToken': sessionStorage.getItem('authToken'),
+                'sessionStorage.gokul_auth_data': sessionStorage.getItem('gokul_auth_data'),
+                'localStorage.authToken': localStorage.getItem('authToken')
+            };
+            
+            results.innerHTML += '<h3>Storage Contents:</h3>';
+            for (const [key, value] of Object.entries(storageCheck)) {
+                results.innerHTML += `<p><strong>${key}:</strong> ${value ? value.substring(0, 50) + '...' : 'null'}</p>`;
+            }
+            
+            // Test login and token storage
+            try {
+                results.innerHTML += '<h3>Testing Login Process:</h3>';
+                const loginResponse = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: 'test1', password: 'password123' })
+                });
+                
+                if (loginResponse.ok) {
+                    const loginData = await loginResponse.json();
+                    results.innerHTML += '<p>✅ Login successful</p>';
+                    results.innerHTML += `<p>Token received: ${loginData.token ? loginData.token.substring(0, 30) + '...' : 'none'}</p>`;
+                    
+                    // Store using the same method as frontend
+                    const authData = {
+                        token: loginData.token,
+                        user: loginData.user,
+                        expiresAt: Date.now() + (8 * 60 * 60 * 1000),
+                        loginTime: Date.now()
+                    };
+                    
+                    sessionStorage.setItem('gokul_unified_auth', JSON.stringify(authData));
+                    sessionStorage.setItem('authToken', loginData.token);
+                    
+                    results.innerHTML += '<p>✅ Token stored in sessionStorage</p>';
+                    
+                    // Test API calls with stored token
+                    const testEndpoints = [
+                        '/api/recommendations?limit=3',
+                        '/api/customer/orders',
+                        '/api/order-settings/minimum'
+                    ];
+                    
+                    results.innerHTML += '<h3>Testing API Endpoints with Stored Token:</h3>';
+                    
+                    for (const endpoint of testEndpoints) {
+                        try {
+                            const response = await fetch(endpoint, {
+                                headers: {
+                                    'Authorization': `Bearer ${loginData.token}`,
+                                    'Content-Type': 'application/json'
+                                }
+                            });
+                            
+                            results.innerHTML += `<p><strong>${endpoint}:</strong> ${response.status} ${response.ok ? '✅' : '❌'}</p>`;
+                            
+                            if (!response.ok) {
+                                const errorText = await response.text();
+                                results.innerHTML += `<p>Error: ${errorText}</p>`;
+                            }
+                        } catch (error) {
+                            results.innerHTML += `<p><strong>${endpoint}:</strong> Error - ${error.message} ❌</p>`;
+                        }
+                    }
+                } else {
+                    results.innerHTML += '<p>❌ Login failed</p>';
+                }
+            } catch (error) {
+                results.innerHTML += `<p>❌ Login error: ${error.message}</p>`;
+            }
+        }
+        
+        // Run debug on page load
+        debugAuth();
+    </script>
+</body>
+</html>

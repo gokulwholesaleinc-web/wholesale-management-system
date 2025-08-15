@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+    <title>Gokul Wholesale - Inventory and Order Management</title>
+    <meta name="description" content="Gokul Wholesale Inventory and Order Management System for tracking orders and inventory." />
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#4f46e5"/>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Gokul Wholesale">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
+    
+    <!-- Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    
+    <!-- iOS Icon Tags -->
+    <link rel="apple-touch-icon" sizes="72x72" href="/icons/icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="96x96" href="/icons/icon-96x96.png">
+    <link rel="apple-touch-icon" sizes="128x128" href="/icons/icon-128x128.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/icons/icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192x192.png">
+    <link rel="apple-touch-icon" sizes="384x384" href="/icons/icon-384x384.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="/icons/icon-512x512.png">
+    
+    <!-- Add base href to ensure paths resolve correctly in deployed version -->
+    <base href="/" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- Service Worker Registration handled by ProductionCacheManager -->
+    
+    <!-- Global Hash Routing Fix for Legacy Links -->
+    <script>
+      // Fix broken hash routing for legacy links
+      (function() {
+        // Check for hash-based routes immediately
+        function handleHashRedirects() {
+          const hash = window.location.hash;
+          const pathname = window.location.pathname;
+          
+          // If we have #/unsubscribe hash, redirect to proper /unsubscribe page
+          if (hash === '#/unsubscribe' || hash.includes('/unsubscribe')) {
+            console.log('🔄 Detected hash-based unsubscribe route, redirecting to direct page');
+            window.location.href = '/unsubscribe';
+            return true;
+          }
+          
+          // Only redirect privacy policy if we have the exact hash and we're on the homepage
+          if (hash === '#/privacy-policy' && (pathname === '/' || pathname === '/index.html')) {
+            console.log('🔄 Detected hash-based privacy policy route, redirecting to direct page');
+            window.location.href = '/privacy-policy';
+            return true;
+          }
+          return false;
+        }
+        
+        // Check immediately on page load
+        if (handleHashRedirects()) return;
+        
+        // Also check on hash changes
+        window.addEventListener('hashchange', handleHashRedirects);
+      })();
+    </script>
+
+    <!-- Installable PWA Prompt -->
+    <script>
+      // Show custom install prompt
+      let deferredPrompt;
+      window.addEventListener('beforeinstallprompt', (e) => {
+        // Prevent Chrome from showing the default prompt
+        e.preventDefault();
+        // Save the event so it can be triggered later
+        deferredPrompt = e;
+        
+        // Show your custom "Add to Home Screen" button or notification
+        // We'll add this functionality in our UI
+        console.log('App can be installed, showing install button...');
+      });
+    </script>
+    
+    <!-- This is a replit script which adds a banner on the top of the page when opened in development mode outside the replit environment -->
+    <script type="text/javascript" src="https://replit.com/public/js/replit-dev-banner.js"></script>
+  </body>
+</html>

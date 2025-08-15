@@ -1,0 +1,145 @@
+[vite] connecting... client:789:9
+[vite] connected. client:912:15
+Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools chunk-SXRIVT2P.js:21609:25
+Initializing cache management system... cacheManager.ts:33:13
+Cache management system initialized cacheManager.ts:36:13
+[queryFn] Added auth headers for /api/auth/user with token: cust_mbpxj6vffmc-175... queryClient.ts:189:13
+Production cache management initialized automatically App.tsx:114:17
+Initializing session timeout system sessionManager.ts:21:11
+Regular user - standard session timeout (8 hours) sessionManager.ts:25:13
+Session manager initialized with timeout of 8 hours sessionManager.ts:49:11
+Session management initialized App.tsx:116:17
+[queryFn] Response status for /api/auth/user: 200 queryClient.ts:198:11
+📄 OrderDetailPage Debug: 
+Object { location: "/orders/8", userInfo: {…}, pathname: "/orders/8" }
+OrderDetailPage.tsx:26:11
+🧮 [Checkout] Flat tax calculation: 
+Object { userApplyFlatTax: true, flatTaxesCount: 0, flatTaxAmount: 0, flatTaxBreakdown: [], cartItems: [] }
+MultiStepCheckoutPopup.tsx:224:11
+🧮 [Checkout] Flat tax calculation: 
+Object { userApplyFlatTax: true, flatTaxesCount: 0, flatTaxAmount: 0, flatTaxBreakdown: [], cartItems: [] }
+MultiStepCheckoutPopup.tsx:224:11
+🧮 [Checkout] Flat tax calculation: 
+Object { userApplyFlatTax: true, flatTaxesCount: 0, flatTaxAmount: 0, flatTaxBreakdown: [], cartItems: [] }
+MultiStepCheckoutPopup.tsx:224:11
+🔍 UnifiedOrderDetail Debug: 
+Object { propOrderId: undefined, paramsId: "8", finalOrderId: "8", params: {…}, currentUrl: "/orders/8" }
+UnifiedOrderDetail.tsx:47:11
+[Unified Cart Registry] Fetching cart items... function-registry.ts:326:15
+[apiRequest] Using unified auth token: cust_mbpxj6vffmc-175... queryClient.ts:51:19
+[apiRequest] ✅ Token found and will be sent: cust_mbpxj6vffmc-175... queryClient.ts:106:15
+[apiRequest] ✅ Auth token added for GET /api/cart (cust_mbpxj6vffmc-175...) queryClient.ts:111:15
+[queryFn] Added auth headers for /api/draft-orders with token: cust_mbpxj6vffmc-175... queryClient.ts:189:13
+[queryFn] Added auth headers for /api/wishlist with token: cust_mbpxj6vffmc-175... queryClient.ts:189:13
+[queryFn] Added auth headers for /api/order-templates with token: cust_mbpxj6vffmc-175... queryClient.ts:189:13
+[queryFn] Added auth headers for /api/flat-taxes with token: cust_mbpxj6vffmc-175... queryClient.ts:189:13
+[queryFn] Added auth headers for /api/orders with token: cust_mbpxj6vffmc-175... queryClient.ts:189:13
+[apiRequest] Using unified auth token: cust_mbpxj6vffmc-175... queryClient.ts:51:19
+[apiRequest] ✅ Token found and will be sent: cust_mbpxj6vffmc-175... queryClient.ts:106:15
+[apiRequest] ✅ Auth token added for GET /api/user/profile (cust_mbpxj6vffmc-175...) queryClient.ts:111:15
+[apiRequest] Using unified auth token: cust_mbpxj6vffmc-175... queryClient.ts:51:19
+[apiRequest] ✅ Token found and will be sent: cust_mbpxj6vffmc-175... queryClient.ts:106:15
+[apiRequest] ✅ Auth token added for GET /api/privacy-policy/status (cust_mbpxj6vffmc-175...) queryClient.ts:111:15
+[queryFn] Response status for /api/draft-orders: 200 queryClient.ts:198:11
+🧮 [Checkout] Flat tax calculation: 
+Object { userApplyFlatTax: true, flatTaxesCount: 0, flatTaxAmount: 0, flatTaxBreakdown: [], cartItems: [] }
+MultiStepCheckoutPopup.tsx:224:11
+🧮 [Checkout] Flat tax calculation: 
+Object { userApplyFlatTax: true, flatTaxesCount: 0, flatTaxAmount: 0, flatTaxBreakdown: [], cartItems: [] }
+MultiStepCheckoutPopup.tsx:224:11
+🧮 [Checkout] Flat tax calculation: 
+Object { userApplyFlatTax: true, flatTaxesCount: 0, flatTaxAmount: 0, flatTaxBreakdown: [], cartItems: [] }
+MultiStepCheckoutPopup.tsx:224:11
+[queryFn] Response status for /api/wishlist: 200 queryClient.ts:198:11
+[apiRequest] Response status: 200 OK queryClient.ts:124:11
+[apiRequest] Success response received for GET /api/cart queryClient.ts:132:11
+🧮 [Checkout] Flat tax calculation: 
+Object { userApplyFlatTax: true, flatTaxesCount: 0, flatTaxAmount: 0, flatTaxBreakdown: [], cartItems: [] }
+MultiStepCheckoutPopup.tsx:224:11
+🧮 [Checkout] Flat tax calculation: 
+Object { userApplyFlatTax: true, flatTaxesCount: 0, flatTaxAmount: 0, flatTaxBreakdown: [], cartItems: [] }
+MultiStepCheckoutPopup.tsx:224:11
+🧮 [Checkout] Flat tax calculation: 
+Object { userApplyFlatTax: true, flatTaxesCount: 0, flatTaxAmount: 0, flatTaxBreakdown: [], cartItems: [] }
+MultiStepCheckoutPopup.tsx:224:11
+🧮 [Checkout] Flat tax calculation: 
+Object { userApplyFlatTax: true, flatTaxesCount: 0, flatTaxAmount: 0, flatTaxBreakdown: [], cartItems: [] }
+MultiStepCheckoutPopup.tsx:224:11
+🧮 [Checkout] Flat tax calculation: 
+Object { userApplyFlatTax: true, flatTaxesCount: 0, flatTaxAmount: 0, flatTaxBreakdown: [], cartItems: [] }
+MultiStepCheckoutPopup.tsx:224:11
+🧮 [Checkout] Flat tax calculation: 
+Object { userApplyFlatTax: true, flatTaxesCount: 0, flatTaxAmount: 0, flatTaxBreakdown: [], cartItems: [] }
+MultiStepCheckoutPopup.tsx:224:11
+🧮 [Checkout] Flat tax calculation: 
+Object { userApplyFlatTax: true, flatTaxesCount: 0, flatTaxAmount: 0, flatTaxBreakdown: [], cartItems: [] }
+MultiStepCheckoutPopup.tsx:224:11
+🧮 [Checkout] Flat tax calculation: 
+Object { userApplyFlatTax: true, flatTaxesCount: 0, flatTaxAmount: 0, flatTaxBreakdown: [], cartItems: [] }
+MultiStepCheckoutPopup.tsx:224:11
+🧮 [Checkout] Flat tax calculation: 
+Object { userApplyFlatTax: true, flatTaxesCount: 0, flatTaxAmount: 0, flatTaxBreakdown: [], cartItems: [] }
+MultiStepCheckoutPopup.tsx:224:11
+[queryFn] Response status for /api/flat-taxes: 200 queryClient.ts:198:11
+🧮 [Checkout] Flat tax calculation: 
+Object { userApplyFlatTax: true, flatTaxesCount: 2, flatTaxAmount: 0, flatTaxBreakdown: [], cartItems: [] }
+MultiStepCheckoutPopup.tsx:224:11
+🧮 [Checkout] Flat tax calculation: 
+Object { userApplyFlatTax: true, flatTaxesCount: 2, flatTaxAmount: 0, flatTaxBreakdown: [], cartItems: [] }
+MultiStepCheckoutPopup.tsx:224:11
+🧮 [Checkout] Flat tax calculation: 
+Object { userApplyFlatTax: true, flatTaxesCount: 2, flatTaxAmount: 0, flatTaxBreakdown: [], cartItems: [] }
+MultiStepCheckoutPopup.tsx:224:11
+[queryFn] Response status for /api/order-templates: 200 queryClient.ts:198:11
+🧮 [Checkout] Flat tax calculation: 
+Object { userApplyFlatTax: true, flatTaxesCount: 2, flatTaxAmount: 0, flatTaxBreakdown: [], cartItems: [] }
+MultiStepCheckoutPopup.tsx:224:11
+🧮 [Checkout] Flat tax calculation: 
+Object { userApplyFlatTax: true, flatTaxesCount: 2, flatTaxAmount: 0, flatTaxBreakdown: [], cartItems: [] }
+MultiStepCheckoutPopup.tsx:224:11
+🧮 [Checkout] Flat tax calculation: 
+Object { userApplyFlatTax: true, flatTaxesCount: 2, flatTaxAmount: 0, flatTaxBreakdown: [], cartItems: [] }
+MultiStepCheckoutPopup.tsx:224:11
+[queryFn] Response status for /api/orders: 200 queryClient.ts:198:11
+🔍 Order data received: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+UnifiedOrderDetail.tsx:59:15
+🔍 UnifiedOrderDetail Debug: 
+Object { propOrderId: undefined, paramsId: "8", finalOrderId: "8", params: {…}, currentUrl: "/orders/8" }
+UnifiedOrderDetail.tsx:47:11
+🔍 Order data received: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+UnifiedOrderDetail.tsx:59:15
+Warning: Received NaN for the `children` attribute. If this is expected, cast the value to a string.
+div
+Badge@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/components/ui/badge.tsx:35:15
+div
+div
+_c9@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/components/ui/card.tsx:114:9
+div
+_c@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/components/ui/card.tsx:20:8
+div
+div
+div
+UnifiedOrderDetail@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/components/shared/UnifiedOrderDetail.tsx:38:35
+div
+div
+main
+div
+AppLayout@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/layout/AppLayout.tsx:48:26
+OrderDetailPage@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/pages/OrderDetailPage.tsx:24:22
+AuthProtectedRoute@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/components/AuthProtectedRoute.tsx:21:35
+Route@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=4fa6cfb2:206:13
+Switch@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=4fa6cfb2:262:14
+ErrorBoundary@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/components/ui/error-boundary.tsx:10:5
+InitialNotificationOptinProvider@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/contexts/InitialNotificationOptinContext.tsx:33:49
+PrivacyPolicyProvider@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/contexts/PrivacyPolicyContext.tsx:33:38
+Provider@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-OXZDJRWN.js?v=4fa6cfb2:38:47
+TooltipProvider@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=4fa6cfb2:70:7
+App@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/App.tsx?v=u5ID3LGG9fTIrnkWeEvup:105:31
+Router@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=4fa6cfb2:161:14
+QueryClientProvider@https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=4fa6cfb2:2932:27
+AppWithProviders chunk-SXRIVT2P.js:521:38
+[apiRequest] Response status: 200 OK 2 queryClient.ts:124:11
+[apiRequest] Success response received for GET /api/user/profile queryClient.ts:132:11
+[apiRequest] Success response received for GET /api/privacy-policy/status queryClient.ts:132:11

@@ -1,0 +1,39 @@
+Why we did it this way (quick rationale)
+
+1) Single source of truth for balances
+We standardized the meaning of currentBalance:
+
+> 0 = customer has credit (store owes them)
+
+< 0 = customer owes (debit)
+
+All UI and logic (available credit, over-limit, status chips) now derive from this via owedFromBalance, availableFrom, and isOverLimit. This eliminates contradictory Math.abs uses and over-limit false positives.
+
+2) Correct available credit & over-limit math
+Available credit is limit – owed (floored at 0). Over-limit triggers only when owed > limit. Previously, positive credits could be misinterpreted as over-limit or could reduce available credit.
+
+3) Money precision safety
+Floating-point math can drift. We added optional fixed-point helpers (toCents/fromCents) so you can migrate to integer cents end-to-end. For now, we keep numbers but consolidated formatting with fmtUSD and avoided lossy toFixed during logic.
+
+4) Fresh stats without network churn
+creditStats are computed with useMemo from existing queries (customers, unpaidInvoices). No phantom “stats” query, no stale enabled issue, and they auto-update when either input changes.
+
+5) Consistent transaction typing
+We unified transactionType to the union type 'charge' | 'payment' | 'adjustment'. This simplifies styling, reduces bugs, and improves autocomplete.
+
+6) Query invalidation that actually catches everything
+Post-mutation, we invalidate via predicate for all customer-scoped keys (/api/admin/customers*) + specific lists. This prevents stale sub-views (credit-account, unpaid-invoices, transactions).
+
+7) UX clarity
+
+Amount colors and labels map to balance semantics: green for credit, red for owed/charges.
+
+“Exceed by” is guaranteed non-negative.
+
+Dialogs show before/after balance and available credit to make decisions obvious.
+
+8) Safer input validation
+We use Number(...) + finiteness checks and (optionally) cap payments to owed if your policy disallows overpayments.
+
+9) No duplicate component definitions
+CreditTransactionHistory is defined once (in its own file). If you previously had a local duplicate, remove it to avoid naming collisions.

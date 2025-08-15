@@ -1,0 +1,135 @@
+ Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+ Initializing cache management system...
+ Cache management system initialized
+ [queryFn] Added auth headers for /api/auth/user with token: user-1750354461611-1...
+ Production cache management initialized automatically
+ Initializing session timeout system
+ Admin user detected - extended session timeout (8 hours)
+ Session manager initialized with timeout of 8 hours
+ Session management initialized
+ App can be installed, showing install button...
+admin#/admin:1 Banner not shown: beforeinstallpromptevent.preventDefault() called. The page must call beforeinstallpromptevent.prompt() to show the banner.
+ [queryFn] Response status for /api/auth/user: 200
+ Using simpleCart instead of the old CartProvider
+ [queryFn] Added auth headers for /api/notifications with token: user-1750354461611-1...
+ Fetching cart items...
+ [apiRequest] Using unified auth token: user-1750354461611-1...
+ [apiRequest] ✅ Token found and will be sent: user-1750354461611-1...
+ [apiRequest] ✅ Auth token added for GET /api/cart (user-1750354461611-1...)
+ [queryFn] Added auth headers for /api/admin/order-settings with token: user-1750354461611-1...
+ [apiRequest] Response status: 200 OK
+ [queryFn] Response status for /api/notifications: 200
+ [apiRequest] Success response received for GET /api/cart
+ Cart response: Array(0)
+ Using simpleCart instead of the old CartProvider
+ [queryFn] Response status for /api/admin/order-settings: 200
+ Using simpleCart instead of the old CartProvider
+ Using simpleCart instead of the old CartProvider
+ Using simpleCart instead of the old CartProvider
+main.tsx:38 Navigating to: /admin/categories
+useCart.tsx:7 Using simpleCart instead of the old CartProvider
+simpleCart.ts:34 Fetching cart items...
+queryClient.ts:40 [apiRequest] Using unified auth token: user-1750354461611-1...
+queryClient.ts:95 [apiRequest] ✅ Token found and will be sent: user-1750354461611-1...
+queryClient.ts:103 [apiRequest] ✅ Auth token added for GET /api/cart (user-1750354461611-1...)
+queryClient.ts:197 [queryFn] Added auth headers for /api/categories with token: user-1750354461611-1...
+queryClient.ts:197 [queryFn] Added auth headers for /api/products with token: user-1750354461611-1...
+queryClient.ts:208 [queryFn] Response status for /api/categories: 200
+useCart.tsx:7 Using simpleCart instead of the old CartProvider
+useCart.tsx:7 Using simpleCart instead of the old CartProvider
+queryClient.ts:118 [apiRequest] Response status: 200 OK
+queryClient.ts:130 [apiRequest] Success response received for GET /api/cart
+simpleCart.ts:36 Cart response: Array(0)
+queryClient.ts:208 [queryFn] Response status for /api/products: 200
+useCart.tsx:7 Using simpleCart instead of the old CartProvider
+useCart.tsx:7 Using simpleCart instead of the old CartProvider
+button.tsx:51  Uncaught TypeError: Cannot destructure property 'variant' of 'undefined' as it is undefined.
+    at buttonVariants (button.tsx:51:27)
+    at _c11 (alert-dialog.tsx:105:19)
+    at renderWithHooks (react-dom.development.js:15486:18)
+    at updateForwardRef (react-dom.development.js:19245:20)
+    at beginWork (react-dom.development.js:21675:16)
+    at HTMLUnknownElement.callCallback2 (react-dom.development.js:4164:14)
+    at Object.invokeGuardedCallbackDev (react-dom.development.js:4213:16)
+    at invokeGuardedCallback (react-dom.development.js:4277:31)
+    at beginWork$1 (react-dom.development.js:27490:7)
+    at performUnitOfWork (react-dom.development.js:26596:12)
+button.tsx:51  Uncaught TypeError: Cannot destructure property 'variant' of 'undefined' as it is undefined.
+    at buttonVariants (button.tsx:51:27)
+    at _c11 (alert-dialog.tsx:105:19)
+    at renderWithHooks (react-dom.development.js:15486:18)
+    at updateForwardRef (react-dom.development.js:19245:20)
+    at beginWork (react-dom.development.js:21675:16)
+    at HTMLUnknownElement.callCallback2 (react-dom.development.js:4164:14)
+    at Object.invokeGuardedCallbackDev (react-dom.development.js:4213:16)
+    at invokeGuardedCallback (react-dom.development.js:4277:31)
+    at beginWork$1 (react-dom.development.js:27490:7)
+    at performUnitOfWork (react-dom.development.js:26596:12)
+react-dom.development.js:18704  The above error occurred in the <AlertDialogAction> component:
+
+    at _c11 (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/components/ui/alert-dialog.tsx:180:13)
+    at div
+    at AlertDialogFooter (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/components/ui/alert-dialog.tsx:111:3)
+    at Slottable2 (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-LHPXHTGV.js?v=4d54196d:59:25)
+    at div
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-IWFJIMEQ.js?v=4d54196d:42:13
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-DQMU3INC.js?v=4d54196d:47:7
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-LHPXHTGV.js?v=4d54196d:43:13
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-LHPXHTGV.js?v=4d54196d:20:13
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-IWFJIMEQ.js?v=4d54196d:42:13
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-QBRBARQL.js?v=4d54196d:29:5
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-CXVWIQBM.js?v=4d54196d:239:13
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-CXVWIQBM.js?v=4d54196d:162:58
+    at Presence (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-3TAXNJ3T.js?v=4d54196d:24:11)
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-CXVWIQBM.js?v=4d54196d:153:64
+    at Provider (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-5AJU3CG7.js?v=4d54196d:38:15)
+    at Provider (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-5AJU3CG7.js?v=4d54196d:17:13)
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-alert-dialog.js?v=4d54196d:89:13
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-LHPXHTGV.js?v=4d54196d:43:13
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-LHPXHTGV.js?v=4d54196d:20:13
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-IWFJIMEQ.js?v=4d54196d:42:13
+    at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-DQMU3INC.js?v=4d54196d:246:22
+    at Presence (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-3TAXNJ3T.js?v=4d54196d:24:11)
+    at Provider (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-5AJU3CG7.js?v=4d54196d:38:15)
+    at DialogPortal (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-CXVWIQBM.js?v=4d54196d:115:11)
+    at AlertDialogPortal (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-alert-dialog.js?v=4d54196d:70:11)
+    at _c3 (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/components/ui/alert-dialog.tsx:50:12)
+    at Provider (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-5AJU3CG7.js?v=4d54196d:38:15)
+    at Dialog (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-CXVWIQBM.js?v=4d54196d:56:5)
+    at AlertDialog (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-alert-dialog.js?v=4d54196d:54:11)
+    at div
+    at div
+    at main
+    at div
+    at AppLayout (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/layout/AppLayout.tsx:50:3)
+    at CategoryManagementPage (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/pages/CategoryManagementPage.tsx:63:20)
+    at AdminProtectedRoute (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/components/AdminProtectedRoute.tsx:21:50)
+    at Route (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=4d54196d:323:16)
+    at Switch (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=4d54196d:379:17)
+    at ErrorBoundary (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/components/ui/error-boundary.tsx:10:5)
+    at Provider (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-5AJU3CG7.js?v=4d54196d:38:15)
+    at TooltipProvider (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=4d54196d:67:5)
+    at App (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/src/App.tsx?v=D0UnAObLWF8yH8upTi6MR:91:3)
+    at Router (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=4d54196d:291:17)
+    at QueryClientProvider (https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=4d54196d:2805:3)
+    at AppWithProviders
+
+React will try to recreate this component tree from scratch using the error boundary you provided, ErrorBoundary.
+logCapturedError @ react-dom.development.js:18704
+error-boundary.tsx:36  Error caught by ErrorBoundary: TypeError: Cannot destructure property 'variant' of 'undefined' as it is undefined.
+    at buttonVariants (button.tsx:51:27)
+    at _c11 (alert-dialog.tsx:105:19)
+    at renderWithHooks (react-dom.development.js:15486:18)
+    at updateForwardRef (react-dom.development.js:19245:20)
+    at beginWork (react-dom.development.js:21675:16)
+    at beginWork$1 (react-dom.development.js:27465:14)
+    at performUnitOfWork (react-dom.development.js:26596:12)
+    at workLoopSync (react-dom.development.js:26505:5)
+    at renderRootSync (react-dom.development.js:26473:7)
+    at recoverFromConcurrentError (react-dom.development.js:25889:20) Object
+componentDidCatch @ error-boundary.tsx:36
+[NEW] Explain Console errors by using Copilot in Edge: click
+         
+         to explain an error. 
+        Learn more
+        Don't show again

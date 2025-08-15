@@ -1,0 +1,29 @@
+SES The 'dateTaming' option is deprecated and does nothing. In the future specifying it will be an error. lockdown-install.js:1:194912
+SES The 'mathTaming' option is deprecated and does nothing. In the future specifying it will be an error. lockdown-install.js:1:194912
+SES Removing unpermitted intrinsics lockdown-install.js:1:195048
+  Removing intrinsics.%DatePrototype%.toTemporalInstant lockdown-install.js:1:194893
+Initializing cache management system... index-DLFYCBbq.js:1046:29540
+Cache management system initialized index-DLFYCBbq.js:1046:29645
+Production cache management initialized automatically index-DLFYCBbq.js:1059:365
+Initializing session timeout system index-DLFYCBbq.js:1046:27951
+Regular user - standard session timeout (8 hours) index-DLFYCBbq.js:1046:28079
+Session manager initialized with timeout of 8 hours index-DLFYCBbq.js:1046:28533
+Session management initialized index-DLFYCBbq.js:1059:454
+Navigating to: /create-account index-DLFYCBbq.js:1059:5126
+Navigating to: /login index-DLFYCBbq.js:1059:5126
+Navigating to: /catalog index-DLFYCBbq.js:1059:5126
+[queryFn] Added auth headers for /api/products/public with token: admin_49rzcl0p-17545... index-DLFYCBbq.js:40:104065
+[queryFn] Added auth headers for /api/categories with token: admin_49rzcl0p-17545... index-DLFYCBbq.js:40:104065
+[queryFn] Response status for /api/categories: 200 index-DLFYCBbq.js:40:104302
+[queryFn] Response status for /api/products/public: 200 index-DLFYCBbq.js:40:104302
+Navigating to: /login index-DLFYCBbq.js:1059:5126
+[queryFn] Added auth headers for /api/products/public with token: admin_49rzcl0p-17545... index-DLFYCBbq.js:40:104065
+[queryFn] Added auth headers for /api/categories with token: admin_49rzcl0p-17545... index-DLFYCBbq.js:40:104065
+[queryFn] Response status for /api/categories: 200 index-DLFYCBbq.js:40:104302
+[queryFn] Response status for /api/products/public: 200 index-DLFYCBbq.js:40:104302
+Navigating to: / index-DLFYCBbq.js:1059:5126
+Navigating to: /create-account index-DLFYCBbq.js:1059:5126
+[apiRequest] Using unified auth token: admin_49rzcl0p-17545... index-DLFYCBbq.js:40:100008
+[apiRequest] ✅ Token found and will be sent: admin_49rzcl0p-17545... index-DLFYCBbq.js:40:101258
+[apiRequest] ✅ Auth token added for POST /api/account-requests (admin_49rzcl0p-17545...) index-DLFYCBbq.js:40:102044
+[apiRequest] Response status: 400 index-DLFYCBbq.js:40:102401

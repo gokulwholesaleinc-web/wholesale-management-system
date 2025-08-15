@@ -1,0 +1,682 @@
+Wholesale POS System - Complete Implementation Guide
+
+This guide provides all the core components, database schema, and utilities needed to implement a comprehensive Point of Sale system in another application.
+
+## 🏗️ System Architecture Overview
+
+The POS system follows a modern full-stack architecture:
+- **Frontend**: React with TypeScript, Tailwind CSS, shadcn/ui components
+- **Backend**: Express.js with TypeScript
+- **Database**: PostgreSQL with Drizzle ORM
+- **Authentication**: Session-based with bcrypt
+- **State Management**: TanStack Query (React Query)
+
+## 📊 Database Schema
+
+### Core Tables
+
+```typescript
+// User roles for security
+export const USER_ROLES = {
+  ADMIN: 'admin',
+  MANAGER: 'manager',
+  CASHIER: 'cashier',
+  INVENTORY: 'inventory'
+} as const;
+
+// Users table
+export const users = pgTable("users", {
+  id: serial("id").primaryKey(),
+  username: varchar("username", { length: 50 }).notNull().unique(),
+  email: varchar("email", { length: 100 }).unique(),
+  passwordHash: varchar("password_hash", { length: 255 }).notNull(),
+  firstName: varchar("first_name", { length: 100 }),
+  lastName: varchar("last_name", { length: 100 }),
+  profileImageUrl: varchar("profile_image_url"),
+  role: varchar("role", { length: 20 }).notNull().default(USER_ROLES.CASHIER),
+  active: boolean("active").notNull().default(true),
+  lastLogin: timestamp("last_login"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// Customer table
+export const customers = pgTable("customers", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  email: text("email"),
+  phone: text("phone"),
+  address: text("address"),
+  creditLimit: decimal("credit_limit", { precision: 10, scale: 2 }).default("0").notNull(),
+  creditBalance: decimal("credit_balance", { precision: 10, scale: 2 }).default("0").notNull(),
+  paymentTerms: integer("payment_terms").default(30),
+  nextReminder: date("next_reminder"),
+  reminderFrequency: integer("reminder_frequency").default(30),
+  notes: text("notes"),
+});
+
+// Product/Inventory table
+export const products = pgTable("products", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  sku: text("sku").notNull().unique(),
+  barcode: text("barcode").unique(),
+  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  costPrice: decimal("cost_price", { precision: 10, scale: 2 }),
+  stockQuantity: integer("stock_quantity").default(0).notNull(),
+  lowStockThreshold: integer("low_stock_threshold").default(10),
+  category: text("category"),
+});
+
+// Transaction table for sales and invoices
+export const transactions = pgTable("transactions", {
+  id: serial("id").primaryKey(),
+  customerId: integer("customer_id").references(() => customers.id),
+  userId: integer("user_id").references(() => users.id),
+  userName: text("user_name"),
+  total: decimal("total", { precision: 10, scale: 2 }).notNull(),
+  tax: decimal("tax", { precision: 10, scale: 2 }).default("0"),
+  status: text("status").notNull(), // Completed, Processing, On Credit, Cancelled
+  paymentMethod: text("payment_method"), // Credit Card, Cash, Bank Transfer, On Credit
+  invoiceNumber: text("invoice_number"),
+  dueDate: date("due_date"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  notes: text("notes"),
+  isPrinted: boolean("is_printed").default(false),
+  isVoided: boolean("is_voided").default(false),
+  voidReason: text("void_reason"),
+  voidedAt: timestamp("voided_at"),
+  voidedBy: integer("voided_by").references(() => users.id),
+  voidedByName: text("voided_by_name"),
+  managerOverride: boolean("manager_override").default(false),
+  managerApprovalBy: integer("manager_approval_by").references(() => users.id),
+  voidType: text("void_type").default("full"),
+  partialVoidAmount: decimal("partial_void_amount", { precision: 10, scale: 2 }),
+  originalTransactionId: integer("original_transaction_id").references(() => transactions.id),
+  isReturn: boolean("is_return").default(false),
+});
+
+// Transaction items (line items)
+export const transactionItems = pgTable("transaction_items", {
+  id: serial("id").primaryKey(),
+  transactionId: integer("transaction_id").references(() => transactions.id).notNull(),
+  productId: integer("product_id").references(() => products.id).notNull(),
+  quantity: integer("quantity").notNull(),
+  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  originalPrice: decimal("original_price", { precision: 10, scale: 2 }),
+  taxRate: decimal("tax_rate", { precision: 5, scale: 2 }),
+  taxAmount: decimal("tax_amount", { precision: 10, scale: 2 }),
+  isTaxExempt: boolean("is_tax_exempt").default(false),
+  subtotal: decimal("subtotal", { precision: 10, scale: 2 }).notNull(),
+  notes: text("notes"),
+  isReturned: boolean("is_returned").default(false),
+  originalItemId: integer("original_item_id").references(() => transactionItems.id),
+});
+
+// Payments table
+export const payments = pgTable("payments", {
+  id: serial("id").primaryKey(),
+  customerId: integer("customer_id").references(() => customers.id).notNull(),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  paymentMethod: text("payment_method").notNull(),
+  transactionId: integer("transaction_id").references(() => transactions.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  notes: text("notes"),
+  idempotencyKey: varchar("idempotency_key", { length: 255 }).unique()
+});
+
+// Settings table for business info and app settings
+export const settings = pgTable("settings", {
+  id: serial("id").primaryKey(),
+  businessName: text("business_name").notNull(),
+  businessAddress: text("business_address"),
+  businessPhone: text("business_phone"),
+  businessEmail: text("business_email"),
+  taxRate: decimal("tax_rate", { precision: 5, scale: 2 }).default("0"),
+  receiptFooter: text("receipt_footer"),
+  receiptHeader: text("receipt_header"),
+  logoUrl: text("logo_url"),
+  invoicePrefix: text("invoice_prefix").default("INV-"),
+  nextInvoiceNumber: integer("next_invoice_number").default(1001),
+  defaultPaymentTerms: integer("default_payment_terms").default(30),
+  defaultReminderDays: integer("default_reminder_days").default(45),
+  dailyReminderAfter: integer("daily_reminder_after").default(45),
+  printerSettings: jsonb("printer_settings"),
+});
+
+// Held Transactions table (for transactions on hold)
+export const heldTransactions = pgTable("held_transactions", {
+  id: serial("id").primaryKey(),
+  customerId: integer("customer_id").references(() => customers.id),
+  userId: integer("user_id").references(() => users.id),
+  userName: text("user_name"),
+  items: jsonb("items").notNull(), // Stored cart items as JSON
+  name: text("name"), // Optional friendly name for the held transaction
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  notes: text("notes")
+});
+
+// Audit Logs for security
+export const auditLogs = pgTable("audit_logs", {
+  id: serial("id").primaryKey(),
+  timestamp: timestamp("timestamp").notNull().defaultNow(),
+  userId: integer("user_id"),
+  username: varchar("username", { length: 255 }),
+  ipAddress: varchar("ip_address", { length: 45 }).notNull(),
+  userAgent: text("user_agent"),
+  actionType: varchar("action_type", { length: 50 }).notNull(),
+  eventType: varchar("event_type", { length: 50 }).notNull(),
+  resourceType: varchar("resource_type", { length: 50 }).notNull(),
+  resourceId: varchar("resource_id", { length: 100 }),
+  details: text("details").notNull(),
+  level: varchar("level", { length: 20 }).notNull(),
+  success: boolean("success").notNull()
+});
+```
+
+## 🛠️ Core Utility Functions
+
+### Currency and Number Formatting
+
+```typescript
+// Currency formatting
+export function formatCurrency(value: number | string | undefined | null): string {
+  if (value === undefined || value === null) return '$0.00';
+  
+  const numValue = typeof value === 'string' ? parseFloat(value) : value;
+  
+  if (isNaN(numValue)) return '$0.00';
+  
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(numValue);
+}
+
+// Payment calculation utilities
+export function calculateChange(amountPaid: number, total: number): number {
+  return Math.max(0, amountPaid - total);
+}
+
+export function validatePaymentAmount(amount: string, total: number): { isValid: boolean; error?: string } {
+  const numAmount = parseFloat(amount);
+  
+  if (isNaN(numAmount) || numAmount < 0) {
+    return { isValid: false, error: "Please enter a valid amount" };
+  }
+  
+  if (numAmount < total) {
+    return { isValid: false, error: "Payment amount cannot be less than total" };
+  }
+  
+  return { isValid: true };
+}
+
+export function calculateTax(subtotal: number, taxRate: number): number {
+  return subtotal * (taxRate / 100);
+}
+
+export function calculateTotals(items: Array<{ quantity: number; price: number | string }>, taxRate: number = 0) {
+  const subtotal = items.reduce((sum, item) => {
+    const price = typeof item.price === 'string' ? parseFloat(item.price) : item.price;
+    return sum + (item.quantity * price);
+  }, 0);
+  
+  const tax = calculateTax(subtotal, taxRate);
+  const total = subtotal + tax;
+  
+  return {
+    subtotal: subtotal.toFixed(2),
+    tax: tax.toFixed(2),
+    total: total.toFixed(2)
+  };
+}
+```
+
+### Date and Time Formatting
+
+```typescript
+// Date formatting
+export function formatDate(dateInput: string | Date | null | undefined): string {
+  if (!dateInput) return 'N/A';
+  
+  const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
+  if (isNaN(date.getTime())) return 'Invalid Date';
+  
+  return new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  }).format(date);
+}
+
+// Time formatting
+export function formatTime(dateInput: string | Date | null | undefined): string {
+  if (!dateInput) return 'N/A';
+  
+  const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
+  if (isNaN(date.getTime())) return 'Invalid Time';
+  
+  return new Intl.DateTimeFormat('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+    timeZone: 'America/Chicago'
+  }).format(date);
+}
+```
+
+### Validation Utilities
+
+```typescript
+// Input validation utilities
+export function validateEmail(email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}
+
+export function validatePhone(phone: string): boolean {
+  const phoneRegex = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/;
+  return phoneRegex.test(phone);
+}
+
+// Phone number formatting
+export function formatPhoneNumber(phone: string): string {
+  if (!phone) return '';
+  
+  const cleaned = phone.replace(/\D/g, '');
+  
+  if (cleaned.length === 10) {
+    return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
+  }
+  
+  return phone;
+}
+```
+
+## 🔧 API Client Setup
+
+### Query Client Configuration
+
+```typescript
+import { QueryClient, QueryFunction } from "@tanstack/react-query";
+
+async function throwIfResNotOk(res: Response) {
+  if (!res.ok) {
+    const text = (await res.text()) || res.statusText;
+    
+    // Check if response is HTML (authentication redirect)
+    if (text.includes('<!DOCTYPE') || text.includes('<html')) {
+      throw new Error(`${res.status}: Unauthorized - Please log in again`);
+    }
+    
+    throw new Error(`${res.status}: ${text}`);
+  }
+}
+
+export async function apiRequest(
+  method: string,
+  url: string,
+  data?: unknown | undefined,
+): Promise<Response> {
+  const res = await fetch(url, {
+    method,
+    headers: data ? { "Content-Type": "application/json" } : {},
+    body: data ? JSON.stringify(data) : undefined,
+    credentials: "include",
+  });
+
+  await throwIfResNotOk(res);
+  return res;
+}
+
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      queryFn: getQueryFn({ on401: "returnNull" }),
+      refetchInterval: false,
+      refetchOnWindowFocus: false,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      retry: 1,
+    },
+    mutations: {
+      retry: false,
+    },
+  },
+});
+```
+
+## 🏪 Core POS Components
+
+### Cart Interface
+
+```typescript
+export interface CartItem {
+  productId: number;
+  quantity: number;
+  price: string;
+  subtotal: string;
+}
+```
+
+### Storage Interface
+
+```typescript
+export interface IStorage {
+  // User operations
+  getUsers(): Promise<User[]>;
+  getUser(id: string | number): Promise<User | undefined>;
+  getUserByUsername(username: string): Promise<User | undefined>;
+  createUser(user: { username: string, password: string, email?: string | null, firstName?: string | null, lastName?: string | null, role?: string }): Promise<User>;
+  updateUser(id: number, user: Partial<Omit<InsertUser, 'confirmPassword'>>): Promise<User | undefined>;
+  deleteUser(id: number): Promise<boolean>;
+  
+  // Customer operations
+  getCustomers(): Promise<Customer[]>;
+  getCustomer(id: number): Promise<Customer | undefined>;
+  createCustomer(customer: InsertCustomer): Promise<Customer>;
+  updateCustomer(id: number, customer: Partial<InsertCustomer>): Promise<Customer | undefined>;
+  deleteCustomer(id: number): Promise<boolean>;
+  
+  // Product operations
+  getProducts(): Promise<Product[]>;
+  getProduct(id: number): Promise<Product | undefined>;
+  getProductByBarcode(barcode: string): Promise<Product | undefined>;
+  createProduct(product: InsertProduct): Promise<Product>;
+  updateProduct(id: number, product: Partial<InsertProduct>): Promise<Product | undefined>;
+  deleteProduct(id: number): Promise<boolean>;
+  updateProductStock(id: number, quantityChange: number): Promise<Product | undefined>;
+  getLowStockProducts(): Promise<Product[]>;
+  
+  // Transaction operations
+  getTransactions(days?: number): Promise<Transaction[]>;
+  getTransaction(id: number): Promise<Transaction | undefined>;
+  getCustomerTransactions(customerId: number): Promise<Transaction[]>;
+  createTransaction(transaction: InsertTransaction): Promise<Transaction>;
+  updateTransactionStatus(id: number, status: string): Promise<Transaction | undefined>;
+  generateInvoiceNumber(): Promise<string>;
+  voidTransaction(id: number, voidData: {
+    reason: string;
+    voidType?: 'full' | 'partial';
+    partialAmount?: number;
+    managerOverride?: boolean;
+    managerCode?: string;
+    voidedBy: number;
+    voidedByName: string;
+    managerApprovalBy?: number;
+  }): Promise<Transaction | undefined>;
+  
+  // Transaction items operations
+  getTransactionItems(transactionId: number): Promise<TransactionItem[]>;
+  createTransactionItem(item: InsertTransactionItem): Promise<TransactionItem>;
+  
+  // Payment operations
+  getPayments(): Promise<Payment[]>;
+  getPayment(id: number): Promise<Payment | undefined>;
+  getCustomerPayments(customerId: number): Promise<Payment[]>;
+  createPayment(payment: InsertPayment): Promise<Payment>;
+  
+  // Held Transaction operations
+  getHeldTransactions(): Promise<HeldTransaction[]>;
+  getHeldTransaction(id: number): Promise<HeldTransaction | undefined>;
+  createHeldTransaction(heldTransaction: InsertHeldTransaction): Promise<HeldTransaction>;
+  deleteHeldTransaction(id: number): Promise<boolean>;
+  
+  // Search operations
+  searchProducts(query: string): Promise<Product[]>;
+  searchCustomers(query: string): Promise<Customer[]>;
+  
+  // Summary/Reports
+  getDailySalesTotal(date: Date): Promise<number>;
+  getOutstandingCreditTotal(): Promise<number>;
+  getMonthlySalesReport(year: number, month: number): Promise<any>;
+  getCustomerCreditReport(): Promise<any>;
+}
+```
+
+## 🔐 Authentication & Security
+
+### Session-based Authentication
+
+```typescript
+// Authentication routes
+app.post("/api/login", async (req: Request, res: Response) => {
+  try {
+    const { username, password } = req.body;
+    
+    if (!username || !password) {
+      return res.status(400).json({ message: "Username and password are required" });
+    }
+    
+    const user = await storage.getUserByUsername(username);
+    
+    if (!user) {
+      return res.status(401).json({ message: "Invalid username or password" });
+    }
+    
+    const isValidPassword = await bcrypt.compare(password, user.passwordHash);
+    if (!isValidPassword) {
+      return res.status(401).json({ message: "Invalid username or password" });
+    }
+    
+    if (!user.active) {
+      return res.status(401).json({ message: "Account is inactive" });
+    }
+    
+    // Store user in session
+    (req as any).session.user = { id: user.id, username: user.username, role: user.role };
+    
+    res.json({ 
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        role: user.role
+      },
+      message: "Login successful" 
+    });
+  } catch (error) {
+    console.error("Login error:", error);
+    res.status(500).json({ message: "Login failed" });
+  }
+});
+
+// Authentication middleware
+export function requireAuth(req: Request, res: Response, next: NextFunction) {
+  const session = (req as any).session;
+  if (!session || !session.user) {
+    return res.status(401).json({ 
+      message: "Authentication required",
+      redirectTo: "/login"
+    });
+  }
+  
+  req.user = session.user;
+  next();
+}
+
+// Role-based authorization
+export function requireRole(role: string) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    if (!req.user || req.user.role !== role) {
+      return res.status(403).json({ message: "Insufficient permissions" });
+    }
+    next();
+  };
+}
+```
+
+## 🏗️ Key Features Implementation
+
+### 1. Transaction Processing
+
+```typescript
+// Create transaction with items
+export async function createTransactionWithItems(
+  transactionData: InsertTransaction,
+  items: InsertTransactionItem[]
+): Promise<Transaction> {
+  const transaction = await storage.createTransaction(transactionData);
+  
+  for (const item of items) {
+    await storage.createTransactionItem({
+      ...item,
+      transactionId: transaction.id
+    });
+    
+    // Update stock if not a return
+    if (!transactionData.isReturn) {
+      await storage.updateProductStock(item.productId, -item.quantity);
+    }
+  }
+  
+  return transaction;
+}
+```
+
+### 2. Customer Credit Management
+
+```typescript
+// Calculate customer credit balance
+export async function recalculateCustomerBalance(customerId: number): Promise<number> {
+  const creditTransactions = await storage.getCustomerTransactions(customerId);
+  const payments = await storage.getCustomerPayments(customerId);
+  
+  const totalCredit = creditTransactions
+    .filter(t => t.status === 'On Credit' && !t.isVoided)
+    .reduce((sum, t) => sum + parseFloat(t.total), 0);
+    
+  const totalPayments = payments.reduce((sum, p) => sum + parseFloat(p.amount), 0);
+  
+  return totalCredit - totalPayments;
+}
+```
+
+### 3. Inventory Management
+
+```typescript
+// Low stock alert
+export async function getLowStockProducts(): Promise<Product[]> {
+  const products = await storage.getProducts();
+  return products.filter(p => p.stockQuantity <= p.lowStockThreshold);
+}
+
+// Update stock with validation
+export async function updateStock(productId: number, quantityChange: number): Promise<void> {
+  const product = await storage.getProduct(productId);
+  if (!product) throw new Error('Product not found');
+  
+  const newQuantity = product.stockQuantity + quantityChange;
+  if (newQuantity < 0) throw new Error('Insufficient stock');
+  
+  await storage.updateProduct(productId, { stockQuantity: newQuantity });
+}
+```
+
+### 4. Payment Processing
+
+```typescript
+// Process payment with change calculation
+export function processPayment(amountPaid: number, total: number): {
+  change: number;
+  isValid: boolean;
+  error?: string;
+} {
+  if (amountPaid < 0) {
+    return { change: 0, isValid: false, error: "Payment amount cannot be negative" };
+  }
+  
+  if (amountPaid < total) {
+    return { change: 0, isValid: false, error: "Insufficient payment amount" };
+  }
+  
+  return {
+    change: calculateChange(amountPaid, total),
+    isValid: true
+  };
+}
+```
+
+## 🎯 Integration Steps
+
+### 1. Database Setup
+1. Install Drizzle ORM and PostgreSQL driver
+2. Create database schema using the provided table definitions
+3. Run migrations to create tables
+
+### 2. Backend Implementation
+1. Set up Express server with session middleware
+2. Implement storage interface with database operations
+3. Create API routes for CRUD operations
+4. Add authentication and authorization middleware
+
+### 3. Frontend Setup
+1. Install React Query for state management
+2. Set up API client with authentication handling
+3. Create reusable components for cart, products, customers
+4. Implement POS interface with transaction processing
+
+### 4. Key Dependencies
+
+```json
+{
+  "dependencies": {
+    // Backend
+    "express": "^4.18.0",
+    "express-session": "^1.17.0",
+    "bcrypt": "^5.1.0",
+    "drizzle-orm": "^0.29.0",
+    "@neondatabase/serverless": "^0.6.0",
+    
+    // Frontend
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "@tanstack/react-query": "^5.0.0",
+    "wouter": "^3.0.0",
+    "tailwindcss": "^3.3.0",
+    "@radix-ui/react-dialog": "^1.0.0",
+    "@radix-ui/react-select": "^2.0.0",
+    
+    // Utilities
+    "zod": "^3.22.0",
+    "react-hook-form": "^7.45.0",
+    "@hookform/resolvers": "^3.3.0"
+  }
+}
+```
+
+## 🚀 Advanced Features
+
+### 1. Real-time Updates
+- WebSocket integration for live inventory updates
+- Real-time transaction monitoring
+
+### 2. Reporting & Analytics
+- Daily/monthly sales reports
+- Customer purchase analytics
+- Inventory turnover reports
+
+### 3. Security Features
+- Audit logging for all operations
+- Role-based access control
+- Session management with automatic logout
+
+### 4. UI/UX Enhancements
+- Keyboard shortcuts for common operations
+- Barcode scanning integration
+- Receipt printing
+- Mobile-responsive design
+
+## 💡 Best Practices
+
+1. **Data Validation**: Always validate input on both client and server
+2. **Error Handling**: Implement comprehensive error handling with user-friendly messages
+3. **Security**: Never trust client-side data, always validate on server
+4. **Performance**: Use pagination for large datasets
+5. **Backup**: Implement regular database backups
+6. **Testing**: Write unit tests for critical business logic
+
+This implementation guide provides a solid foundation for building a comprehensive POS system. The architecture is scalable and follows modern development practices for maintainability and security.

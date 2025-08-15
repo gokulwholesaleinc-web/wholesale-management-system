@@ -1,0 +1,78 @@
+C:\Users\user\Desktop>node capture-rmh-commands.js
+🔍 RMH Command Capture Tool Started
+=======================================
+This tool will monitor:
+- Windows print spooler activity
+- File system operations to temp folders
+- Process creation events
+
+📋 Instructions:
+1. Start this tool first
+2. Open RMH software
+3. Open the cash drawer through RMH
+4. Watch this console for captured commands
+
+🚀 Starting all monitors...
+
+👀 Monitoring Windows Print Spooler...
+📁 Monitoring temp folder for print jobs...
+🔄 Monitoring new process creation...
+✅ All monitors active!
+
+🎯 Now use RMH to open your cash drawer
+   Watch this console for captured commands
+
+Press Ctrl+C to stop monitoring
+=======================================
+[3:39:52 PM] 📄 New temp file: 0979b2ec-04ce-4da8-8de6-da4d3b03bb2b.tmp
+[3:39:52 PM] 📄 New temp file: 137aae0a-2f2e-4919-91f4-0f910a815ef9.tmp
+[3:39:52 PM] 📄 New temp file: 49a4f121-e506-4543-925a-bd1e31cf3a61.tmp
+[3:39:52 PM] 📄 New temp file: 523dbf5f-d554-4baf-88de-0907a42c0367.tmp
+[3:39:52 PM] 📄 New temp file: 678ee0eb-858b-46e8-9cf0-0eb97dfd06d5.tmp
+[3:39:52 PM] 📄 New temp file: a3f319ff-cbf9-4bb6-823c-7bdaeef1ae7b.tmp
+[3:39:52 PM] 📄 New temp file: b5615567-4c83-4156-a973-04780081e1e3.tmp
+[3:39:52 PM] 📄 New temp file: c06264b9-132c-4e22-89d5-ccfad9fd4d21.tmp
+[3:39:52 PM] 📄 New temp file: da2f8bf6-5a03-4f67-805a-309456b2414b.tmp
+[3:39:52 PM] 📄 New temp file: f2c29f16-f377-4b97-ada6-be1959950c7d.tmp
+[3:39:52 PM] 📄 New temp file: f677eed4-4d0c-4032-97d3-2c17ab5b9c0c.tmp
+[3:39:52 PM] 📄 New temp file: wct1645.tmp
+[3:39:52 PM] 📄 New temp file: wct2204.tmp
+[3:39:52 PM] 📄 New temp file: wct2205.tmp
+[3:39:52 PM] 📄 New temp file: wct2419.tmp
+[3:39:52 PM] 📄 New temp file: wct26F4.tmp
+[3:39:52 PM] 📄 New temp file: wct2952.tmp
+[3:39:52 PM] 📄 New temp file: wct3B87.tmp
+[3:39:52 PM] 📄 New temp file: wct43CF.tmp
+[3:39:52 PM] 📄 New temp file: wct468E.tmp
+[3:39:52 PM] 📄 New temp file: wct49AD.tmp
+[3:39:52 PM] 📄 New temp file: wct556.tmp
+[3:39:52 PM] 📄 New temp file: wct59C4.tmp
+[3:39:52 PM] 📄 New temp file: wct5EF8.tmp
+[3:39:52 PM] 📄 New temp file: wct630B.tmp
+[3:39:52 PM] 📄 New temp file: wct64F0.tmp
+[3:39:52 PM] 📄 New temp file: wct66D6.tmp
+[3:39:52 PM] 📄 New temp file: wct69BC.tmp
+[3:39:52 PM] 📄 New temp file: wct6BB2.tmp
+[3:39:52 PM] 📄 New temp file: wct7C02.tmp
+[3:39:52 PM] 📄 New temp file: wct7E6D.tmp
+[3:39:52 PM] 📄 New temp file: wct80FD.tmp
+[3:39:52 PM] 📄 New temp file: wct87B2.tmp
+[3:39:52 PM] 📄 New temp file: wct94CF.tmp
+[3:39:52 PM] 📄 New temp file: wctA251.tmp
+[3:39:52 PM] 📄 New temp file: wctC5D1.tmp
+[3:39:52 PM] 📄 New temp file: wctC64F.tmp
+[3:39:52 PM] 📄 New temp file: wctC9F9.tmp
+[3:39:52 PM] 📄 New temp file: wctD98B.tmp
+[3:39:52 PM] 📄 New temp file: wctDC9A.tmp
+[3:39:52 PM] 📄 New temp file: wctE5F7.tmp
+[3:39:52 PM] 📄 New temp file: wctED4A.tmp
+[3:39:52 PM] 📄 New temp file: wctEFDC.tmp
+[3:39:52 PM] 📄 New temp file: wctF19E.tmp
+[3:39:52 PM] 📄 New temp file: wctF2DF.tmp
+[3:39:52 PM] 📄 New temp file: wctFD76.tmp
+[3:39:52 PM] Print Spooler Activity Detected
+[3:39:53 PM] 🔄 Process: DESKTOP-85AB9LR,"C:\WINDOWS\system32\cmd.exe" ,cmd.exe,13164
+💾 Logged PROCESS to rmh-capture.log
+[3:39:53 PM] 🔄 Process: DESKTOP-85AB9LR,C:\WINDOWS\system32\cmd.exe /d /s /c "wmic process where "name like '%print%' or name like '%cmd%' or name like '%rmh%'" get processid,commandline,name /format:csv",cmd.exe,18728
+💾 Logged PROCESS to rmh-capture.log
+[3:39:53 PM] 🔄 Process: DESKT

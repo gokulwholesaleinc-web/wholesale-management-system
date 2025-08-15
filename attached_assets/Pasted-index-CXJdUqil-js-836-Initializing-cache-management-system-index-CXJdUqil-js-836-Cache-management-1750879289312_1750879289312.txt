@@ -1,0 +1,29 @@
+index-CXJdUqil.js:836 Initializing cache management system...
+index-CXJdUqil.js:836 Cache management system initialized
+index-CXJdUqil.js:40 [queryFn] Added auth headers for /api/auth/user with token: user-1750354461611-1...
+index-CXJdUqil.js:849 Production cache management initialized automatically
+index-CXJdUqil.js:836 Initializing session timeout system
+index-CXJdUqil.js:836 Admin user detected - extended session timeout (8 hours)
+index-CXJdUqil.js:836 Session manager initialized with timeout of 8 hours
+index-CXJdUqil.js:849 Session management initialized
+cart:52 App can be installed, showing install button...
+cart#/cart:1 Banner not shown: beforeinstallpromptevent.preventDefault() called. The page must call beforeinstallpromptevent.prompt() to show the banner.
+index-CXJdUqil.js:40 [queryFn] Response status for /api/auth/user: 200
+index-CXJdUqil.js:40 [queryFn] Added auth headers for /api/cart with token: user-1750354461611-1...
+index-CXJdUqil.js:40 [queryFn] Added auth headers for /api/order-settings/minimum with token: user-1750354461611-1...
+index-CXJdUqil.js:40 [queryFn] Response status for /api/order-settings/minimum: 200
+index-CXJdUqil.js:40 [queryFn] Response status for /api/cart: 200
+index-CXJdUqil.js:768 Initiating cart clear for user: user-1750354461611
+index-CXJdUqil.js:40 [apiRequest] Using unified auth token: user-1750354461611-1...
+index-CXJdUqil.js:40 [apiRequest] ✅ Token found and will be sent: user-1750354461611-1...
+index-CXJdUqil.js:40 [apiRequest] ✅ Auth token added for DELETE /api/cart (user-1750354461611-1...)
+api/cart:1 
+            
+            
+           Failed to load resource: the server responded with a status of 404 ()
+index-CXJdUqil.js:40 [apiRequest] Response status: 404 
+index-CXJdUqil.js:768 Cart clearing error: Error: 404: {"message":"API endpoint not found"}
+    at I8 (index-CXJdUqil.js:40:97885)
+    at async xt (index-CXJdUqil.js:40:100834)
+    at async clearCart (index-CXJdUqil.js:768:272227)
+clearCart @ index-CXJdUqil.js:768
