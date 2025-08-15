@@ -2,6 +2,34 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 type Item = { sku: string; name: string; qty: number; unit_price: number; line_tax_rate: number; il_otp_cents?: number };
 
+// Hardware integration bridge
+declare global {
+  interface Window {
+    POSBridge?: {
+      printText(text: string): void;
+      openDrawer(): void;
+    };
+    MMFB?: {
+      printReceiptText(text: string): void;
+      kickCashDrawer(): void;
+    };
+  }
+}
+
+// Initialize POSBridge adapter if not already present
+if (!window.POSBridge) {
+  window.POSBridge = {
+    printText(text: string) {
+      if (window.MMFB?.printReceiptText) return window.MMFB.printReceiptText(text);
+      console.warn('No printer bridge; skipped print');
+    },
+    openDrawer() {
+      if (window.MMFB?.kickCashDrawer) return window.MMFB.kickCashDrawer();
+      console.warn('No cash drawer bridge; skipped');
+    }
+  };
+}
+
 async function api(path: string, init?: RequestInit) {
   const res = await fetch(`/api/pos-api${path}`, { 
     headers: { 
@@ -112,34 +140,49 @@ export default function InStorePOS() {
     };
     try {
       const { data } = await api('/sale', { method: 'POST', body: JSON.stringify(payload) });
-      // Try to print via bridge if available
-      // @ts-ignore
-      if (window.MMFB?.printReceiptText) {
-        // build on server ideally; quick client call
-        const lines = [
-          'GOKUL WHOLESALE',
-          '1141 W Bryn Mawr Ave, Itasca IL 60143',
-          'Phone: 630-540-9910',
-          'www.shopgokul.com',
-          '------------------------------------------',
-          `SALE ${data.id}`,
-          new Date(data.created_at).toLocaleString(),
-          '------------------------------------------',
-          ...data.items.flatMap((it:any)=>[
-            `${it.name}`,
-            `  ${it.sku}  x${it.qty}  @$${(it.unit_price/100).toFixed(2)}   $${((it.unit_price*it.qty)/100).toFixed(2)}`
-          ]),
-          '------------------------------------------',
-          `Subtotal                 $${(data.subtotal/100).toFixed(2)}`,
-          `45% IL TOBACCO TAX PAID  $${(data.tax_il_otp/100).toFixed(2)}`,
-          `Other Taxes              $${(data.tax_other/100).toFixed(2)}`,
-          `Discount                -$${(data.discount/100).toFixed(2)}`,
-          `TOTAL                    $${(data.total/100).toFixed(2)}`,
-        ];
-        // @ts-ignore
-        window.MMFB.printReceiptText(lines.join('\n'));
+      
+      // Build professional receipt using POSBridge
+      const receiptLines = [
+        'GOKUL WHOLESALE',
+        '1141 W Bryn Mawr Ave, Itasca IL 60143',
+        'Phone: 630-540-9910',
+        'www.shopgokul.com',
+        '------------------------------------------',
+        `SALE ${data.id}`,
+        new Date(data.created_at).toLocaleString(),
+        `Register: ${data.register_id} | Cashier: ${data.cashier_id}`,
+        '------------------------------------------',
+        ...data.items.flatMap((it:any)=>[
+          `${it.name}`,
+          `  ${it.sku}  x${it.qty}  @$${(it.unit_price/100).toFixed(2)}   $${((it.unit_price*it.qty)/100).toFixed(2)}`
+        ]),
+        '------------------------------------------',
+        `Subtotal                 $${(data.subtotal/100).toFixed(2)}`,
+        data.tax_il_otp > 0 ? `45% IL TOBACCO TAX PAID  $${(data.tax_il_otp/100).toFixed(2)}` : null,
+        data.tax_other > 0 ? `Other Taxes              $${(data.tax_other/100).toFixed(2)}` : null,
+        data.discount > 0 ? `Discount                -$${(data.discount/100).toFixed(2)}` : null,
+        '------------------------------------------',
+        `TOTAL                    $${(data.total/100).toFixed(2)}`,
+        `${type}                  $${(data.tenders[0]?.amount/100 || 0).toFixed(2)}`,
+        data.change_due > 0 ? `CHANGE                   $${(data.change_due/100).toFixed(2)}` : null,
+        '',
+        'Thank you for your business!',
+        data.tax_il_otp > 0 ? 'IL Tobacco Tax Notice: This sale includes' : null,
+        data.tax_il_otp > 0 ? '45% Illinois Other Tobacco Products tax.' : null,
+        ''
+      ].filter(Boolean);
+
+      // Print receipt using hardware bridge
+      window.POSBridge?.printText(receiptLines.join('\n'));
+      
+      // Open cash drawer for cash payments
+      if (type === 'CASH') {
+        window.POSBridge?.openDrawer();
       }
-      setItems([]); setDiscount(0); setMessage(`Sale ${data.id} completed - Change: $${(data.change_due/100).toFixed(2)}`);
+      
+      setItems([]); setDiscount(0); 
+      const changeMsg = data.change_due > 0 ? ` - Change: $${(data.change_due/100).toFixed(2)}` : '';
+      setMessage(`Sale ${data.id} completed${changeMsg}`);
     } catch (err:any) {
       // offline or server error → queue
       enqueue(payload);
@@ -276,11 +319,45 @@ export default function InStorePOS() {
           </div>
         )}
 
+        {/* Hardware Controls */}
+        <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
+          <button
+            onClick={() => window.POSBridge?.openDrawer()}
+            style={{
+              flex: 1,
+              padding: '8px',
+              borderRadius: 6,
+              border: '1px solid #e5e7eb',
+              backgroundColor: '#f9fafb',
+              fontSize: 12,
+              cursor: 'pointer'
+            }}
+          >
+            Open Drawer
+          </button>
+          <button
+            onClick={() => window.POSBridge?.printText('*** TEST PRINT ***\nGokul Wholesale\nPrinter Test\n\n')}
+            style={{
+              flex: 1,
+              padding: '8px',
+              borderRadius: 6,
+              border: '1px solid #e5e7eb',
+              backgroundColor: '#f9fafb',
+              fontSize: 12,
+              cursor: 'pointer'
+            }}
+          >
+            Test Print
+          </button>
+        </div>
+
         {/* Queue status */}
-        <div style={{ marginTop: 8, fontSize: 11, color: '#6b7280' }}>
+        <div style={{ marginTop: 12, fontSize: 11, color: '#6b7280', textAlign: 'center' }}>
           Store: ITASCA | Register: REG-01
           <br />
           Queue: {JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]').length} pending
+          <br />
+          Hardware: {window.POSBridge ? '✓' : '✗'} | Bridge: {window.MMFB ? '✓' : '✗'}
         </div>
       </div>
     </div>
