@@ -1,5 +1,5 @@
 import React from 'react';
-import { useOrder, useChangeStatus } from '../../hooks/useOrders';
+import { useOrder, useChangeStatus } from '../../hooks/useNewOrders';
 
 const ALLOWED: Record<string, string[]> = {
   NEW: ['PAID', 'CANCELLED', 'ON_HOLD'],
@@ -90,7 +90,7 @@ export function OrderDrawer({ id, onClose }: { id?: string; onClose: () => void 
           <div style={{ marginTop: 16 }}>
             <button
               onClick={async () => {
-                await fetch(`/api/orders/${order.id}/recalc`, { method: 'POST' });
+                await fetch(`/api/new-orders/${order.id}/recalc`, { method: 'POST' });
                 window.location.reload();
               }}
               style={{ padding: '8px 12px', borderRadius: 8, background: '#111827', color: 'white' }}
