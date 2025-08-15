@@ -2188,16 +2188,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // PUT endpoint for admin order settings
   app.put('/api/admin/order-settings', requireEmployeeOrAdmin, async (req: any, res) => {
     try {
+      console.log('🏪 [ORDER SETTINGS PUT] Request body:', req.body);
+      console.log('🏪 [ORDER SETTINGS PUT] Request headers:', req.headers['content-type']);
+      
       const { minimumOrderAmount, deliveryFee, freeDeliveryThreshold, loyaltyPointsRate } = req.body;
+      
+      // Add input validation
+      if (minimumOrderAmount !== undefined && (isNaN(minimumOrderAmount) || minimumOrderAmount < 0)) {
+        console.error('❌ Invalid minimumOrderAmount:', minimumOrderAmount);
+        return res.status(400).json({ message: 'Minimum order amount must be a valid positive number' });
+      }
+      
+      if (deliveryFee !== undefined && (isNaN(deliveryFee) || deliveryFee < 0)) {
+        console.error('❌ Invalid deliveryFee:', deliveryFee);
+        return res.status(400).json({ message: 'Delivery fee must be a valid positive number' });
+      }
+      
+      if (freeDeliveryThreshold !== undefined && (isNaN(freeDeliveryThreshold) || freeDeliveryThreshold < 0)) {
+        console.error('❌ Invalid freeDeliveryThreshold:', freeDeliveryThreshold);
+        return res.status(400).json({ message: 'Free delivery threshold must be a valid positive number' });
+      }
+      
+      if (loyaltyPointsRate !== undefined && (isNaN(loyaltyPointsRate) || loyaltyPointsRate < 0 || loyaltyPointsRate > 1)) {
+        console.error('❌ Invalid loyaltyPointsRate:', loyaltyPointsRate);
+        return res.status(400).json({ message: 'Loyalty points rate must be a valid number between 0 and 1' });
+      }
+      
+      console.log('✅ Validation passed, updating settings...');
+      
       const updatedSettings = await storage.updateOrderSettings({
         minimumOrderAmount,
         deliveryFee,
         freeDeliveryThreshold,
         loyaltyPointsRate
       });
+      
+      console.log('✅ Settings updated successfully:', updatedSettings);
       res.json(updatedSettings);
     } catch (error) {
-      console.error('Error updating admin order settings:', error);
+      console.error('❌ Error updating admin order settings:', error);
       res.status(500).json({ message: 'Failed to update admin order settings' });
     }
   });

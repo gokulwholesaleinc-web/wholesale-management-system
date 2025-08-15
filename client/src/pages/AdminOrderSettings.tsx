@@ -75,7 +75,17 @@ export default function AdminOrderSettings() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    updateMutation.mutate(formData);
+    
+    // Ensure all numeric values are properly converted
+    const cleanData = {
+      minimumOrderAmount: formData.minimumOrderAmount ? Number(formData.minimumOrderAmount) : undefined,
+      deliveryFee: formData.deliveryFee ? Number(formData.deliveryFee) : undefined,
+      freeDeliveryThreshold: formData.freeDeliveryThreshold ? Number(formData.freeDeliveryThreshold) : undefined,
+      loyaltyPointsRate: formData.loyaltyPointsRate ? Number(formData.loyaltyPointsRate) : undefined,
+    };
+    
+    console.log('🏪 [Frontend] Sending order settings data:', cleanData);
+    updateMutation.mutate(cleanData);
   };
 
   const handleCancel = () => {
