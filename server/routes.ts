@@ -528,6 +528,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // CONSOLIDATED LOGIN - Use /api/login for all authentication
 
+  // Login endpoint (security middleware will be added in future update)
   app.post('/api/login', async (req, res) => {
     try {
       const { username, password } = req.body;
