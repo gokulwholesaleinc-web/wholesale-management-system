@@ -31,6 +31,13 @@ fix-duplicate-endpoints.mjs
 *cleanup*.sh
 archive/
 
+# Vulnerable development scripts (GitHub Security Alert)
+TM-T88V-MMF-Bridge*.js
+analyze-rmh-success.js
+capture-rmh-commands.js
+check-printer-names.js
+rmh-commands.js
+
 # Additional cleanup
 *.md.backup
 *temp*
