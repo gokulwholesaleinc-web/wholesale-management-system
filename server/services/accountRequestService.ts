@@ -5,14 +5,27 @@ import { users } from '../..../../../shared/schema';
 import { or, eq } from 'drizzle-orm';
 import { SMSService } from './smsService';
 
-if (!process.env.SENDGRID_API_KEY) {
-  throw new Error("SENDGRID_API_KEY environment variable must be set");
+// Soft-fail approach for email service in development
+let mailService: MailService | null = null;
+
+if (process.env.SENDGRID_API_KEY) {
+  mailService = new MailService();
+  mailService.setApiKey(process.env.SENDGRID_API_KEY);
+  console.log('✅ SendGrid email service initialized');
+} else {
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error("SENDGRID_API_KEY environment variable must be set in production");
+  } else {
+    console.warn('⚠️ SendGrid API key not configured - email notifications will be disabled');
+  }
 }
 
-const mailService = new MailService();
-mailService.setApiKey(process.env.SENDGRID_API_KEY);
-
 export async function sendAccountRequestNotification(request: AccountRequest): Promise<void> {
+  // Skip email sending if service not configured (dev/staging)
+  if (!mailService) {
+    console.warn('📧 Email service not configured - skipping account request notification');
+    return;
+  }
   // Get all admin and employee users to notify
   const staffUsers = await db.select({
     email: users.email,

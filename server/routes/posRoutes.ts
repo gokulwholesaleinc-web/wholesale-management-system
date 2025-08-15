@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { storage } from '../storage';
+import { validatePosToken, generateSecurePosToken, invalidatePosSession } from '../utils/secureTokenValidator';
 // POS auth will be handled in the new dedicated auth routes
 // import { requirePosAuth } from './posAuthRoutes';
 import { 
@@ -25,10 +26,11 @@ import { eq, desc, and, like, or, sql } from 'drizzle-orm';
 
 const router = Router();
 
-// POS Authentication verification endpoint
+// POS Authentication verification endpoint - SECURE VERSION
 router.post('/auth/verify', async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
+    const { deviceFingerprint } = req.body;
     
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return res.status(401).json({ success: false, message: 'No valid authentication token' });
@@ -36,36 +38,23 @@ router.post('/auth/verify', async (req, res) => {
     
     const token = authHeader.replace('Bearer ', '');
     
-    // Validate POS token format (pos-{userId}-{timestamp})
-    if (!token.startsWith('pos-')) {
-      return res.status(401).json({ success: false, message: 'Invalid POS token format' });
-    }
+    // Use secure token validation
+    const validationResult = await validatePosToken(token, deviceFingerprint);
     
-    // Extract user ID from token
-    const tokenParts = token.split('-');
-    if (tokenParts.length < 3) {
-      return res.status(401).json({ success: false, message: 'Invalid token structure' });
-    }
-    
-    const userId = tokenParts.slice(1, -1).join('-'); // Handle user IDs with hyphens
-    
-    // Verify user exists and has admin/employee privileges
-    const user = await storage.getUser(userId);
-    if (!user || (!user.isAdmin && !user.isEmployee)) {
-      return res.status(401).json({ success: false, message: 'User not found or insufficient privileges' });
+    if (!validationResult.isValid) {
+      return res.status(401).json({ success: false, message: 'Invalid or expired POS token' });
     }
     
     // Return authenticated user data
     res.json({ 
       success: true,
       user: {
-        id: user.id,
-        username: user.username,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        isAdmin: user.isAdmin,
-        isEmployee: user.isEmployee,
-        role: user.isAdmin ? 'admin' : 'employee'
+        id: validationResult.userId,
+        username: validationResult.username,
+        role: validationResult.role,
+        isAdmin: validationResult.role === 'admin',
+        isEmployee: validationResult.role === 'employee',
+        expiresAt: validationResult.expiresAt
       }
     });
   } catch (error) {
@@ -74,48 +63,36 @@ router.post('/auth/verify', async (req, res) => {
   }
 });
 
-// Legacy session validation (for backward compatibility)
+// Legacy session validation - SECURE VERSION (backward compatibility)
 router.post('/validate-session', async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
-    const { session } = req.body;
+    const { session, deviceFingerprint } = req.body;
     
-    if (!authHeader || !session) {
-      return res.json({ valid: false, message: 'Missing authentication data' });
+    if (!authHeader) {
+      return res.json({ valid: false, message: 'Missing authentication token' });
     }
     
     const token = authHeader.replace('Bearer ', '');
     
-    // Validate POS token format (pos-{userId}-{timestamp})
-    if (!token.startsWith('pos-')) {
-      return res.json({ valid: false, message: 'Invalid token format' });
+    // Use secure token validation
+    const validationResult = await validatePosToken(token, deviceFingerprint);
+    
+    if (!validationResult.isValid) {
+      return res.json({ valid: false, message: 'Invalid or expired token' });
     }
     
-    // Extract user ID from token
-    const tokenParts = token.split('-');
-    if (tokenParts.length < 3) {
-      return res.json({ valid: false, message: 'Invalid token structure' });
-    }
-    
-    const userId = tokenParts.slice(1, -1).join('-'); // Handle user IDs with hyphens
-    
-    // Verify user exists and has admin/employee privileges
-    const user = await storage.getUser(userId);
-    if (!user || (!user.isAdmin && !user.isEmployee)) {
-      return res.json({ valid: false, message: 'User not found or insufficient privileges' });
-    }
-    
-    // For now, accept any valid POS token format
-    // In production, you'd validate against stored sessions
     res.json({ 
       valid: true, 
       user: {
-        id: user.id,
-        username: user.username,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        isAdmin: user.isAdmin,
-        isEmployee: user.isEmployee
+        id: validationResult.userId,
+        username: validationResult.username,
+        firstName: validationResult.username, // Legacy compatibility
+        lastName: '', // Legacy compatibility
+        isAdmin: validationResult.role === 'admin',
+        isEmployee: validationResult.role === 'employee',
+        role: validationResult.role,
+        expiresAt: validationResult.expiresAt
       }
     });
   } catch (error) {
@@ -175,9 +152,8 @@ router.post('/login', async (req, res) => {
           const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
           
           if (trustedDevice.createdAt > thirtyDaysAgo) {
-            // Device is trusted and not expired, skip OTP
-            const timestamp = Date.now();
-            const posToken = `pos-${user.id}-${timestamp}`;
+            // Device is trusted and not expired, skip OTP  
+            const posToken = generateSecurePosToken(user.id, deviceFingerprint);
             
             // Update last used timestamp
             await storage.updateTrustedDeviceLastUsed(user.id, deviceFingerprint);
@@ -357,9 +333,8 @@ router.post('/verify-otp', async (req, res) => {
       });
     }
     
-    // Generate POS session token
-    const timestamp = Date.now();
-    const posToken = `pos-${user.id}-${timestamp}`;
+    // Generate secure POS session token
+    const posToken = generateSecurePosToken(user.id, deviceFingerprint || 'unknown');
     
     // If user chose to remember device, add it to trusted devices
     if (rememberDevice && deviceFingerprint) {

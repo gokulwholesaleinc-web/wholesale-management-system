@@ -8,8 +8,16 @@ import memoize from "memoizee";
 import connectPg from "connect-pg-simple";
 import { storage } from "./storage";
 
-if (!process.env.REPLIT_DOMAINS) {
-  throw new Error("Environment variable REPLIT_DOMAINS not provided");
+// Feature flag for Replit OIDC - only throw if explicitly enabled
+if (process.env.ENABLE_REPLIT_OIDC === 'true' && !process.env.REPLIT_DOMAINS) {
+  throw new Error("Environment variable REPLIT_DOMAINS not provided when REPLIT_OIDC is enabled");
+}
+
+// Skip Replit OIDC setup if not enabled
+const isReplitOidcEnabled = process.env.ENABLE_REPLIT_OIDC === 'true' && process.env.REPLIT_DOMAINS;
+
+if (!isReplitOidcEnabled) {
+  console.warn('⚠️ Replit OIDC disabled - set ENABLE_REPLIT_OIDC=true and REPLIT_DOMAINS to enable');
 }
 
 const getOidcConfig = memoize(
@@ -67,6 +75,11 @@ async function upsertUser(
 }
 
 export async function setupAuth(app: Express) {
+  // Skip Replit OIDC setup if not enabled
+  if (!isReplitOidcEnabled) {
+    console.log('Skipping Replit OIDC setup - not enabled');
+    return;
+  }
   app.set("trust proxy", 1);
   app.use(getSession());
   app.use(passport.initialize());

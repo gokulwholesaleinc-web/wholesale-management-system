@@ -32,7 +32,7 @@ authRoutes.post('/login', async (req, res) => {
       return res.status(401).json({ message: 'Incorrect username or password' });
     }
     
-    const isValidPassword = await bcrypt.compare(password, user.passwordHash);
+    const isValidPassword = await bcrypt.compare(password, user.passwordHash || '');
     if (!isValidPassword) {
       // Log failed login attempt
       const clientIp = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'] || 'Unknown';

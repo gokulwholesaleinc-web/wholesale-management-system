@@ -1,264 +1,198 @@
 /**
- * Unified Authentication Storage
- * 
- * Provides a consistent interface for authentication data storage
- * across different environments (browser, PWA, mobile webview)
+ * Centralized Authentication Token Management
+ * Fixes inconsistent token naming across the application
  */
 
-const AUTH_STORAGE_KEY = 'gokul_auth_data';
-const TOKEN_STORAGE_KEY = 'authToken';
+export type TokenType = 'main' | 'pos';
 
-export interface AuthData {
+interface AuthToken {
   token: string;
-  user: any;
-  expiresAt: number;
-  loginTime: number;
+  type: TokenType;
+  userId: string;
+  expires?: number;
 }
 
-export class UnifiedAuthStorage {
-  private static instance: UnifiedAuthStorage;
-
-  private constructor() {}
-
-  static getInstance(): UnifiedAuthStorage {
-    if (!UnifiedAuthStorage.instance) {
-      UnifiedAuthStorage.instance = new UnifiedAuthStorage();
-    }
-    return UnifiedAuthStorage.instance;
-  }
-
-  /**
-   * Store authentication data
-   */
-  setAuthData(authData: AuthData): void {
-    try {
-      const authString = JSON.stringify(authData);
-      
-      // Always store in sessionStorage for immediate access
-      sessionStorage.setItem(AUTH_STORAGE_KEY, authString);
-      sessionStorage.setItem(TOKEN_STORAGE_KEY, authData.token);
-      
-      // Also store in localStorage for persistence
-      localStorage.setItem(AUTH_STORAGE_KEY, authString);
-      localStorage.setItem(TOKEN_STORAGE_KEY, authData.token);
-      
-      console.log('[UnifiedAuth] Auth data stored successfully');
-    } catch (error) {
-      console.error('[UnifiedAuth] Failed to store auth data:', error);
-    }
-  }
-
-  /**
-   * Get authentication data
-   */
-  getAuthData(): AuthData | null {
-    try {
-      // Check for PWA mode
-      if (this.isPWA()) {
-        console.log('[UnifiedAuth] PWA mode detected, checking localStorage');
-        const authDataStr = localStorage.getItem(AUTH_STORAGE_KEY);
-        if (!authDataStr) {
-          console.log('[UnifiedAuth] PWA FAILURE - No valid auth data found in localStorage');
-          return null;
-        }
-        
-        const authData: AuthData = JSON.parse(authDataStr);
-        
-        // Check if token has expired
-        if (Date.now() > authData.expiresAt) {
-          this.clearAuthData();
-          return null;
-        }
-        
-        return authData;
-      }
-
-      // Regular web browser logic
-      let authDataStr = sessionStorage.getItem(AUTH_STORAGE_KEY);
-      
-      // Fallback to localStorage
-      if (!authDataStr) {
-        authDataStr = localStorage.getItem(AUTH_STORAGE_KEY);
-      }
-
-      if (!authDataStr) {
-        return null;
-      }
-
-      const authData: AuthData = JSON.parse(authDataStr);
-      
-      // Check if token has expired
-      if (Date.now() > authData.expiresAt) {
-        this.clearAuthData();
-        return null;
-      }
-
-      return authData;
-    } catch (error) {
-      console.error('[UnifiedAuth] Failed to get auth data:', error);
-      this.clearAuthData();
-      return null;
-    }
-  }
-
-  /**
-   * Get user data
-   */
-  getUser(): any | null {
-    const authData = this.getAuthData();
-    return authData?.user || null;
-  }
-
-  /**
-   * Check if user is authenticated
-   */
-  isAuthenticated(): boolean {
-    return !!this.getAuthData();
-  }
-
-  /**
-   * Clear all authentication data
-   */
-  clearAuthData(): void {
-    try {
-      const isPWAMode = this.isPWA();
-      const isIOSDevice = /iPhone|iPad|iPod/.test(navigator.userAgent);
-      
-      // CRITICAL: For PWA users, preserve localStorage for automatic login persistence
-      // Only clear sessionStorage to maintain cross-tab communication
-      if (isPWAMode || isIOSDevice) {
-        console.log('[UnifiedAuth] PWA/iOS detected - clearing session storage but preserving persistent storage');
-        
-        // Clear only sessionStorage for PWA (preserves authentication across app restarts)
-        sessionStorage.removeItem(AUTH_STORAGE_KEY);
-        sessionStorage.removeItem(TOKEN_STORAGE_KEY);
-        
-        // DO NOT clear localStorage for PWA - this maintains persistent login
-        return;
-      }
-      
-      // Standard web browser - clear everything
-      console.log('[UnifiedAuth] Standard browser - clearing all auth storage');
-      sessionStorage.removeItem(AUTH_STORAGE_KEY);
-      sessionStorage.removeItem(TOKEN_STORAGE_KEY);
-      localStorage.removeItem(AUTH_STORAGE_KEY);
-      localStorage.removeItem(TOKEN_STORAGE_KEY);
-      
-      // Clear legacy storage
-      this.clearLegacyStorage();
-    } catch (error) {
-      console.error('[UnifiedAuth] Error clearing auth data:', error);
-    }
-  }
-
-  /**
-   * Clear legacy storage keys
-   */
-  private clearLegacyStorage(): void {
-    const legacyKeys = [
-      'replit_auth_token',
-      'replit_user_data',
-      'user_auth_data',
-      'auth_token',
-      'user_data'
-    ];
+/**
+ * Single source of truth for getting authentication tokens
+ * Handles multiple token formats and storage locations
+ */
+export function getAuthToken(preferredType: TokenType = 'main'): string | null {
+  // Priority order based on requested type
+  if (preferredType === 'pos') {
+    // POS-specific token priority
+    const posToken = localStorage.getItem('pos_auth_token');
+    if (posToken) return posToken;
     
-    legacyKeys.forEach(key => {
+    // Fallback to unified auth if POS token not found
+    const unifiedAuth = localStorage.getItem('gokul_unified_auth');
+    if (unifiedAuth) {
       try {
-        sessionStorage.removeItem(key);
-        localStorage.removeItem(key);
-      } catch (error) {
-        console.error(`[UnifiedAuth] Failed to clear legacy key ${key}:`, error);
+        const parsed = JSON.parse(unifiedAuth);
+        return parsed.token || parsed.authToken;
+      } catch (e) {
+        console.warn('Failed to parse unified auth token');
       }
-    });
-  }
-
-  /**
-   * Force clear all auth data (emergency cleanup)
-   */
-  forceClearAllAuthData(): void {
-    try {
-      console.log('[UnifiedAuth] FORCE CLEAR - Removing all authentication data');
-      
-      // Clear standard keys
-      sessionStorage.removeItem(AUTH_STORAGE_KEY);
-      sessionStorage.removeItem(TOKEN_STORAGE_KEY);
-      localStorage.removeItem(AUTH_STORAGE_KEY);
-      localStorage.removeItem(TOKEN_STORAGE_KEY);
-      
-      // Clear legacy keys
-      this.clearLegacyStorage();
-      
-      console.log('[UnifiedAuth] Force clear completed');
-    } catch (error) {
-      console.error('[UnifiedAuth] Error during force clear:', error);
     }
-  }
-
-  /**
-   * Extend session
-   */
-  extendSession(): void {
-    const authData = this.getAuthData();
-    if (!authData) return;
     
-    // Extend expiration by 8 hours
-    authData.expiresAt = Date.now() + (8 * 60 * 60 * 1000);
-    this.setAuthData(authData);
-  }
-
-  /**
-   * Check if user is admin
-   */
-  isAdmin(): boolean {
-    const user = this.getUser();
-    return !!(user?.isAdmin || user?.is_admin);
-  }
-
-  /**
-   * Check if user is employee
-   */
-  isEmployee(): boolean {
-    const user = this.getUser();
-    return !!(user?.isEmployee || user?.is_employee);
-  }
-
-  /**
-   * Get session duration in milliseconds
-   */
-  getSessionDuration(): number {
-    const authData = this.getAuthData();
-    if (!authData) return 0;
-    return Date.now() - authData.loginTime;
-  }
-
-  /**
-   * Check if running in PWA mode
-   */
-  private isPWA(): boolean {
-    try {
-      // Check for PWA display mode
-      if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {
-        return true;
+    // Legacy fallbacks
+    return localStorage.getItem('posAuthToken') || 
+           localStorage.getItem('authToken') ||
+           localStorage.getItem('token');
+  } else {
+    // Main app token priority
+    const unifiedAuth = localStorage.getItem('gokul_unified_auth');
+    if (unifiedAuth) {
+      try {
+        const parsed = JSON.parse(unifiedAuth);
+        return parsed.token || parsed.authToken;
+      } catch (e) {
+        console.warn('Failed to parse unified auth token');
       }
-      
-      // Check for iOS PWA
-      if ('navigator' in window && 'standalone' in (window.navigator as any)) {
-        return !!(window.navigator as any).standalone;
-      }
-      
-      // Check for Android PWA
-      if (document.referrer.includes('android-app://')) {
-        return true;
-      }
-      
-      return false;
-    } catch (error) {
-      console.error('[UnifiedAuth] Error checking PWA mode:', error);
-      return false;
     }
+    
+    // Legacy fallbacks
+    return localStorage.getItem('authToken') ||
+           localStorage.getItem('token') ||
+           localStorage.getItem('pos_auth_token');
   }
 }
 
-// Export singleton instance
-export const unifiedAuth = UnifiedAuthStorage.getInstance();
+/**
+ * Set authentication token with proper storage
+ */
+export function setAuthToken(token: string, type: TokenType = 'main', userId?: string): void {
+  if (type === 'pos') {
+    localStorage.setItem('pos_auth_token', token);
+    
+    // Also update unified auth for consistency
+    const existingUnified = localStorage.getItem('gokul_unified_auth');
+    if (existingUnified) {
+      try {
+        const parsed = JSON.parse(existingUnified);
+        parsed.posToken = token;
+        localStorage.setItem('gokul_unified_auth', JSON.stringify(parsed));
+      } catch (e) {
+        console.warn('Failed to update unified auth with POS token');
+      }
+    }
+  } else {
+    // Main app token
+    const authData = {
+      token,
+      authToken: token, // Legacy compatibility
+      type,
+      userId,
+      timestamp: Date.now()
+    };
+    
+    localStorage.setItem('gokul_unified_auth', JSON.stringify(authData));
+    localStorage.setItem('authToken', token); // Legacy compatibility
+  }
+}
+
+/**
+ * Clear all authentication tokens
+ */
+export function clearAuthTokens(): void {
+  const tokenKeys = [
+    'gokul_unified_auth',
+    'pos_auth_token', 
+    'posAuthToken',
+    'authToken',
+    'token',
+    'tempAuthToken'
+  ];
+  
+  tokenKeys.forEach(key => localStorage.removeItem(key));
+}
+
+/**
+ * Check if user is authenticated for specific context
+ */
+export function isAuthenticated(type: TokenType = 'main'): boolean {
+  const token = getAuthToken(type);
+  return !!token && token.length > 0;
+}
+
+/**
+ * Get Authorization header value for API requests
+ */
+export function getAuthHeader(type: TokenType = 'main'): string | null {
+  const token = getAuthToken(type);
+  return token ? `Bearer ${token}` : null;
+}
+
+/**
+ * Enhanced API request wrapper that always includes proper auth
+ */
+export async function authenticatedFetch(
+  url: string, 
+  options: RequestInit = {}, 
+  tokenType: TokenType = 'main'
+): Promise<Response> {
+  const authHeader = getAuthHeader(tokenType);
+  
+  if (!authHeader) {
+    throw new Error(`No valid ${tokenType} authentication token found`);
+  }
+  
+  const headers = {
+    'Content-Type': 'application/json',
+    'Authorization': authHeader,
+    ...options.headers
+  };
+  
+  const response = await fetch(url, {
+    ...options,
+    headers
+  });
+  
+  // Handle 401 errors consistently
+  if (response.status === 401) {
+    console.warn(`401 Unauthorized for ${tokenType} request to ${url}`);
+    // Clear invalid tokens
+    if (tokenType === 'pos') {
+      localStorage.removeItem('pos_auth_token');
+    } else {
+      localStorage.removeItem('gokul_unified_auth');
+      localStorage.removeItem('authToken');
+    }
+    throw new Error(`401: Unauthorized - ${tokenType} token invalid`);
+  }
+  
+  return response;
+}
+
+/**
+ * Parse token to extract user information (for debugging)
+ */
+export function parseToken(token: string): { userId?: string; type?: string } | null {
+  try {
+    // Handle POS tokens: pos-{userId}-{timestamp}-{hash}
+    if (token.startsWith('pos-')) {
+      const parts = token.split('-');
+      if (parts.length >= 3) {
+        return { 
+          userId: parts.slice(1, -2).join('-'), 
+          type: 'pos' 
+        };
+      }
+    }
+    
+    // Handle main auth tokens: user-{userId}-{timestamp}-{hash}
+    if (token.startsWith('user-')) {
+      const parts = token.split('-');
+      if (parts.length >= 3) {
+        return { 
+          userId: parts[1], 
+          type: 'main' 
+        };
+      }
+    }
+    
+    return null;
+  } catch (e) {
+    console.warn('Failed to parse token:', e);
+    return null;
+  }
+}
