@@ -157,7 +157,7 @@ export const EnhancedPosSale: React.FC = () => {
         }
         
         const data = await response.json();
-        console.log('POS Products loaded:', data?.length || 0, 'products');
+        console.log('✅ POS Products loaded successfully:', data?.length || 0, 'products (showing all inventory)');
         return data || [];
       } catch (error) {
         console.error('Failed to load POS products:', error);

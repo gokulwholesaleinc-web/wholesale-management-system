@@ -486,7 +486,7 @@ router.get('/settings', async (req, res) => {
 // GET /api/pos/products - Get products for POS
 router.get('/products', async (req, res) => {
   try {
-    const { search, category, limit = 100 } = req.query;
+    const { search, category, limit = 1000 } = req.query;
     
     const productList = await storage.getProducts();
     let filteredProducts = productList;
@@ -507,8 +507,8 @@ router.get('/products', async (req, res) => {
       filteredProducts = filteredProducts.filter(product => product.categoryId === categoryId);
     }
     
-    // Apply limit
-    const limitNum = parseInt(limit as string) || 100;
+    // Apply limit (default 1000 to show all products for POS)
+    const limitNum = parseInt(limit as string) || 1000;
     filteredProducts = filteredProducts.slice(0, limitNum);
     
     res.json(filteredProducts);
