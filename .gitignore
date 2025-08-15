@@ -1,27 +1,38 @@
-# Environment variables and secrets
+# env & secrets
 .env
 *.env
 *.pem
 *.p12
 *.key
 
-# Credentials and sensitive files
-all-working-credentials.md
-complete-verified-credentials.md
-cookies.txt
-
-# Runtime/build/output
+# node
+node_modules/
 dist/
 build/
-node_modules/
 
-# App data
+# data & outputs
 uploads/
 invoices/
 backups/
 *.pdf
 *.sqlite
 *.db
+coverage/
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# editor
+.DS_Store
+.vscode/
+
+# Credentials and sensitive files
+all-working-credentials.md
+complete-verified-credentials.md
+cookies.txt
 
 # Debug and development files
 fix-duplicate-endpoints.mjs
@@ -43,16 +54,7 @@ rmh-commands.js
 *temp*
 *tmp*
 
-# Logs
-*.log
-logs/
-
-# OS files
-.DS_Store
-Thumbs.db
-
 # IDE files
-.vscode/
 .idea/
 
 # Temporary files
