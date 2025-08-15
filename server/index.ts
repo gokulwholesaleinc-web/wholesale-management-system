@@ -2,6 +2,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import path from "path";
 import { registerRoutes } from "./routes/index";
 import { setupVite, serveStatic, log } from "./vite";
+import adminRouter from "./routes/admin";
 
 const app = express();
 
@@ -34,6 +35,9 @@ app.use(express.urlencoded({ extended: false }));
 
   // Register API routes AFTER favicon handling
   const server = await registerRoutes(app);
+  
+  // Wire admin router
+  app.use('/api/admin', adminRouter);
   
   // Add API-specific middleware AFTER routes are registered
   app.use('/api*', (req, res, next) => {
