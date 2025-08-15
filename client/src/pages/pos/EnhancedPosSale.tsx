@@ -95,6 +95,8 @@ export const EnhancedPosSale: React.FC = () => {
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [pendingQuantity, setPendingQuantity] = useState<number | null>(null);
+  const [selectedResultIndex, setSelectedResultIndex] = useState(-1);
+  const searchResultsRef = useRef<HTMLDivElement>(null);
   const [customerSearch, setCustomerSearch] = useState('');
   const [isCustomerLookupOpen, setIsCustomerLookupOpen] = useState(false);
   const [selectedItemInfo, setSelectedItemInfo] = useState<Product | null>(null);
@@ -622,21 +624,52 @@ export const EnhancedPosSale: React.FC = () => {
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
+    // Arrow key navigation for search results
+    if (searchResults.length > 0 && isSearchFocused) {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        const newIndex = selectedResultIndex < searchResults.length - 1 ? selectedResultIndex + 1 : 0;
+        setSelectedResultIndex(newIndex);
+        scrollToSelectedItem(newIndex);
+        return;
+      }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        const newIndex = selectedResultIndex > 0 ? selectedResultIndex - 1 : searchResults.length - 1;
+        setSelectedResultIndex(newIndex);
+        scrollToSelectedItem(newIndex);
+        return;
+      }
+    }
+    
     if (e.key === 'Enter' && itemSearch.trim()) {
       if (searchResults.length > 0) {
-        // Check for pending quantity
+        // Use selected index or first item
+        const selectedProduct = selectedResultIndex >= 0 && selectedResultIndex < searchResults.length 
+          ? searchResults[selectedResultIndex] 
+          : searchResults[0];
+        
         const quantity = pendingQuantity || 1;
-        addItemToCart(searchResults[0], quantity);
+        addItemToCart(selectedProduct, quantity);
+        
         if (pendingQuantity) {
           toast({
             title: "Item Added",
-            description: `${searchResults[0].name} (${quantity}x) added to transaction`,
+            description: `${selectedProduct.name} (${quantity}x) added to transaction`,
           });
           setPendingQuantity(null);
         }
+        
+        // Reset selection
+        setSelectedResultIndex(-1);
       } else {
         handleQuickItemAdd(itemSearch);
       }
+    }
+    
+    // Reset selection when search changes
+    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp' && e.key !== 'Enter') {
+      setSelectedResultIndex(-1);
     }
     
     // Function keys for quick actions (RMS-style)
@@ -655,6 +688,16 @@ export const EnhancedPosSale: React.FC = () => {
     if (e.key === 'F10') {
       e.preventDefault();
       setIsRecallDialogOpen(true);
+    }
+  };
+
+  // Auto-scroll to selected item in search results
+  const scrollToSelectedItem = (index: number) => {
+    if (searchResultsRef.current) {
+      const items = searchResultsRef.current.querySelectorAll('[data-search-result]');
+      if (items[index]) {
+        items[index].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
     }
   };
 
@@ -963,14 +1006,25 @@ export const EnhancedPosSale: React.FC = () => {
                     </div>
                   )}
                   
-                  {/* Real-time Search Results */}
+                  {/* Real-time Search Results with Keyboard Navigation */}
                   {isSearchFocused && searchResults.length > 0 && (
-                    <Card className="absolute top-full left-0 right-0 z-50 mt-1 max-h-96 overflow-hidden">
-                      <ScrollArea className="max-h-96">
-                        {searchResults.map((product) => (
+                    <Card className="absolute top-full left-0 right-0 z-50 mt-1 max-h-96 overflow-hidden border-2 border-blue-200 shadow-lg">
+                      <ScrollArea className="max-h-96" ref={searchResultsRef}>
+                        {searchResults.map((product, index) => (
                           <div
                             key={product.id}
-                            className="p-3 hover:bg-blue-50 border-b flex items-center gap-3"
+                            data-search-result
+                            className={`p-3 border-b flex items-center gap-3 cursor-pointer transition-colors ${
+                              index === selectedResultIndex 
+                                ? 'bg-blue-100 border-blue-300' 
+                                : 'hover:bg-blue-50'
+                            }`}
+                            onClick={() => {
+                              const quantity = pendingQuantity || 1;
+                              addItemToCart(product, quantity);
+                              if (pendingQuantity) setPendingQuantity(null);
+                              setSelectedResultIndex(-1);
+                            }}
                           >
                             {/* Product Image */}
                             <div className="w-12 h-12 bg-gray-100 rounded border flex items-center justify-center shrink-0">
@@ -1055,6 +1109,12 @@ export const EnhancedPosSale: React.FC = () => {
                           </div>
                         ))}
                       </ScrollArea>
+                      <div className="p-2 bg-gray-50 text-xs text-gray-600 border-t">
+                        <div className="flex justify-between items-center">
+                          <span>{searchResults.length} results found</span>
+                          <span>Use ↑↓ arrows to navigate, Enter to select</span>
+                        </div>
+                      </div>
                     </Card>
                   )}
                 </div>
