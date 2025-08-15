@@ -222,7 +222,7 @@ export class OrderCalculationService {
   static async getFlatTaxFromDB(flatTaxId: number): Promise<number> {
     try {
       const { db } = await import('../db');
-      const { flatTaxes } = await import('../../..../../../shared/schema');
+      const { flatTaxes } = await import('../../shared/schema');
       const { eq } = await import('drizzle-orm');
       
       const [flatTax] = await db.select().from(flatTaxes).where(eq(flatTaxes.id, flatTaxId));
@@ -246,7 +246,7 @@ export class OrderCalculationService {
   static async loadFlatTaxValues(): Promise<void> {
     try {
       const { db } = await import('../db');
-      const { flatTaxes } = await import('../../..../../../shared/schema');
+      const { flatTaxes } = await import('../../shared/schema');
       
       const allFlatTaxes = await db.select().from(flatTaxes);
       
