@@ -849,8 +849,25 @@ export function UnifiedOrderDetail({
                           );
                         }
                         
-                        // Fallback for other formats
-                        return <div>{JSON.stringify(order.deliveryAddress)}</div>;
+                        // Handle the actual delivery address object structure
+                        if (order.deliveryAddress.businessName && order.deliveryAddress.addressLine1) {
+                          return (
+                            <>
+                              <div>{order.deliveryAddress.businessName || order.deliveryAddress.name}</div>
+                              <div>{order.deliveryAddress.addressLine1}</div>
+                              {order.deliveryAddress.addressLine2 && <div>{order.deliveryAddress.addressLine2}</div>}
+                              <div>
+                                {order.deliveryAddress.city}, {order.deliveryAddress.state} {order.deliveryAddress.postalCode}
+                              </div>
+                              {order.deliveryAddress.phone && (
+                                <div className="text-xs text-gray-500">📞 {order.deliveryAddress.phone}</div>
+                              )}
+                            </>
+                          );
+                        }
+                        
+                        // Last fallback - display as formatted text
+                        return <div>Delivery address format not recognized</div>;
                       })()}
                     </div>
                     {order.deliveryAddress?.instructions && (
