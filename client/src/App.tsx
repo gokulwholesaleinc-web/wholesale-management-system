@@ -54,6 +54,7 @@ import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import LoyaltyRedemptionHistoryPage from "@/pages/LoyaltyRedemptionHistoryPage";
 import AdminInvoices from "@/pages/AdminInvoices";
 import AdminTaxManagerPage from "@/pages/AdminTaxManagerPage";
+import AdminOrderSettings from "@/pages/AdminOrderSettings";
 import InstoreLoginNew from "@/pages/InstoreLoginNew";
 import PosApp from "@/pages/pos/PosApp";
 import NewOrdersPage from "@/pages/NewOrdersPage";
@@ -189,6 +190,9 @@ function App() {
           </Route>
           <Route path="/admin/tax-management">
             <AdminProtectedRoute component={AdminTaxManagerPage} />
+          </Route>
+          <Route path="/admin/order-settings">
+            <AdminProtectedRoute component={AdminOrderSettings} />
           </Route>
 
           <Route path="/admin/purchase-orders">
