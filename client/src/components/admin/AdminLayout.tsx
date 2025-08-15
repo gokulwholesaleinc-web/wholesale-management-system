@@ -1,329 +1,194 @@
-import React, { ReactNode, useState } from "react";
-import { Link, useLocation } from "wouter";
-import { 
-  LayoutDashboard, 
-  Package, 
-  ShoppingCart, 
-  Users, 
-  Settings, 
-  LogOut, 
-  UserCog,
-  Activity,
-  FolderOpen,
-  Archive,
-  FileText,
-  ChevronDown,
-  ChevronRight,
-  Menu,
-  X,
-  Home,
-  BarChart3,
-  Database,
-  CreditCard,
-  Brain,
-  Calculator,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+/**
+ * Centralized Admin Layout with Navigation
+ * Provides consistent admin UI structure across all admin pages
+ */
 
+import React from 'react';
+import { Link, useLocation } from 'wouter';
+import { AppLayout } from '@/layout/AppLayout';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { BreadcrumbNavigation } from '@/components/BreadcrumbNavigation';
+import { 
+  Users, 
+  ShoppingCart, 
+  Package, 
+  Tags, 
+  Calculator, 
+  Star, 
+  FileText, 
+  Database, 
+  UserCheck, 
+  Activity, 
+  BarChart3,
+  Settings,
+  Shield
+} from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { normalizeUserRoles, isAdmin } from '../../../shared/roleUtils';
 
 interface AdminLayoutProps {
-  children: ReactNode;
+  children: React.ReactNode;
   title?: string;
+  breadcrumbs?: Array<{ label: string; href?: string }>;
 }
 
-export function AdminLayout({ children, title }: AdminLayoutProps) {
+interface NavItem {
+  label: string;
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  badge?: string;
+  adminOnly?: boolean;
+}
+
+const navItems: NavItem[] = [
+  { label: 'Dashboard', href: '/admin', icon: BarChart3 },
+  { label: 'Users', href: '/admin/users', icon: Users },
+  { label: 'Orders', href: '/admin/orders', icon: ShoppingCart },
+  { label: 'Products', href: '/admin/products', icon: Package },
+  { label: 'Categories', href: '/admin/categories', icon: Tags },
+  { label: 'Tax Management', href: '/admin/tax', icon: Calculator },
+  { label: 'Loyalty Points', href: '/admin/loyalty', icon: Star },
+  { label: 'Account Requests', href: '/admin/account-requests', icon: UserCheck },
+  { label: 'Exports', href: '/admin/exports', icon: FileText },
+  { label: 'Backups', href: '/admin/backups', icon: Database, adminOnly: true },
+  { label: 'System Health', href: '/admin/system-health', icon: Activity, adminOnly: true },
+  { label: 'Business Insights', href: '/admin/business-insights', icon: BarChart3, adminOnly: true },
+];
+
+export function AdminLayout({ children, title, breadcrumbs = [] }: AdminLayoutProps) {
+  const { user } = useAuth();
   const [location] = useLocation();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [expandedSections, setExpandedSections] = useState<string[]>(['core']);
 
-  const toggleSection = (sectionId: string) => {
-    setExpandedSections(prev => 
-      prev.includes(sectionId) 
-        ? prev.filter(id => id !== sectionId)
-        : [...prev, sectionId]
-    );
-  };
-
-  const menuSections = [
-    {
-      id: 'core',
-      title: 'Core Management',
-      items: [
-        {
-          name: "Dashboard",
-          path: "/admin",
-          icon: <LayoutDashboard className="h-5 w-5" />,
-          badge: null,
-        },
-        {
-          name: "Orders",
-          path: "/admin/orders",
-          icon: <ShoppingCart className="h-5 w-5" />,
-          badge: "6",
-        },
-        {
-          name: "Products",
-          path: "/admin/products",
-          icon: <Package className="h-5 w-5" />,
-          badge: "222",
-        },
-      ]
-    },
-    {
-      id: 'inventory',
-      title: 'Inventory & Data',
-      items: [
-        {
-          name: "Categories",
-          path: "/admin/categories",
-          icon: <FolderOpen className="h-5 w-5" />,
-          badge: "18",
-        },
-        {
-          name: "Purchase Orders",
-          path: "/admin/purchase-orders",
-          icon: <FileText className="h-5 w-5" />,
-          badge: "34",
-        },
-        {
-          name: "Backup System",
-          path: "/admin/backup",
-          icon: <Archive className="h-5 w-5" />,
-          badge: null,
-        },
-      ]
-    },
-    {
-      id: 'users',
-      title: 'User Management',
-      items: [
-        {
-          name: "Customers",
-          path: "/admin/users",
-          icon: <Users className="h-5 w-5" />,
-          badge: "3",
-        },
-        {
-          name: "Credit Management",
-          path: "/admin/credit-management",
-          icon: <CreditCard className="h-5 w-5" />,
-          badge: null,
-        },
-        {
-          name: "Staff",
-          path: "/admin/staff",
-          icon: <UserCog className="h-5 w-5" />,
-          badge: "6",
-        },
-      ]
-    },
-    {
-      id: 'system',
-      title: 'System & Reports',
-      items: [
-        {
-          name: "Activity Logs",
-          path: "/admin/activity-logs",
-          icon: <Activity className="h-5 w-5" />,
-          badge: "100",
-        },
-        {
-          name: "Tax Management",
-          path: "/admin/tax-management",
-          icon: <Calculator className="h-5 w-5" />,
-          badge: null,
-        },
-        {
-          name: "AI Analytics",
-          path: "/admin/ai-analytics",
-          icon: <BarChart3 className="h-5 w-5" />,
-          badge: null,
-        },
-        {
-          name: "AI Recommendations",
-          path: "/admin/ai-recommendations",
-          icon: <Brain className="h-5 w-5" />,
-          badge: null,
-        },
-      ]
-    }
-  ];
-
-  const NavigationSection = ({ section, isMobile = false }: { section: typeof menuSections[0], isMobile?: boolean }) => {
-    const isExpanded = expandedSections.includes(section.id);
-    
+  if (!user) {
     return (
-      <div className="mb-4">
-        <button
-          onClick={() => toggleSection(section.id)}
-          className={`w-full flex items-center justify-between px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors ${isMobile ? 'text-xs' : ''}`}
-        >
-          <span className="flex items-center">
-            <Database className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'} mr-2`} />
-            {section.title}
-          </span>
-          {isExpanded ? 
-            <ChevronDown className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} /> : 
-            <ChevronRight className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
-          }
-        </button>
-        
-        {isExpanded && (
-          <div className={`mt-2 space-y-1 ${isMobile ? 'ml-2' : 'ml-6'}`}>
-            {section.items.map((item) => (
-              <Link key={item.path} href={item.path}>
-                <div
-                  onClick={() => isMobile && setMobileMenuOpen(false)}
-                  className={`flex items-center justify-between px-3 py-2 text-sm rounded-lg hover:bg-blue-50 transition-colors cursor-pointer ${
-                    location === item.path
-                      ? "bg-blue-100 text-blue-900 font-medium"
-                      : "text-gray-700 hover:text-gray-900"
-                  } ${isMobile ? 'text-xs py-1.5' : ''}`}
-                >
-                  <div className="flex items-center">
-                    {item.icon}
-                    <span className={`${isMobile ? 'ml-2' : 'ml-3'}`}>{item.name}</span>
-                  </div>
-                  {item.badge && (
-                    <Badge variant="secondary" className={`${isMobile ? 'text-xs px-1' : 'text-xs'}`}>
-                      {item.badge}
-                    </Badge>
-                  )}
-                </div>
-              </Link>
-            ))}
+      <AppLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <Shield className="mx-auto h-12 w-12 text-gray-400" />
+            <h2 className="mt-2 text-lg font-medium text-gray-900">Authentication Required</h2>
+            <p className="mt-1 text-sm text-gray-600">Please log in to access admin features.</p>
           </div>
-        )}
-      </div>
+        </div>
+      </AppLayout>
     );
-  };
+  }
+
+  const normalizedUser = normalizeUserRoles(user);
+  
+  if (!isAdmin(normalizedUser)) {
+    return (
+      <AppLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <Shield className="mx-auto h-12 w-12 text-red-400" />
+            <h2 className="mt-2 text-lg font-medium text-gray-900">Admin Access Required</h2>
+            <p className="mt-1 text-sm text-gray-600">You don't have permission to access this page.</p>
+          </div>
+        </div>
+      </AppLayout>
+    );
+  }
+
+  // Filter nav items based on user permissions
+  const filteredNavItems = navItems.filter(item => 
+    !item.adminOnly || normalizedUser.roles.includes('admin')
+  );
 
   return (
-    <div className="flex min-h-screen bg-gray-50 w-full overflow-x-hidden">
-      {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex lg:w-72 flex-col bg-white border-r border-gray-200 shadow-sm">
-        <div className="p-6 border-b">
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <Settings className="h-5 w-5 text-white" />
+    <AppLayout>
+      <div className="flex min-h-screen bg-gray-50">
+        {/* Sidebar */}
+        <div className="hidden md:flex md:w-64 md:flex-col">
+          <div className="flex flex-col flex-grow pt-5 bg-white shadow-sm border-r">
+            <div className="flex items-center flex-shrink-0 px-4">
+              <div className="flex items-center">
+                <Settings className="h-8 w-8 text-blue-600" />
+                <div className="ml-3">
+                  <h1 className="text-xl font-semibold text-gray-900">Admin Panel</h1>
+                  <p className="text-sm text-gray-600">
+                    Welcome, {normalizedUser.firstName || normalizedUser.username}
+                  </p>
+                </div>
+              </div>
             </div>
-            <div>
-              <h1 className="text-xl font-bold text-gray-900">Admin Panel</h1>
-              <p className="text-xs text-gray-500">Gokul Wholesale</p>
+            
+            {/* User Role Badge */}
+            <div className="px-4 mt-4">
+              <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                Administrator
+              </Badge>
             </div>
+
+            {/* Navigation */}
+            <nav className="mt-8 flex-1">
+              <div className="px-2 space-y-1">
+                {filteredNavItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = location === item.href || 
+                    (item.href !== '/admin' && location.startsWith(item.href));
+                  
+                  return (
+                    <Link key={item.href} href={item.href}>
+                      <a className={`
+                        group flex items-center px-2 py-2 text-sm font-medium rounded-md
+                        ${isActive 
+                          ? 'bg-blue-100 text-blue-900' 
+                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                        }
+                      `}>
+                        <Icon className={`
+                          mr-3 flex-shrink-0 h-6 w-6
+                          ${isActive ? 'text-blue-500' : 'text-gray-400 group-hover:text-gray-500'}
+                        `} />
+                        {item.label}
+                        {item.badge && (
+                          <Badge variant="secondary" className="ml-auto text-xs">
+                            {item.badge}
+                          </Badge>
+                        )}
+                      </a>
+                    </Link>
+                  );
+                })}
+              </div>
+            </nav>
           </div>
         </div>
-        
-        <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-          {menuSections.map((section) => (
-            <NavigationSection key={section.id} section={section} />
-          ))}
-        </nav>
-        
-        <div className="p-4 border-t bg-gray-50">
-          <Button variant="outline" className="w-full justify-start hover:bg-red-50 hover:text-red-700 hover:border-red-200" asChild>
-            <Link href="/api/logout">
-              <LogOut className="mr-2 h-4 w-4" />
-              Sign Out
-            </Link>
-          </Button>
-        </div>
-      </aside>
-
-      {/* Mobile Navigation */}
-      <div className="lg:hidden">
-        <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-          <SheetTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              className="fixed top-3 left-3 z-50 lg:hidden bg-white shadow-lg border-gray-300 hover:bg-gray-50"
-            >
-              <Menu className="h-4 w-4" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="w-80 p-0">
-            <div className="flex flex-col h-full">
-              <div className="p-4 border-b">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-6 h-6 bg-blue-600 rounded-md flex items-center justify-center">
-                      <Settings className="h-3 w-3 text-white" />
-                    </div>
-                    <div>
-                      <h1 className="text-lg font-bold text-gray-900">Admin Panel</h1>
-                      <p className="text-xs text-gray-500">Gokul Wholesale</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <nav className="flex-1 px-3 py-4 space-y-2 overflow-y-auto">
-                {menuSections.map((section) => (
-                  <NavigationSection key={section.id} section={section} isMobile={true} />
-                ))}
-              </nav>
-              
-              <div className="p-4 border-t bg-gray-50">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="w-full justify-start hover:bg-red-50 hover:text-red-700" 
-                  asChild
-                >
-                  <Link href="/api/logout">
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Sign Out
-                  </Link>
-                </Button>
-              </div>
-            </div>
-          </SheetContent>
-        </Sheet>
-      </div>
-
-      {/* Main content wrapper */}
-      <div className="flex flex-col flex-1 min-w-0 w-full">
-        {/* Header with breadcrumbs */}
-        <header className="bg-white border-b shadow-sm">
-          <div className="px-4 py-3 lg:px-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4 flex-1">
-                <div className="lg:hidden">
-                  {/* Space for mobile menu button */}
-                  <div className="w-12"></div>
-                </div>
-                <div className="flex-1">
-                  {/* NOTE: Do not add BreadcrumbNavigation here - individual pages handle their own breadcrumbs */}
-                  {title && (
-                    <h1 className="text-lg font-semibold text-gray-900 mt-1">{title}</h1>
-                  )}
-                </div>
-              </div>
-              
-              {/* Quick actions */}
-              <div className="flex items-center space-x-2">
-                <Button variant="outline" size="sm" asChild className="hidden sm:flex">
-                  <Link href="/admin">
-                    <LayoutDashboard className="h-4 w-4 mr-2" />
-                    Dashboard
-                  </Link>
-                </Button>
-              </div>
-            </div>
-          </div>
-        </header>
 
         {/* Main content */}
-        <main className="flex-1 w-full overflow-x-hidden max-w-full bg-gray-50">
-          <div className="w-full max-w-full overflow-x-hidden">
-            {children}
-          </div>
-        </main>
+        <div className="flex flex-col flex-1 overflow-hidden">
+          <main className="flex-1 relative overflow-y-auto focus:outline-none">
+            <div className="py-6">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+                {/* Breadcrumbs */}
+                {breadcrumbs.length > 0 && (
+                  <div className="mb-6">
+                    <BreadcrumbNavigation items={breadcrumbs} />
+                  </div>
+                )}
+
+                {/* Page header */}
+                {title && (
+                  <div className="pb-6">
+                    <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
+                  </div>
+                )}
+
+                {/* Page content */}
+                <div className="space-y-6">
+                  {children}
+                </div>
+              </div>
+            </div>
+          </main>
+        </div>
+
+        {/* Mobile sidebar overlay */}
+        <div className="md:hidden">
+          {/* Would implement mobile menu here */}
+        </div>
       </div>
-    </div>
+    </AppLayout>
   );
 }

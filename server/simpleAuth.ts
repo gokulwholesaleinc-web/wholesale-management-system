@@ -1,5 +1,7 @@
 import { type Request, type Response, type NextFunction } from "express";
 import { storage } from "./storage";
+// Import role utilities for consistent role handling
+import { normalizeUserRoles, isAdmin, isStaff } from '../shared/roleUtils';
 
 // Simple token-based authentication
 export const generateToken = (userId: string) => {
@@ -402,16 +404,18 @@ export const requireAdmin = async (req: Request, res: Response, next: NextFuncti
       return res.status(401).json({ message: "Authentication failed" });
     }
     
-    console.log('RequireAdmin - user found:', user.username || user.id, 'isAdmin:', user.isAdmin, 'is_admin:', user.is_admin);
+    // Normalize user roles for consistent checking
+    const normalizedUser = normalizeUserRoles(user);
+    console.log('RequireAdmin - user found:', normalizedUser.username, 'roles:', normalizedUser.roles);
 
-    // Now check if the user is an admin (handling both camelCase and snake_case formats)
-    const isAdminUser = user.isAdmin || user.is_admin || false;
-    
-    if (!isAdminUser) {
-      console.log('❌ User is not an admin:', user.username, 'isAdmin:', user.isAdmin, 'is_admin:', user.is_admin);
-      console.log('Admin flags:', { isAdmin: user.isAdmin, is_admin: user.is_admin });
+    // Check admin access using normalized role system
+    if (!isAdmin(normalizedUser)) {
+      console.log('❌ User lacks admin privileges:', normalizedUser.username, 'roles:', normalizedUser.roles);
       return res.status(403).json({ message: "Admin access required" });
     }
+
+    // Attach normalized user to request
+    req.user = normalizedUser;
     
     // User is authenticated and is an admin
     next();
@@ -479,21 +483,18 @@ export const requireEmployeeOrAdmin = async (req: Request, res: Response, next: 
       return res.status(401).json({ message: "Authentication failed" });
     }
     
-    console.log('RequireEmployeeOrAdmin - user found:', user.username || user.id, 'isAdmin:', user.isAdmin, 'is_admin:', user.is_admin, 'isEmployee:', user.isEmployee, 'is_employee:', user.is_employee);
+    // Normalize user roles for consistent checking
+    const normalizedUser = normalizeUserRoles(user);
+    console.log('RequireEmployeeOrAdmin - user found:', normalizedUser.username, 'roles:', normalizedUser.roles);
     
-    // Check if user is admin or employee (handling both camelCase and snake_case field names)
-    const isStaffMember = user.isAdmin || user.is_admin || user.isEmployee || user.is_employee;
-    
-    if (!isStaffMember) {
-      console.log('User is neither admin nor employee:', user.username);
-      console.log('User roles:', { 
-        isAdmin: user.isAdmin, 
-        is_admin: user.is_admin,
-        isEmployee: user.isEmployee, 
-        is_employee: user.is_employee 
-      });
+    // Check staff access using normalized role system
+    if (!isStaff(normalizedUser)) {
+      console.log('❌ User lacks staff privileges:', normalizedUser.username, 'roles:', normalizedUser.roles);
       return res.status(403).json({ message: "Staff access required" });
     }
+
+    // Attach normalized user to request
+    req.user = normalizedUser;
     
     // User is authenticated and has appropriate access
     next();
