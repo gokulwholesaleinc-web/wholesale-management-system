@@ -142,15 +142,26 @@ export const EnhancedPosSale: React.FC = () => {
   });
 
   const { data: customers = [], isLoading: isLoadingCustomers } = useQuery({
-    queryKey: ['/api/users'],
-    select: (data: any) => {
-      // Handle both direct array and wrapped response formats
-      const users = Array.isArray(data) ? data : (data?.users || data || []);
-      // Filter to only customers (exclude admin/employee accounts) 
-      const customers = users.filter((user: any) => 
-        user.customerLevel >= 1 || (!user.role || user.role === 'customer')
-      );
-      return customers;
+    queryKey: ['/api/pos/customers'],
+    queryFn: async () => {
+      // Use posApiRequest for proper POS authentication
+      try {
+        const response = await fetch('/api/pos/customers', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('authToken') || localStorage.getItem('pos_auth_token')}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        const data = await response.json();
+        console.log('POS Customers loaded:', data?.length || 0, 'customers');
+        return data || [];
+      } catch (error) {
+        console.error('Failed to load POS customers:', error);
+        throw error;
+      }
     }
   });
 
