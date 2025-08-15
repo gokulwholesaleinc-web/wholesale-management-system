@@ -62,34 +62,22 @@ export function OrderDrawer({ id, onClose }: { id?: string; onClose: () => void 
               <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 6 }}>Delivery Address</div>
               <div style={{ fontSize: 14 }}>
                 {(() => {
-                  // Handle the delivery address parsing - same logic as UnifiedOrderDetail
-                  if (typeof order.deliveryAddress === 'string') {
-                    try {
-                      const parsed = JSON.parse(order.deliveryAddress);
-                      return (
-                        <div>
-                          <div style={{ fontWeight: 600 }}>{parsed.businessName || parsed.name}</div>
-                          <div>{parsed.addressLine1}</div>
-                          {parsed.addressLine2 && <div>{parsed.addressLine2}</div>}
-                          <div>{parsed.city}, {parsed.state} {parsed.postalCode}</div>
-                          {parsed.phone && <div style={{ fontSize: 12, color: '#6b7280' }}>📞 {parsed.phone}</div>}
-                        </div>
-                      );
-                    } catch {
-                      return <div>{order.deliveryAddress}</div>;
-                    }
+                  // The delivery address comes as an object already, not a JSON string
+                  const addr = order.deliveryAddress;
+                  
+                  if (!addr || typeof addr !== 'object') {
+                    return <div>Delivery address not available</div>;
                   }
-                  if (order.deliveryAddress.businessName) {
-                    return (
-                      <div>
-                        <div style={{ fontWeight: 600 }}>{order.deliveryAddress.businessName}</div>
-                        <div>{order.deliveryAddress.addressLine1}</div>
-                        {order.deliveryAddress.addressLine2 && <div>{order.deliveryAddress.addressLine2}</div>}
-                        <div>{order.deliveryAddress.city}, {order.deliveryAddress.state} {order.deliveryAddress.postalCode}</div>
-                      </div>
-                    );
-                  }
-                  return <div>Delivery address not formatted properly</div>;
+                  
+                  return (
+                    <div>
+                      <div style={{ fontWeight: 600 }}>{addr.businessName || addr.name}</div>
+                      <div>{addr.addressLine1}</div>
+                      {addr.addressLine2 && <div>{addr.addressLine2}</div>}
+                      <div>{addr.city}, {addr.state} {addr.postalCode}</div>
+                      {addr.phone && <div style={{ fontSize: 12, color: '#6b7280' }}>📞 {addr.phone}</div>}
+                    </div>
+                  );
                 })()}
               </div>
             </div>
