@@ -365,10 +365,11 @@ export default function PosSystem() {
         // Check for pricing memory
         if (selectedCustomer && pricingMemory) {
           const memoryPrice = (pricingMemory as any[]).find((pm: any) => pm.productId === product.id);
-          if (memoryPrice && memoryPrice.lastPrice !== product.price) {
+          const rememberedPrice = memoryPrice?.specialPrice || memoryPrice?.lastPrice;
+          if (memoryPrice && rememberedPrice !== product.price) {
             toast({
               title: "Pricing Memory Found",
-              description: `Customer previously paid $${memoryPrice.lastPrice.toFixed(2)} for this item`,
+              description: `Customer previously paid $${rememberedPrice.toFixed(2)} for this item`,
             });
           }
         }
@@ -528,14 +529,15 @@ export default function PosSystem() {
       // Check for pricing memory and use it if available
       if (selectedCustomer && pricingMemory) {
         const memoryPrice = (pricingMemory as any[]).find((pm: any) => pm.productId === product.id);
-        if (memoryPrice && memoryPrice.lastPrice !== null) {
-          specialPrice = memoryPrice.lastPrice;
-          unitPrice = memoryPrice.lastPrice; // Use the remembered price
+        const rememberedPrice = memoryPrice?.specialPrice || memoryPrice?.lastPrice;
+        if (memoryPrice && rememberedPrice !== null) {
+          specialPrice = rememberedPrice;
+          unitPrice = rememberedPrice; // Use the remembered price
           hasPricingMemory = true;
           
           toast({
             title: "Price Memory Applied",
-            description: `Using remembered price $${memoryPrice.lastPrice.toFixed(2)} for ${product.name}`,
+            description: `Using remembered price $${rememberedPrice.toFixed(2)} for ${product.name}`,
           });
         }
       }

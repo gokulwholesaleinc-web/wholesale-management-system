@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { storage } from '../storage';
-import { createAuthToken } from '../simpleAuth';
+import { createAuthToken, requireEmployeeOrAdmin } from '../simpleAuth';
 // POS auth will be handled in the new dedicated auth routes
 // import { requirePosAuth } from './posAuthRoutes';
 import { 
@@ -360,7 +360,7 @@ router.post('/verify-otp', async (req, res) => {
 });
 
 // Add today's sales endpoint
-router.get('/todays-sales', async (req, res) => {
+router.get('/todays-sales', requireEmployeeOrAdmin, async (req, res) => {
   try {
     // Get today's date range
     const today = new Date();
@@ -410,7 +410,7 @@ async function logPosAudit(userId: string, action: string, resourceType: string,
 }
 
 // GET /api/pos/settings - Get POS settings
-router.get('/settings', async (req, res) => {
+router.get('/settings', requireEmployeeOrAdmin, async (req, res) => {
   try {
     const [settings] = await db.select().from(posSettings).limit(1);
     
@@ -438,7 +438,7 @@ router.get('/settings', async (req, res) => {
 });
 
 // GET /api/pos/products - Get products for POS
-router.get('/products', async (req, res) => {
+router.get('/products', requireEmployeeOrAdmin, async (req, res) => {
   try {
     const { search, category, limit = 100 } = req.query;
     
@@ -473,7 +473,7 @@ router.get('/products', async (req, res) => {
 });
 
 // GET /api/pos/customers - Get customers for POS
-router.get('/customers', async (req, res) => {
+router.get('/customers', requireEmployeeOrAdmin, async (req, res) => {
   try {
     const { search, limit = 50 } = req.query;
     
@@ -517,7 +517,7 @@ router.get('/customers', async (req, res) => {
 });
 
 // GET /api/pos/categories - Get categories for POS
-router.get('/categories', async (req, res) => {
+router.get('/categories', requireEmployeeOrAdmin, async (req, res) => {
   try {
     const categories = await storage.getCategories();
     res.json(categories);
@@ -528,7 +528,7 @@ router.get('/categories', async (req, res) => {
 });
 
 // POST /api/pos/held-transactions - Hold current transaction
-router.post('/held-transactions', async (req, res) => {
+router.post('/held-transactions', requireEmployeeOrAdmin, async (req, res) => {
   try {
     const user = req.user!;
     const { transactionName, customerId, items, subtotal, tax, total } = req.body;
@@ -568,7 +568,7 @@ router.post('/held-transactions', async (req, res) => {
 });
 
 // PUT /api/pos/settings - Update POS settings
-router.put('/settings', async (req, res) => {
+router.put('/settings', requireEmployeeOrAdmin, async (req, res) => {
   try {
     const user = req.user!;
     const settingsData = {
@@ -607,7 +607,7 @@ router.put('/settings', async (req, res) => {
 });
 
 // POST /api/pos/transactions - Process new transaction
-router.post('/transactions', async (req, res) => {
+router.post('/transactions', requireEmployeeOrAdmin, async (req, res) => {
   try {
     const user = req.user!;
     const {
@@ -637,6 +637,33 @@ router.post('/transactions', async (req, res) => {
       return res.status(400).json({ error: 'Insufficient cash amount' });
     }
 
+    // Validate account credit if using credit payment
+    if (paymentMethod === 'account_credit') {
+      if (!customerId) {
+        return res.status(400).json({ error: 'Customer ID is required for account credit payments' });
+      }
+
+      // Get customer's credit line
+      const [creditLine] = await db.select()
+        .from(customerCreditLines)
+        .where(eq(customerCreditLines.customerId, customerId))
+        .limit(1);
+
+      if (!creditLine) {
+        return res.status(400).json({ error: 'Customer does not have a credit line established' });
+      }
+
+      const creditLimit = parseFloat(creditLine.creditLimit.toString());
+      const currentBalance = parseFloat(creditLine.currentBalance.toString());
+      const availableCredit = creditLimit - currentBalance;
+
+      if (total > availableCredit) {
+        return res.status(400).json({ 
+          error: `Insufficient credit. Available: $${availableCredit.toFixed(2)}, Required: $${total.toFixed(2)}` 
+        });
+      }
+    }
+
     // Generate transaction number
     const transactionNumber = generateTransactionNumber();
 
@@ -657,16 +684,25 @@ router.post('/transactions', async (req, res) => {
       status: 'completed'
     }).returning();
 
-    // Create transaction items
-    const transactionItems = items.map((item: any) => ({
-      transactionId: transaction.id,
-      productId: item.productId,
-      quantity: item.quantity,
-      unitPrice: item.unitPrice,
-      originalPrice: item.unitPrice, // Store original price before discounts
-      discount: item.discount || 0,
-      subtotal: item.subtotal
-    }));
+    // Create transaction items with proper originalPrice from database
+    const transactionItems = [];
+    for (const item of items) {
+      // Get the product's base catalog price for originalPrice
+      const [product] = await db.select().from(products).where(eq(products.id, item.productId)).limit(1);
+      const originalPrice = product ? parseFloat(product.price.toString()) : item.unitPrice;
+      
+      transactionItems.push({
+        transactionId: transaction.id,
+        productId: item.productId,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        originalPrice: originalPrice, // Store actual catalog price
+        discount: item.discount || 0,
+        subtotal: item.lineSubtotal || item.subtotal,
+        lineTax: item.lineTax || 0,
+        lineTotal: item.lineTotal || item.subtotal
+      });
+    }
 
     await db.insert(posTransactionItems).values(transactionItems);
 
@@ -689,6 +725,27 @@ router.post('/transactions', async (req, res) => {
           updatedAt: new Date()
         })
         .where(eq(orders.id, orderId));
+    }
+
+    // Handle account credit payment - update customer balance and create ledger entry
+    if (paymentMethod === 'account_credit' && customerId) {
+      // Update customer's credit balance
+      await db.update(customerCreditLines)
+        .set({
+          currentBalance: sql`current_balance + ${total}`,
+          lastTransactionDate: new Date()
+        })
+        .where(eq(customerCreditLines.customerId, customerId));
+
+      // Create credit line transaction record
+      await db.insert(creditLineTransactions).values({
+        customerId,
+        transactionId: transaction.id,
+        amount: total.toString(),
+        type: 'charge',
+        description: `POS Transaction ${transactionNumber}`,
+        balanceAfter: sql`(SELECT current_balance FROM customer_credit_lines WHERE customer_id = ${customerId})`
+      });
     }
 
     // Save price memory for customer if they got special pricing
@@ -740,6 +797,7 @@ router.post('/transactions', async (req, res) => {
 
     res.json({
       success: true,
+      transactionNumber: transactionNumber, // Top-level for easy consumption
       transaction: {
         ...transaction,
         items: transactionItems
@@ -754,7 +812,7 @@ router.post('/transactions', async (req, res) => {
 });
 
 // GET /api/pos/transactions - Get transaction history
-router.get('/transactions', async (req, res) => {
+router.get('/transactions', requireEmployeeOrAdmin, async (req, res) => {
   try {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 50;
@@ -917,7 +975,7 @@ router.post('/hold-transaction', async (req, res) => {
 });
 
 // GET /api/pos/held-transactions - Get held transactions
-router.get('/held-transactions', async (req, res) => {
+router.get('/held-transactions', requireEmployeeOrAdmin, async (req, res) => {
   try {
     const heldTransactions = await db
       .select({
@@ -942,7 +1000,7 @@ router.get('/held-transactions', async (req, res) => {
 });
 
 // DELETE /api/pos/held-transactions/:id - Delete held transaction
-router.delete('/held-transactions/:id', async (req, res) => {
+router.delete('/held-transactions/:id', requireEmployeeOrAdmin, async (req, res) => {
   try {
     const user = req.user!;
     const heldTransactionId = parseInt(req.params.id);
@@ -1012,6 +1070,7 @@ router.get('/pricing-memory/:customerId', async (req, res) => {
       id: customerPricingMemory.id,
       productId: customerPricingMemory.productId,
       specialPrice: customerPricingMemory.specialPrice,
+      lastPrice: customerPricingMemory.specialPrice, // Alias for backward compatibility
       originalPrice: customerPricingMemory.originalPrice,
       reason: customerPricingMemory.reason,
       isActive: customerPricingMemory.isActive,
@@ -1538,7 +1597,7 @@ router.delete('/orders/:id/items/:itemId', async (req, res) => {
 });
 
 // POST /api/pos/held-transactions/:id/recall - Recall held transaction
-router.post('/held-transactions/:id/recall', async (req, res) => {
+router.post('/held-transactions/:id/recall', requireEmployeeOrAdmin, async (req, res) => {
   try {
     const user = req.user!;
     const heldTransactionId = parseInt(req.params.id);
@@ -1614,6 +1673,83 @@ function formatCurrency(amount: number): string {
     maximumFractionDigits: 2
   }).format(amount);
 }
+
+// POST /api/pos/manager-override - Manager override for POS operations
+router.post('/manager-override', async (req, res) => {
+  try {
+    const { email, username, password, overrideType, reason } = req.body;
+    
+    if ((!email && !username) || !password) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Manager credentials (email/username and password) are required' 
+      });
+    }
+
+    // Authenticate manager using existing user store
+    let manager;
+    if (email) {
+      manager = await storage.getUserByEmail(email);
+    } else {
+      manager = await storage.getUserByUsername(username);
+    }
+
+    if (!manager) {
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Invalid manager credentials' 
+      });
+    }
+
+    // Verify password
+    const bcrypt = await import('bcrypt');
+    const isValidPassword = await bcrypt.compare(password, manager.passwordHash || '');
+    if (!isValidPassword) {
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Invalid manager credentials' 
+      });
+    }
+
+    // Check for admin or appropriate permission
+    if (!manager.isAdmin && !manager.isEmployee) {
+      return res.status(403).json({ 
+        success: false, 
+        message: 'Insufficient privileges for manager override' 
+      });
+    }
+
+    // Generate override token with expiration
+    const overrideToken = `override-${manager.id}-${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+    const expiresAt = new Date(Date.now() + (15 * 60 * 1000)); // 15 minutes
+
+    // Log audit event
+    await logPosAudit(
+      manager.id,
+      'manager_override',
+      'pos_override',
+      overrideToken,
+      `Manager override approved: ${overrideType} - ${reason || 'No reason provided'}`,
+      req.ip
+    );
+
+    res.json({
+      success: true,
+      approved: true,
+      overrideToken,
+      expiresAt: expiresAt.toISOString(),
+      managerName: manager.firstName ? `${manager.firstName} ${manager.lastName}` : manager.username,
+      message: 'Manager override approved'
+    });
+
+  } catch (error) {
+    console.error('Manager override error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to process manager override' 
+    });
+  }
+});
 
 // AI-powered POS endpoints
 router.post('/ai-suggestions', async (req, res) => {

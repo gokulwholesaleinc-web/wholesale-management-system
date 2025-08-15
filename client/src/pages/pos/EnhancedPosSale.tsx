@@ -136,7 +136,7 @@ export const EnhancedPosSale: React.FC = () => {
 
   // Fetch real data from main application
   const { data: products = [], isLoading: isLoadingProducts } = useQuery({
-    queryKey: ['/api/products'],
+    queryKey: ['/api/pos/products'],
     select: (data: any) => data || []
   });
 
@@ -154,7 +154,7 @@ export const EnhancedPosSale: React.FC = () => {
   });
 
   const { data: categories = [] } = useQuery({
-    queryKey: ['/api/categories'],
+    queryKey: ['/api/pos/categories'],
     select: (data: any) => data || []
   });
 
