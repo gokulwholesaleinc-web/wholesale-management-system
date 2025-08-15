@@ -53,6 +53,7 @@ rmh-commands.js
 *.md.backup
 *temp*
 *tmp*
+templates/
 
 # IDE files
 .idea/
