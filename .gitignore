@@ -10,14 +10,26 @@ node_modules/
 dist/
 build/
 
-# data & outputs
+# data & outputs - Generated artifacts
 uploads/
 invoices/
 backups/
+exports/
 *.pdf
 *.sqlite
 *.db
 coverage/
+temp/
+tmp/
+.cache/
+*.tmp
+*.temp
+*.log
+
+# Git and repository maintenance
+.cleanup-backup/
+*backup*
+*.orig
 
 # logs
 npm-debug.log*
@@ -29,10 +41,17 @@ pnpm-debug.log*
 .DS_Store
 .vscode/
 
-# Credentials and sensitive files
+# Credentials and sensitive files - SECURITY CRITICAL
 all-working-credentials.md
-complete-verified-credentials.md
+complete-verified-credentials.md  
 cookies.txt
+*credentials*
+*secrets*
+.env.*
+.env.local
+.env.prod*
+config/secrets.json
+auth.json
 
 # Debug and development files
 fix-duplicate-endpoints.mjs
@@ -41,6 +60,18 @@ fix-duplicate-endpoints.mjs
 *test*.js
 *cleanup*.sh
 archive/
+
+# Maintenance scripts (moved to scripts/maintenance/)
+*validation*.mjs
+*sync*.mjs
+*investigation*.mjs
+*verification*.js
+*monitoring*.js
+*compliance*.js
+deployment-check.sh
+deployment-verification.js
+temp_routes.ts
+validate-endpoints.ts
 
 # Vulnerable development scripts (GitHub Security Alert)
 TM-T88V-MMF-Bridge*.js
