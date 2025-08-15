@@ -991,7 +991,7 @@ export const EnhancedPosSale: React.FC = () => {
                     onChange={(e) => setItemSearch(e.target.value)}
                     onKeyDown={handleKeyPress}
                     onFocus={() => setIsSearchFocused(true)}
-                    onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
+                    onBlur={() => setTimeout(() => setIsSearchFocused(false), 300)}
                     className={`text-lg h-12 pl-12 ${pendingQuantity ? 'border-orange-500 bg-orange-50' : ''}`}
                     autoComplete="off"
                   />
@@ -1008,8 +1008,13 @@ export const EnhancedPosSale: React.FC = () => {
                   
                   {/* Real-time Search Results with Keyboard Navigation */}
                   {isSearchFocused && searchResults.length > 0 && (
-                    <Card className="absolute top-full left-0 right-0 z-50 mt-1 max-h-96 overflow-hidden border-2 border-blue-200 shadow-lg">
-                      <ScrollArea className="max-h-96" ref={searchResultsRef}>
+                    <Card className="absolute top-full left-0 right-0 z-50 mt-1 border-2 border-blue-200 shadow-lg">
+                      <div 
+                        className="max-h-96 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100" 
+                        ref={searchResultsRef}
+                        onMouseEnter={(e) => e.currentTarget.focus()}
+                        style={{ scrollBehavior: 'smooth' }}
+                      >
                         {searchResults.map((product, index) => (
                           <div
                             key={product.id}
@@ -1108,7 +1113,7 @@ export const EnhancedPosSale: React.FC = () => {
                             </div>
                           </div>
                         ))}
-                      </ScrollArea>
+                      </div>
                       <div className="p-2 bg-gray-50 text-xs text-gray-600 border-t">
                         <div className="flex justify-between items-center">
                           <span>{searchResults.length} results found</span>
