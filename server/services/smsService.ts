@@ -308,6 +308,20 @@ export class SMSService {
         `;
         break;
         
+      case 'staff_new_account_alert':
+        prompt += `
+        New Account Request Alert for Staff:
+        - Customer Name: ${data.customerName}
+        - Business Name: ${data.customData?.businessName || 'Not provided'}
+        - Phone: ${data.customData?.phone || 'Not provided'}
+        - Company: ${data.customData?.company || 'Not provided'}
+        
+        CRITICAL: This is a STAFF ALERT, not a customer message.
+        Create a brief SMS alerting staff about a new account request that needs review.
+        Tell staff to "review in admin dashboard".
+        `;
+        break;
+        
       case 'order_note':
         prompt += `
         Order Note Notification:
@@ -511,6 +525,7 @@ export class SMSService {
       'promotional': `${this.companyName}: Special offer for ${customerName}! ${data.promoCode || 'Contact us for details'}. Reply STOP to opt out.`,
       'customer_note': `${this.companyName}: ${customerName}, new message about order #${data.orderNumber}. Reply STOP to opt out.`,
       'staff_new_order_alert': `${this.companyName}: New order #${data.orderNumber} from ${customerName}. $${data.orderTotal}. Check app. Reply STOP to opt out.`,
+      'staff_new_account_alert': `${this.companyName}: New account request from ${customerName} (${data.customData?.businessName || 'Business'}). Review in admin. Reply STOP to opt out.`,
       'order_note': `${this.companyName}: ${customerName}, note added to order #${data.orderNumber}: ${data.customData?.note || 'Check app for details'}. Reply STOP to opt out.`,
       'system_test': `${this.companyName}: System test message. All systems operational. Reply STOP to opt out.`,
       'sms_opt_in_confirmation': `${this.companyName}: Thank you ${customerName}! You've opted in for SMS updates. You'll receive order confirmations and important alerts. Reply STOP to opt out anytime.`
@@ -656,6 +671,9 @@ export class SMSService {
         
       case 'staff_new_order_alert':
         return `${this.companyName}: NEW ORDER #${data.orderNumber} by ${customerName} - $${data.orderTotal}. Check app. Reply STOP to opt out.`;
+
+      case 'staff_new_account_alert':
+        return `${this.companyName}: NEW ACCOUNT REQUEST from ${customerName} (${data.customData?.businessName || 'Business'}). Review in admin dashboard. Reply STOP to opt out.`;
 
       case 'promotional':
         return `${this.companyName}: ${customerName}, special offer! ${data.promoCode ? `Code: ${data.promoCode}` : 'Contact us'}. Reply STOP to opt out.`;
