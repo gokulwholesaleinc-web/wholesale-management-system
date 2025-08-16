@@ -8940,7 +8940,7 @@ Recommend 3-4 products from our inventory that match current trends. Respond wit
 
       // Send approval email to customer using notification registry
       try {
-        const { NotificationRegistry } = await import('@shared/notification-registry');
+        const { NotificationRegistry } = await import('../shared/notification-registry');
         const notificationRegistry = NotificationRegistry.getInstance();
         
         // Note: We don't send the actual password since they set it during request
