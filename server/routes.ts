@@ -9094,6 +9094,78 @@ Recommend 3-4 products from our inventory that match current trends. Respond wit
     }
   });
 
+  // Send approval email manually for already approved requests
+  app.post('/api/admin/account-requests/:id/send-approval-email', requireAdmin, async (req: any, res) => {
+    try {
+      const requestId = parseInt(req.params.id);
+      if (!Number.isInteger(requestId) || requestId <= 0) {
+        return res.status(400).json({ message: 'Invalid ID parameter' });
+      }
+      
+      // Get the account request
+      const [request] = await db.select()
+        .from(accountRequests)
+        .where(eq(accountRequests.id, requestId));
+        
+      if (!request) {
+        return res.status(404).json({ message: 'Account request not found' });
+      }
+      
+      if (request.status !== 'approved') {
+        return res.status(400).json({ message: 'Account request is not approved' });
+      }
+      
+      if (!request.createdUserId) {
+        return res.status(400).json({ message: 'No user account was created for this request' });
+      }
+      
+      // Get the created user
+      const [user] = await db.select()
+        .from(users)
+        .where(eq(users.id, request.createdUserId));
+        
+      if (!user) {
+        return res.status(404).json({ message: 'Created user account not found' });
+      }
+      
+      // Send approval email
+      try {
+        const { NotificationRegistry } = await import('../shared/notification-registry');
+        const notificationRegistry = NotificationRegistry.getInstance();
+        
+        const result = await notificationRegistry.sendAccountApprovalNotification(
+          user,
+          request.requestedUsername,
+          '(password set during registration)', // User already set their password
+          request.assignedCustomerLevel || 1,
+          request.assignedCreditLimit || 1000
+        );
+        
+        if (result.success) {
+          res.json({ 
+            success: true, 
+            message: 'Approval email sent successfully',
+            details: result.details 
+          });
+        } else {
+          res.status(500).json({ 
+            message: 'Failed to send approval email', 
+            details: result.details 
+          });
+        }
+      } catch (error) {
+        console.error('Failed to send approval email:', error);
+        res.status(500).json({ 
+          message: 'Failed to send approval email', 
+          error: (error as Error).message 
+        });
+      }
+    } catch (error) {
+      console.error('Error in send-approval-email endpoint:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
   // ============================================================================
   // ADMIN SMS CONSENT MANAGEMENT ENDPOINTS
   // ============================================================================
