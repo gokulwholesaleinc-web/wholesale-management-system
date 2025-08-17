@@ -1761,20 +1761,20 @@ function AccountRequestsTab() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <AlertCircle className="h-5 w-5" />
-          Pending Account Requests ({accountRequests.length})
+          Pending Account Requests ({accountRequests.filter((request: any) => request.status === 'pending').length})
         </CardTitle>
         <CardDescription>
           Review and approve or reject new account registration requests
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {accountRequests.length === 0 ? (
+        {accountRequests.filter((request: any) => request.status === 'pending').length === 0 ? (
           <div className="text-center py-8 text-gray-500">
             No pending account requests
           </div>
         ) : (
           <div className="space-y-4">
-            {accountRequests.map((request: any) => (
+            {accountRequests.filter((request: any) => request.status === 'pending').map((request: any) => (
               <div key={request.id} className="border rounded-lg p-4 bg-gray-50">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
