@@ -10,7 +10,9 @@
     "strict": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "jsx": "react-jsx",
+    "allowSyntheticDefaultImports": true
   },
   "include": ["server/**/*.ts", "client/**/*.ts", "client/**/*.tsx"]
 }
