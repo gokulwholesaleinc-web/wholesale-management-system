@@ -309,16 +309,16 @@ export class ReceiptGenerator {
         loyaltyPointsEarned,
       };
 
-      // Credit info - Always show customer credit account balance (even if $0.00)
-      const creditInfo = await this.calculatePreviousBalance(customer.id, order.id);
-      receiptData.creditAccountInfo = {
-        previousBalance: creditInfo.previousBalance,
-        currentBalance: creditInfo.currentBalance,
-        creditLimit: creditInfo.creditLimit,
-        paymentMethod: order.paymentMethod,
-      };
-      
-      console.log(`🔍 [CREDIT DEBUG] Customer credit info: Previous: ${fmt$(toC(creditInfo.previousBalance))}, Current: ${fmt$(toC(creditInfo.currentBalance))}, Limit: ${fmt$(toC(creditInfo.creditLimit))}`);
+      // Credit info
+      if (order.paymentMethod === "on_account" || order.paymentMethod === "credit") {
+        const creditInfo = await this.calculatePreviousBalance(customer.id, order.id);
+        receiptData.creditAccountInfo = {
+          previousBalance: creditInfo.previousBalance,
+          currentBalance: creditInfo.currentBalance,
+          creditLimit: creditInfo.creditLimit,
+          paymentMethod: order.paymentMethod,
+        };
+      }
 
       console.log(`[RECEIPT GENERATOR] Generating PDF for order ${orderId}`);
       console.log(`🔥 [CUSTOMER DATA] Name: "${receiptData.customerName}", Business: "${receiptData.customerBusinessName}", Address: "${receiptData.customerAddress}", Email: "${receiptData.customerEmail}"`);
