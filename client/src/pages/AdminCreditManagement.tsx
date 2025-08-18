@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CreditCard, DollarSign, FileText, Search, AlertTriangle, Users, Filter, History } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { CreditTransactionHistory } from '@/components/admin/CreditTransactionHistory';
