@@ -35,7 +35,11 @@ import {
   CheckCircle,
   XCircle,
   Clock,
-  Star
+  Star,
+  Truck,
+  DollarSign,
+  FileText,
+  Settings
 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
@@ -175,6 +179,13 @@ export default function EnhancedUserManagement() {
       const response = await apiRequest('GET', '/api/admin/users');
       return response as User[];
     },
+    enabled: !isLoading && !!user?.isAdmin
+  });
+
+  // Fetch order settings for the settings tab
+  const { data: orderSettings } = useQuery({
+    queryKey: ['/api/admin/order-settings'],
+    retry: 3,
     enabled: !isLoading && !!user?.isAdmin
   });
 
@@ -568,7 +579,7 @@ export default function EnhancedUserManagement() {
 
         {/* Tabs for Users and Account Requests */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 gap-2 h-auto p-2 bg-gray-100 rounded-lg">
+          <TabsList className="grid w-full grid-cols-1 sm:grid-cols-4 gap-2 h-auto p-2 bg-gray-100 rounded-lg">
             <TabsTrigger 
               value="users" 
               className="flex items-center justify-center gap-2 text-xs sm:text-sm py-3 px-2 rounded-md border border-transparent data-[state=active]:bg-white data-[state=active]:border-gray-200 data-[state=active]:shadow-sm data-[state=inactive]:hover:bg-gray-50 transition-all duration-200"
@@ -592,6 +603,14 @@ export default function EnhancedUserManagement() {
               <Mail className="h-4 w-4" />
               <span className="hidden sm:inline">Email Management</span>
               <span className="sm:hidden">Email</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="settings" 
+              className="flex items-center justify-center gap-2 text-xs sm:text-sm py-3 px-2 rounded-md border border-transparent data-[state=active]:bg-white data-[state=active]:border-gray-200 data-[state=active]:shadow-sm data-[state=inactive]:hover:bg-gray-50 transition-all duration-200"
+            >
+              <Settings className="h-4 w-4" />
+              <span className="hidden sm:inline">Order Settings</span>
+              <span className="sm:hidden">Settings</span>
             </TabsTrigger>
           </TabsList>
 
@@ -714,6 +733,10 @@ export default function EnhancedUserManagement() {
 
           <TabsContent value="emails" className="space-y-6">
             <EmailCampaignManagement />
+          </TabsContent>
+
+          <TabsContent value="settings" className="space-y-6">
+            <OrderDeliverySettingsCard />
           </TabsContent>
         </Tabs>
 
@@ -1659,3 +1682,212 @@ function UserForm({
   );
 }
 
+
+// Order & Delivery Settings Card Component
+function OrderDeliverySettingsCard() {
+  const { toast } = useToast();
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({
+    minimumOrderAmount: 0,
+    deliveryFee: 0,
+    freeDeliveryThreshold: 0,
+    loyaltyPointsRate: 0,
+    invoiceStyle: "legacy" as "legacy" | "enhanced"
+  });
+
+  // Fetch order settings
+  const { data: settings, isLoading: isLoadingSettings } = useQuery({
+    queryKey: ["/api/admin/order-settings"],
+    retry: 3,
+  });
+
+  // Initialize form data when settings load
+  React.useEffect(() => {
+    if (settings && !isEditing) {
+      setFormData({
+        minimumOrderAmount: settings.minimumOrderAmount || 0,
+        deliveryFee: settings.deliveryFee || 0,
+        freeDeliveryThreshold: settings.freeDeliveryThreshold || 0,
+        loyaltyPointsRate: settings.loyaltyPointsRate || 0,
+        invoiceStyle: settings.invoiceStyle || "legacy"
+      });
+    }
+  }, [settings, isEditing]);
+
+  // Update settings mutation
+  const updateMutation = useMutation({
+    mutationFn: async (data: typeof formData) => {
+      return apiRequest("PUT", "/api/admin/order-settings", data);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Settings Updated",
+        description: "Order and delivery settings have been updated successfully.",
+      });
+      setIsEditing(false);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Update Failed",
+        description: `Failed to update settings: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    updateMutation.mutate(formData);
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+    if (settings) {
+      setFormData({
+        minimumOrderAmount: settings.minimumOrderAmount || 0,
+        deliveryFee: settings.deliveryFee || 0,
+        freeDeliveryThreshold: settings.freeDeliveryThreshold || 0,
+        loyaltyPointsRate: settings.loyaltyPointsRate || 0,
+        invoiceStyle: settings.invoiceStyle || "legacy"
+      });
+    }
+  };
+
+  if (isLoadingSettings) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="animate-pulse space-y-4">
+            <div className="h-6 bg-gray-200 rounded w-1/3"></div>
+            <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+            <div className="h-16 bg-gray-200 rounded"></div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Settings className="h-5 w-5" />
+            <CardTitle>Order & Delivery Settings</CardTitle>
+          </div>
+          {!isEditing ? (
+            <Button onClick={() => setIsEditing(true)} variant="outline" size="sm">
+              <Settings className="h-4 w-4 mr-2" />
+              Configure Settings
+            </Button>
+          ) : (
+            <div className="flex gap-2">
+              <Button onClick={handleCancel} variant="outline" size="sm">
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleSubmit} 
+                size="sm"
+                disabled={updateMutation.isPending}
+              >
+                {updateMutation.isPending ? "Saving..." : "Save"}
+              </Button>
+            </div>
+          )}
+        </div>
+        <CardDescription>
+          Configure minimum orders & delivery fees
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        {!isEditing ? (
+          <div className="text-sm text-gray-600 space-y-2">
+            <p>Set minimum order amounts (${settings?.minimumOrderAmount || 30}), delivery fees (${settings?.deliveryFee || 5}), free delivery threshold (${settings?.freeDeliveryThreshold || 250}), loyalty points rate ({((settings?.loyaltyPointsRate || 0.02) * 100).toFixed(1)}%), and invoice style ({settings?.invoiceStyle || "legacy"}).</p>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="minimumOrderAmount">Minimum Order Amount ($)</Label>
+                <Input
+                  id="minimumOrderAmount"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formData.minimumOrderAmount}
+                  onChange={(e) => setFormData({ ...formData, minimumOrderAmount: parseFloat(e.target.value) || 0 })}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="deliveryFee">Delivery Fee ($)</Label>
+                <Input
+                  id="deliveryFee"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formData.deliveryFee}
+                  onChange={(e) => setFormData({ ...formData, deliveryFee: parseFloat(e.target.value) || 0 })}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="freeDeliveryThreshold">Free Delivery Threshold ($)</Label>
+                <Input
+                  id="freeDeliveryThreshold"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formData.freeDeliveryThreshold}
+                  onChange={(e) => setFormData({ ...formData, freeDeliveryThreshold: parseFloat(e.target.value) || 0 })}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="loyaltyPointsRate">Loyalty Points Rate (%)</Label>
+                <Input
+                  id="loyaltyPointsRate"
+                  type="number"
+                  min="0"
+                  max="1"
+                  step="0.001"
+                  value={formData.loyaltyPointsRate}
+                  onChange={(e) => setFormData({ ...formData, loyaltyPointsRate: parseFloat(e.target.value) || 0 })}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="invoiceStyle">Invoice Style</Label>
+              <Select 
+                value={formData.invoiceStyle} 
+                onValueChange={(value: "legacy" | "enhanced") => setFormData({ ...formData, invoiceStyle: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select invoice style" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="legacy">
+                    <div className="flex items-center gap-2">
+                      <FileText className="h-4 w-4" />
+                      Legacy Format
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="enhanced">
+                    <div className="flex items-center gap-2">
+                      <FileText className="h-4 w-4" />
+                      Enhanced Format
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-gray-500">
+                Choose between legacy invoice format and enhanced format with improved styling
+              </p>
+            </div>
+          </form>
+        )}
+      </CardContent>
+    </Card>
+  );
+}

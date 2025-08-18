@@ -330,6 +330,7 @@ export const orderSettings = pgTable("order_settings", {
   deliveryFee: doublePrecision("delivery_fee").default(0.00),
   freeDeliveryThreshold: doublePrecision("free_delivery_threshold").default(100.00),
   loyaltyPointsRate: doublePrecision("loyalty_points_rate").default(0.02), // Default 2% loyalty rate
+  invoiceStyle: varchar("invoice_style").default("legacy"), // 'legacy' or 'enhanced'
   updatedAt: timestamp("updated_at").defaultNow(),
   updatedBy: varchar("updated_by"),
 });

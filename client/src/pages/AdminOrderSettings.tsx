@@ -5,9 +5,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
-import { Settings, Truck, DollarSign, ShoppingCart, Save, RefreshCw } from 'lucide-react';
+import { Settings, Truck, DollarSign, ShoppingCart, Save, RefreshCw, FileText } from 'lucide-react';
 import { BreadcrumbNavigation } from '@/components/navigation/BreadcrumbNavigation';
 
 interface OrderSettings {
@@ -16,6 +17,7 @@ interface OrderSettings {
   deliveryFee: number;
   freeDeliveryThreshold: number;
   loyaltyPointsRate: number;
+  invoiceStyle: string;
   updatedAt: string;
   updatedBy: string;
 }
@@ -42,6 +44,7 @@ export default function AdminOrderSettings() {
         deliveryFee: settings.deliveryFee,
         freeDeliveryThreshold: settings.freeDeliveryThreshold,
         loyaltyPointsRate: settings.loyaltyPointsRate,
+        invoiceStyle: settings.invoiceStyle || 'legacy',
       });
     }
   }, [settings, isEditing]);
@@ -82,6 +85,7 @@ export default function AdminOrderSettings() {
       deliveryFee: formData.deliveryFee ? Number(formData.deliveryFee) : undefined,
       freeDeliveryThreshold: formData.freeDeliveryThreshold ? Number(formData.freeDeliveryThreshold) : undefined,
       loyaltyPointsRate: formData.loyaltyPointsRate ? Number(formData.loyaltyPointsRate) : undefined,
+      invoiceStyle: formData.invoiceStyle || 'legacy',
     };
     
     console.log('🏪 [Frontend] Sending order settings data:', cleanData);
@@ -96,6 +100,7 @@ export default function AdminOrderSettings() {
         deliveryFee: settings.deliveryFee,
         freeDeliveryThreshold: settings.freeDeliveryThreshold,
         loyaltyPointsRate: settings.loyaltyPointsRate,
+        invoiceStyle: settings.invoiceStyle || 'legacy',
       });
     }
   };
