@@ -573,10 +573,11 @@ export class DatabaseStorage implements IStorage {
       smsConsentIpAddress: userData.smsConsentIpAddress || null,
       marketingSmsConsent: userData.marketingSmsConsent || false,
       transactionalSmsConsent: userData.transactionalSmsConsent || false,
-      // Privacy policy acceptance
+      // Privacy policy acceptance - allow admin to create accounts without requiring privacy policy
       privacyPolicyAccepted: userData.privacyPolicyAccepted || false,
       privacyPolicyAcceptedDate: userData.privacyPolicyAccepted ? new Date() : null,
-      privacyPolicyVersion: userData.privacyPolicyAccepted ? '1.0' : null,
+      privacyPolicyVersion: userData.privacyPolicyAccepted ? '2.0' : null,
+      firstTimeLoginCompleted: userData.privacyPolicyAccepted || false, // Skip first-time modal if already accepted
       createdAt: new Date(),
       updatedAt: new Date()
     };

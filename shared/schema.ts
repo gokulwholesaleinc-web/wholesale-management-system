@@ -108,6 +108,8 @@ export const users = pgTable("users", {
   privacyPolicyAccepted: boolean("privacy_policy_accepted").default(false), // User accepted privacy policy
   privacyPolicyVersion: varchar("privacy_policy_version"), // Version of privacy policy accepted
   privacyPolicyAcceptedDate: timestamp("privacy_policy_accepted_date"), // When privacy policy was accepted
+  privacyPolicyAcceptedIpAddress: varchar("privacy_policy_accepted_ip_address"), // IP address when privacy policy was accepted
+  firstTimeLoginCompleted: boolean("first_time_login_completed").default(false), // User completed first-time login process
   // Initial notification opt-in tracking
   initialNotificationOptinCompleted: boolean("initial_notification_optin_completed").default(false), // User completed initial notification setup
   initialNotificationOptinDate: timestamp("initial_notification_optin_date"), // When initial notification setup was completed
