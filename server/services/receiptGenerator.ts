@@ -347,11 +347,15 @@ export class ReceiptGenerator {
         loyaltyPointsEarned,
       };
 
-      // Credit info - Always show customer credit account balance (even if $0.00)
+      // Credit info - always show (even if $0.00)
+      // IMPORTANT: currentBalance = previousBalance + the SAME total shown on the PDF
       const creditInfo = await this.calculatePreviousBalance(customer.id, order.id);
+      const previousBalance = Number(creditInfo.previousBalance || 0);
+      const currentBalance = previousBalance + fromC(finalTotalC); // <-- use finalTotalC (PDF total)
+      
       receiptData.creditAccountInfo = {
-        previousBalance: creditInfo.previousBalance,
-        currentBalance: creditInfo.currentBalance,
+        previousBalance,
+        currentBalance,
         creditLimit: creditInfo.creditLimit,
         paymentMethod: order.paymentMethod,
       };
@@ -614,28 +618,32 @@ export class ReceiptGenerator {
     doc.text("TOTAL:", pageWidth - 90, currentY);
     doc.text(USD.format(receiptData.total), pageWidth - 20, currentY, { align: "right" });
     
-    // Left-side block: Previous Balance and Amount Due (only for credit orders)
-    if (receiptData.creditAccountInfo && (receiptData.paymentMethod === 'on_account' || receiptData.paymentMethod === 'credit')) {
-      const leftBlockX = 20;
-      const leftBlockY = currentY - 10;
+    // ===== Left-side block: Previous Balance & Amount Due (always show) =====
+    if (receiptData.creditAccountInfo) {
+      const prev = Number(receiptData.creditAccountInfo.previousBalance || 0);
+      const amountDue = prev + Number(receiptData.total || 0);
       
-      // Light background box
+      const leftBlockX = 15;
+      const leftBlockY = currentY - 8;
+      const leftBlockW = pageWidth - 140; // space to the left of the right totals column
+      const leftBlockH = 16;
+      
       doc.setFillColor(250, 250, 250);
-      doc.rect(leftBlockX, leftBlockY, 100, 25, "F");
+      doc.rect(leftBlockX, leftBlockY, leftBlockW, leftBlockH, "F");
       doc.setDrawColor(200, 200, 200);
-      doc.rect(leftBlockX, leftBlockY, 100, 25);
+      doc.rect(leftBlockX, leftBlockY, leftBlockW, leftBlockH);
       
       // Previous Balance
       doc.setTextColor(...textDark);
       doc.setFontSize(9);
       doc.setFont('helvetica', 'normal');
-      doc.text("Previous Balance:", leftBlockX + 3, leftBlockY + 8);
-      doc.text(USD.format(receiptData.creditAccountInfo.previousBalance), leftBlockX + 50, leftBlockY + 8);
+      doc.text("Previous Balance:", leftBlockX + 4, leftBlockY + 6);
+      doc.text(USD.format(prev), leftBlockX + 4, leftBlockY + 12, { align: "right" });
       
       // Amount Due (Prev + This)
       doc.setFont('helvetica', 'bold');
-      doc.text("Amount Due (Prev + This):", leftBlockX + 3, leftBlockY + 16);
-      doc.text(USD.format(receiptData.creditAccountInfo.currentBalance), leftBlockX + 50, leftBlockY + 16);
+      doc.text("Amount Due (Prev + This):", leftBlockX + 4, leftBlockY + 12);
+      doc.text(USD.format(amountDue), leftBlockX + leftBlockW - 4, leftBlockY + 12, { align: "right" });
     }
     
     currentY += 15;
@@ -664,16 +672,16 @@ export class ReceiptGenerator {
       currentY += 35;
     }
 
-    // Loyalty Points Earned banner - positioned after totals
+    // Loyalty Points Earned banner
     if (receiptData.loyaltyPointsEarned && receiptData.loyaltyPointsEarned > 0) {
-      currentY += 5; // Add extra space before loyalty points
-      doc.setFillColor(240, 248, 240); // Light green background
+      currentY += 5;
+      doc.setFillColor(240, 248, 240);
       doc.rect(15, currentY - 3, pageWidth - 30, 12, "F");
       doc.setTextColor(...successGreen);
       doc.setFontSize(11);
       doc.setFont('helvetica', 'bold');
       doc.text(`Loyalty Points Earned: ${receiptData.loyaltyPointsEarned} points`, 20, currentY + 5);
-      currentY += 20; // Extra space after loyalty points
+      currentY += 20;
     }
 
     // Mandatory IL Tobacco Tax Compliance Message - Small box in bottom left corner
