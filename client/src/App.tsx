@@ -72,6 +72,8 @@ import { InstoreProtectedRoute } from "@/components/InstoreProtectedRoute";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 // Import auth hook for root route protection
 import { useAuth } from "@/hooks/useAuth";
+// Import privacy policy components
+import { PrivacyPolicyManager } from "@/components/PrivacyPolicyManager";
 // Import session management utilities
 import { initSessionManager } from "@/lib/sessionManager";
 // Import enhanced cache management system
@@ -170,6 +172,9 @@ function App() {
             <OfflineBanner />
             <Toaster />
             <OfflineIndicator />
+            
+            {/* Privacy Policy Modal for First-Time Login */}
+            <PrivacyPolicyManager />
           
           <ErrorBoundary>
           <Switch>

@@ -156,7 +156,7 @@ export default function EnhancedUserManagement() {
     postalCode: '',
     emailNotifications: false,
     smsNotifications: false,
-    privacyPolicyAccepted: false,  // Not required during admin creation
+    privacyPolicyAccepted: false,  // Set to false - user will accept on first login
     applyFlatTax: false
   });
 
@@ -279,7 +279,7 @@ export default function EnhancedUserManagement() {
       postalCode: '',
       emailNotifications: false,
       smsNotifications: false,
-      privacyPolicyAccepted: false,  // Not required during admin creation
+      privacyPolicyAccepted: false,  // Set to false - user will accept on first login
       applyFlatTax: false
     });
     setSelectedUser(null);
