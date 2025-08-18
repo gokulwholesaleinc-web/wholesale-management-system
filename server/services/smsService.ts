@@ -311,17 +311,14 @@ export class SMSService {
       case 'staff_new_account_alert':
         prompt += `
         New Account Request Alert for Staff:
+        - Customer Name: ${data.customerName}
         - Business Name: ${data.customData?.businessName || 'Not provided'}
-        - Contact Name: ${data.customerName}
         - Phone: ${data.customData?.phone || 'Not provided'}
-        - Email: ${data.customData?.email || 'Not provided'}
-        - FEIN: ${data.customData?.feinNumber || 'Not provided'}
-        - Business Type: ${data.customData?.businessType || 'Not provided'}
+        - Company: ${data.customData?.company || 'Not provided'}
         
         CRITICAL: This is a STAFF ALERT, not a customer message.
-        Create a detailed SMS alerting staff about a new business account request that needs immediate review and approval.
-        Include business name, contact info, and tell staff to "approve/reject in admin dashboard".
-        Make it sound urgent and professional for B2B wholesale context.
+        Create a brief SMS alerting staff about a new account request that needs review.
+        Tell staff to "review in admin dashboard".
         `;
         break;
         
@@ -528,7 +525,7 @@ export class SMSService {
       'promotional': `${this.companyName}: Special offer for ${customerName}! ${data.promoCode || 'Contact us for details'}. Reply STOP to opt out.`,
       'customer_note': `${this.companyName}: ${customerName}, new message about order #${data.orderNumber}. Reply STOP to opt out.`,
       'staff_new_order_alert': `${this.companyName}: New order #${data.orderNumber} from ${customerName}. $${data.orderTotal}. Check app. Reply STOP to opt out.`,
-      'staff_new_account_alert': `${this.companyName}: 🔔 NEW B2B ACCOUNT REQUEST - ${data.customData?.businessName || 'Business'} (Contact: ${customerName}, Phone: ${data.customData?.phone || 'N/A'}). URGENT: Approve/reject in admin now. Reply STOP to opt out.`,
+      'staff_new_account_alert': `${this.companyName}: New account request from ${customerName} (${data.customData?.businessName || 'Business'}). Review in admin. Reply STOP to opt out.`,
       'order_note': `${this.companyName}: ${customerName}, note added to order #${data.orderNumber}: ${data.customData?.note || 'Check app for details'}. Reply STOP to opt out.`,
       'system_test': `${this.companyName}: System test message. All systems operational. Reply STOP to opt out.`,
       'sms_opt_in_confirmation': `${this.companyName}: Thank you ${customerName}! You've opted in for SMS updates. You'll receive order confirmations and important alerts. Reply STOP to opt out anytime.`
@@ -676,12 +673,7 @@ export class SMSService {
         return `${this.companyName}: NEW ORDER #${data.orderNumber} by ${customerName} - $${data.orderTotal}. Check app. Reply STOP to opt out.`;
 
       case 'staff_new_account_alert':
-        return `${this.companyName}: 🔔 NEW B2B ACCOUNT REQUEST
-Business: ${data.customData?.businessName || 'Unknown Business'}
-Contact: ${customerName}
-Phone: ${data.customData?.phone || 'N/A'}
-FEIN: ${data.customData?.feinNumber || 'N/A'}
-URGENT: Approve/reject in admin dashboard now. Reply STOP to opt out.`;
+        return `${this.companyName}: NEW ACCOUNT REQUEST from ${customerName} (${data.customData?.businessName || 'Business'}). Review in admin dashboard. Reply STOP to opt out.`;
 
       case 'promotional':
         return `${this.companyName}: ${customerName}, special offer! ${data.promoCode ? `Code: ${data.promoCode}` : 'Contact us'}. Reply STOP to opt out.`;

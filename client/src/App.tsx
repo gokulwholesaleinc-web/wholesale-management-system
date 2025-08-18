@@ -19,7 +19,7 @@ import StaffProductManagement from "@/pages/StaffProductManagement";
 import StaffActivityMonitor from "@/pages/StaffActivityMonitor";
 // RealActivityLogs removed during cleanup
 import Admin from "@/pages/Admin";
-import AccountRequestsManagement from "@/components/admin/AccountRequestsManagement";
+import EnhancedUserManagement from "@/pages/EnhancedUserManagement";
 import Login from "@/pages/Login";
 // Enhanced cart is now a popup component, no dedicated routes needed
 import { EnhancedCartPage } from "@/pages/EnhancedCartPage";
@@ -217,7 +217,7 @@ function App() {
             <AdminProtectedRoute component={AdminInvoices} />
           </Route>
           <Route path="/admin/users">
-            <AdminProtectedRoute component={AccountRequestsManagement} />
+            <AdminProtectedRoute component={EnhancedUserManagement} />
           </Route>
           <Route path="/admin/staff">
             <AdminProtectedRoute component={ManageStaffPage} />

@@ -160,6 +160,8 @@ Submitted: ${request.createdAt ? new Date(request.createdAt).toLocaleString() : 
     console.log(`📱 [ACCOUNT REQUEST] Found ${staffWithPhones.length} staff members with phone numbers`);
     
     if (staffWithPhones.length > 0) {
+      const smsMessage = `🔔 NEW ACCOUNT REQUEST\n\nBusiness: ${request.businessName}\nContact: ${request.contactFirstName} ${request.contactLastName}\nEmail: ${request.email}\nPhone: ${request.phone}\n\nPlease review in admin dashboard.\n\nReply STOP to opt out`;
+      
       for (const staffMember of staffWithPhones) {
         try {
           console.log(`📱 [ACCOUNT REQUEST] Sending SMS to staff member: ${staffMember.phone}`);
@@ -169,10 +171,6 @@ Submitted: ${request.createdAt ? new Date(request.createdAt).toLocaleString() : 
             customerName: `${request.contactFirstName} ${request.contactLastName}`,
             customData: {
               businessName: request.businessName,
-              phone: request.phone,
-              email: request.email,
-              feinNumber: request.feinNumber,
-              businessType: request.businessType,
               requestId: request.id
             }
           };
