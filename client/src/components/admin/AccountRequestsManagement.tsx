@@ -62,9 +62,12 @@ import {
   CheckCircle,
   XCircle,
   Clock,
-  Trash2
+  Trash2,
+  ArrowLeft,
+  Home
 } from "lucide-react";
 import { AccountRequest } from "@shared/schema";
+import { Link } from "wouter";
 
 const approvalSchema = z.object({
   customerLevel: z.coerce.number().min(1).max(5),
@@ -237,15 +240,58 @@ export default function AccountRequestsManagement() {
 
   return (
     <div className="space-y-6">
+      {/* Mobile Navigation Header */}
+      <div className="lg:hidden bg-white border-b sticky top-0 z-10 p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <Link href="/admin" className="flex items-center text-gray-600 hover:text-gray-900">
+              <ArrowLeft className="h-5 w-5" />
+            </Link>
+            <div className="text-sm text-gray-500">
+              <Link href="/admin" className="hover:text-gray-700">Admin</Link>
+              <span className="mx-2">/</span>
+              <span className="text-gray-900">Account Requests</span>
+            </div>
+          </div>
+          <Link href="/" className="p-2 text-gray-600 hover:text-gray-900">
+            <Home className="h-5 w-5" />
+          </Link>
+        </div>
+      </div>
+
+      {/* Desktop Navigation - Hidden on mobile */}
+      <div className="hidden lg:block">
+        <div className="flex items-center space-x-2 text-sm text-gray-500 mb-4">
+          <Link href="/" className="hover:text-gray-700">Home</Link>
+          <span>/</span>
+          <Link href="/admin" className="hover:text-gray-700">Admin</Link>
+          <span>/</span>
+          <span className="text-gray-900">Account Requests</span>
+        </div>
+      </div>
+
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center">
-            <UserPlus className="h-5 w-5 mr-2" />
-            Account Requests Management
-          </CardTitle>
-          <CardDescription>
-            Review and approve new wholesale account applications
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center">
+                <UserPlus className="h-5 w-5 mr-2" />
+                Account Requests Management
+              </CardTitle>
+              <CardDescription>
+                Review and approve new wholesale account applications
+              </CardDescription>
+            </div>
+            {/* Desktop Back Button */}
+            <div className="hidden lg:block">
+              <Button asChild variant="outline">
+                <Link href="/admin">
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Back to Admin
+                </Link>
+              </Button>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
