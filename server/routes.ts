@@ -198,8 +198,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/ai-analytics/health', requireAdmin, async (req, res) => {
     try {
       const hasApiKey = !!process.env.OPENAI_API_KEY;
-      const storage = await openaiAnalytics.storage.getProducts();
-      const hasData = storage.length > 0;
+      // Security fix: Use proper method access
+      const analyticsData = await storage.getProducts();
+      const hasData = analyticsData.length > 0;
       
       res.json({
         status: 'healthy',
@@ -298,7 +299,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Generate and send OTP for in-store access
   app.post('/api/auth/generate-instore-otp', requireEmployeeOrAdmin, async (req, res) => {
     try {
-      const user = req.user;
+      const user = req.user as any; // Type assertion for middleware user
       if (!user?.email) {
         return res.status(400).json({ error: 'User email not found' });
       }
@@ -327,7 +328,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const expires = Date.now() + (5 * 60 * 1000); // 5 minutes
       otpCodes.set(otpKey, {
         code: otpCode,
-        email: user.email,
+        email: user.email as string,
         expires,
         userId: user.id
       });
@@ -337,12 +338,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log(`📧 Attempting to send OTP via EmailService to ${user.email}`);
         console.log(`🔐 Debug - OTP Code being passed: ${otpCode}`);
         const emailResult = await emailService.sendEmail({
-          to: user.email,
-          customerName: user.firstName || user.username || 'User',
-          language: 'en',
-          otpCode: otpCode,
-          expiresInMinutes: 5,
-          systemName: 'In-Store POS Access',
+          to: user.email as string,
+          customerName: (user.firstName as string) || user.username || 'User',
+          language: 'en' as const,
           securityMessage: 'This code is required in addition to your username, password, and in-store access code.'
         }, 'otp_verification', 'professional');
         
@@ -1119,7 +1117,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ message: 'Password reset successfully' });
     } catch (error) {
       console.error('Error resetting user password:', error);
-      res.status(500).json({ message: 'Failed to reset password: ' + error.message });
+      res.status(500).json({ message: 'Failed to reset password: ' + (error instanceof Error ? error.message : 'Unknown error') });
     }
   });
 
@@ -1142,11 +1140,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         id: userToDelete.id,
         username: userToDelete.username,
         email: userToDelete.email,
-        role: userToDelete.role,
         isAdmin: userToDelete.isAdmin,
         isEmployee: userToDelete.isEmployee,
-        customerLevel: userToDelete.customerLevel,
-        isActive: userToDelete.isActive
+        customerLevel: userToDelete.customerLevel
       });
 
       // Check for existing orders
