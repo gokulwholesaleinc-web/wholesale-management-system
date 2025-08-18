@@ -1,0 +1,117 @@
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import gokulLogo from "@assets/IMG_0846.png";
+
+/** ------------ Types (with optional server fields) ------------ */
+interface OrderItem {
+  id: number;
+  productId: number;
+  quantity: number;
+  price: number;
+  createdAt: string | null;
+  product?: { id: number; name: string; sku?: string; isTobaccoProduct?: boolean };
+  productName?: string;
+  flatTaxAmount?: number;      // per-line or per-unit (server dependent)
+  totalTaxAmount?: number;     // per-line total tax if provided
+  flatTaxName?: string;        // e.g., "Cook Co. Lg Cigar 60ct"
+  isTobaccoProduct?: boolean;  // if provided on client
+}
+
+type FlatTaxLine = { name: string; amount: number; description?: string };
+
+interface CalcLine { kind: string; label: string; amount: number; }
+interface CalculationBreakdown {
+  itemsSubtotal?: number;
+  flatTaxTotal?: number;
+  subtotalBeforeDelivery?: number;
+  nonTobaccoSubtotal?: number;
+  loyaltyPointsEarned?: number;
+  loyaltyRedeemValue?: number;
+  deliveryFee?: number;
+  lines?: CalcLine[];
+}
+
+interface Order {
+  id: number;
+  userId: string;
+  total: number;
+  orderType: "delivery" | "pickup" | string;
+  deliveryDate: string | null;
+  deliveryTimeSlot: string | null;
+  deliveryFee: number | null;
+  deliveryNote: string | null;
+  pickupTimeSlot: string | null;
+  pickupNote: string | null;
+  status: string;
+  createdAt: string | null;
+  updatedAt: string | null;
+  items: OrderItem[];
+  deliveryAddressData?: any;
+
+  // payment / notes
+  paymentMethod?: string;
+  checkNumber?: string;
+  paymentDate?: string;
+  paymentNotes?: string;
+  notes?: string;
+  adminNote?: string;
+
+  // loyalty
+  loyaltyPointsRedeemed?: number;
+  loyaltyPointsValue?: number;
+  loyaltyPointsEarned?: number;
+
+  // breakdowns from server (optional)
+  flatTaxBreakdown?: FlatTaxLine[];
+  calculationBreakdown?: CalculationBreakdown;
+
+  // user
+  user?: {
+    id: string;
+    firstName: string | null;
+    lastName: string | null;
+    company: string | null;
+    businessName?: string | null;
+    username: string;
+  };
+
+  // credit / previous balance (any of these may exist)
+  previousBalance?: number;
+  creditAccountInfo?: { previousBalance?: number };
+}
+
+/** ------------ Helpers ------------ */
+const fmt$ = (n: number) => `$${n.toFixed(2)}`;
+const asDate = (s?: string | null) => (s ? new Date(s).toLocaleDateString() : "N/A");
+
+/** ------------ Main: build PDF (client-side) ------------ */
+export const generateOrderPDF = (order: Order, customerName?: string) => {
+  const doc = new jsPDF();
+
+  // ---------- Header with transparent logo ----------
+  try {
+    doc.addImage(gokulLogo, "PNG", 20, 10, 25, 25);
+  } catch (err) {
+    // If logo fails, we still render header text
+    // (no crash)
+  }
+
+  doc.setFont("helvetica", "bold").setFontSize(18);
+  doc.text("Gokul Wholesale Inc.", 50, 20);
+
+  doc.setFont("helvetica", "normal").setFontSize(10);
+  doc.text("1141 W Bryn Mawr Ave, Itasca, IL 60143", 50, 28);
+  doc.text("(630) 540-9910 | sales@gokulwholesaleinc.com", 50, 34);
+  doc.text("TP# 97239", 50, 40);
+
+  doc.setFont("helvetica", "bold").setFontSize(12);
+  doc.text(`Order #${order.id}`, 180, 20, { align: "right" });
+
+  doc.setFont("helvetica", "normal").setFontSize(10);
+  doc.text(`Date: ${asDate(order.createdAt)}`, 180, 28, { align: "right" });
+
+  // thin divider
+  doc.setLineWidth(0.5);
+  doc.line(15, 45, 195, 45);
+
+  // ---------- Custom
