@@ -1,0 +1,236 @@
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import gokulLogo from "@assets/IMG_0846.png"; // Transparent PNG version (no white circle)
+
+/**
+ * Order + Item interfaces
+ */
+interface OrderItem {
+  id: number;
+  productId: number;
+  quantity: number;
+  price: number;
+  createdAt: string | null;
+  product?: { id: number; name: string };
+  productName?: string;
+  flatTaxAmount?: number;
+  totalTaxAmount?: number;
+}
+
+interface Order {
+  id: number;
+  userId: string;
+  total: number;
+  orderType: string;
+  deliveryDate: string | null;
+  deliveryTimeSlot: string | null;
+  deliveryFee: number | null;
+  deliveryNote: string | null;
+  pickupTimeSlot: string | null;
+  pickupNote: string | null;
+  status: string;
+  createdAt: string | null;
+  updatedAt: string | null;
+  items: OrderItem[];
+  deliveryAddressData?: any;
+  paymentMethod?: string;
+  checkNumber?: string;
+  paymentDate?: string;
+  paymentNotes?: string;
+  notes?: string;
+  adminNote?: string;
+  loyaltyPointsRedeemed?: number;
+  loyaltyPointsValue?: number;
+  user?: {
+    id: string;
+    firstName: string | null;
+    lastName: string | null;
+    company: string | null;
+    businessName?: string | null;
+    username: string;
+  };
+}
+
+/**
+ * Generate PDF Document
+ */
+export const generateOrderPDF = (order: Order, customerName?: string) => {
+  const displayCustomerName =
+    customerName ||
+    order.user?.company ||
+    order.user?.businessName ||
+    (order.user?.firstName && order.user?.lastName
+      ? `${order.user.firstName} ${order.user.lastName}`
+      : "") ||
+    order.user?.username ||
+    "Customer";
+
+  const doc = new jsPDF();
+
+  /**
+   * =========================
+   * Header + Logo
+   * =========================
+   */
+  try {
+    // Transparent PNG logo
+    doc.addImage(gokulLogo, "PNG", 20, 10, 25, 25);
+
+    // Company text
+    doc.setFontSize(16).setFont("helvetica", "bold");
+    doc.text("Gokul Wholesale", 50, 20);
+
+    doc.setFontSize(9).setFont("helvetica", "normal");
+    doc.text(
+      "1141 W Bryn Mawr Ave, Itasca, IL 60143 | Phone: (630) 540-9910",
+      50,
+      28
+    );
+
+    // License top right
+    doc.setFontSize(10).setFont("helvetica", "bold");
+    doc.text("TP#97239", 160, 32);
+
+    // Order number
+    doc.setFontSize(14).setFont("helvetica", "bold");
+    doc.text(`Order #${order.id}`, 140, 20);
+
+    doc.setLineWidth(0.3);
+    doc.line(20, 38, 190, 38);
+  } catch (err) {
+    console.warn("Logo load failed:", err);
+    doc.setFontSize(16).setFont("helvetica", "bold");
+    doc.text("Gokul Wholesale", 20, 20);
+  }
+
+  /**
+   * =========================
+   * Order Info
+   * =========================
+   */
+  const orderDate = order.createdAt
+    ? new Date(order.createdAt).toLocaleDateString()
+    : "N/A";
+
+  doc.setFontSize(9).setFont("helvetica", "normal");
+  doc.text(`Date: ${orderDate}`, 20, 48);
+  doc.text(
+    `Type: ${order.orderType === "delivery" ? "Delivery" : "Pickup"}`,
+    80,
+    48
+  );
+  doc.text(`Status: ${order.status}`, 140, 48);
+
+  let yPos = 58;
+  if (displayCustomerName) {
+    doc.text(`Customer: ${displayCustomerName}`, 20, yPos);
+  }
+  if (order.paymentMethod) {
+    let payment = order.paymentMethod;
+    if (payment === "check" && order.checkNumber) {
+      payment += ` #${order.checkNumber}`;
+    }
+    doc.text(`Payment: ${payment}`, 120, yPos);
+  }
+
+  /**
+   * =========================
+   * Items Table
+   * =========================
+   */
+  yPos += 10;
+  const tableData = order.items.map((item) => [
+    item.product?.name || item.productName || "Product",
+    item.quantity.toString(),
+    `$${item.price.toFixed(2)}`,
+    `$${(item.quantity * item.price).toFixed(2)}`,
+  ]);
+
+  autoTable(doc, {
+    startY: yPos,
+    head: [["Product", "Qty", "Unit Price", "Total"]],
+    body: tableData,
+    theme: "grid",
+    headStyles: { fillColor: [41, 128, 185], textColor: 255, fontStyle: "bold" },
+    styles: { fontSize: 9, cellPadding: 4 },
+    columnStyles: { 1: { halign: "center" }, 2: { halign: "right" }, 3: { halign: "right" } },
+  });
+
+  /**
+   * =========================
+   * Totals Section
+   * =========================
+   */
+  const subtotal = order.items.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
+  const deliveryFee = order.deliveryFee || 0;
+  const taxes = order.items.reduce(
+    (sum, i) => sum + (i.totalTaxAmount || i.flatTaxAmount || 0),
+    0
+  );
+
+  let yTotal = (doc as any).lastAutoTable.finalY + 10;
+  doc.setFont("helvetica", "bold");
+  doc.text(`Subtotal: $${subtotal.toFixed(2)}`, 140, yTotal);
+  yTotal += 7;
+
+  if (taxes > 0) {
+    doc.text(`Cook County Large Cigar Tax: $${taxes.toFixed(2)}`, 140, yTotal);
+    yTotal += 7;
+  }
+  if (deliveryFee > 0) {
+    doc.text(`Delivery Fee: $${deliveryFee.toFixed(2)}`, 140, yTotal);
+    yTotal += 7;
+  }
+  if ((order.loyaltyPointsRedeemed || 0) > 0) {
+    doc.text(
+      `Loyalty Redeemed: ${order.loyaltyPointsRedeemed} ($${(
+        order.loyaltyPointsValue || 0
+      ).toFixed(2)})`,
+      140,
+      yTotal
+    );
+    yTotal += 7;
+  }
+
+  doc.setFontSize(12);
+  doc.text(`Total: $${order.total.toFixed(2)}`, 140, yTotal);
+
+  /**
+   * =========================
+   * Tobacco Notice (bottom-left small box)
+   * =========================
+   */
+  const pageH = doc.internal.pageSize.height;
+  const noticeY = pageH - 25;
+
+  const notice = "45% IL Tobacco Tax Paid";
+  doc.setFontSize(9).setFont("helvetica", "bold").setTextColor(220, 53, 69);
+
+  doc.setDrawColor(220, 53, 69);
+  doc.rect(20, noticeY - 6, 60, 10); // small box bottom-left
+  doc.text(notice, 50, noticeY, { align: "center" });
+
+  doc.setTextColor(0, 0, 0);
+
+  /**
+   * =========================
+   * Footer
+   * =========================
+   */
+  doc.setFontSize(8).setFont("helvetica", "normal");
+  doc.text("Thank you for your business!", 20, pageH - 12);
+  doc.text(`Generated on ${new Date().toLocaleDateString()}`, 20, pageH - 7);
+
+  return doc;
+};
+
+/**
+ * Save PDF
+ */
+export const downloadOrderPDF = (order: Order, customerName?: string) => {
+  const doc = generateOrderPDF(order, customerName);
+  doc.save(`Order-${order.id}-${Date.now()}.pdf`);
+};
