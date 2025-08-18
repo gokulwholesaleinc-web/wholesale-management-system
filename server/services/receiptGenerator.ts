@@ -490,38 +490,54 @@ export class ReceiptGenerator {
     doc.setFont("helvetica", "normal");
     doc.text(`Date: ${receiptData.orderDate}`, pageWidth - 20, 32, { align: "right" });
 
-    // Customer info card (dynamic height for address wrapping)
+    // ---- Customer info card (now includes business, name, address) ----
     let y = 55;
-    let cardHeight = 22; // base height
-    
-    // Calculate additional height needed for wrapped address
-    if (receiptData.customerAddress && receiptData.customerAddress.trim() !== "") {
-      const wrapWidth = (pageWidth / 2) - 25;
-      const addrLines = doc.splitTextToSize(receiptData.customerAddress, wrapWidth);
-      const extraLines = Math.min(addrLines.length, 3) - 1; // first line is accounted for in base
-      cardHeight += Math.max(0, extraLines * 5); // 5 units per extra line
+    const leftX = 15;
+    const rightX = pageWidth / 2;
+    const lineGap = 5;
+    const wrapWidth = (pageWidth / 2) - 25;
+
+    // Prepare left-side lines
+    const linesLeft: string[] = [];
+    const biz = (receiptData.customerBusinessName || "").trim();
+    const person = (receiptData.customerName || "").trim();
+    const addr = (receiptData.customerAddress || "").trim();
+
+    if (biz) linesLeft.push(biz);
+    if (person) linesLeft.push(person);
+    if (addr) {
+      const addrLines = doc.splitTextToSize(addr, wrapWidth);
+      linesLeft.push(...addrLines.slice(0, 3)); // up to 3 lines
     }
-    
-    // Note: Business name is now displayed in the main body, not in this header card
-    
+
+    // Compute dynamic height
+    const leftBlockHeight = linesLeft.length > 0 ? (lineGap * linesLeft.length) : 0;
+    const minCardHeight = 22;
+    const cardHeight = Math.max(minCardHeight, 10 + leftBlockHeight); // base + lines
     doc.setFillColor(...lightGray);
     doc.rect(10, y, pageWidth - 20, cardHeight, "F");
 
+    // Title
     doc.setTextColor(...textDark);
     doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
-    doc.text("Customer Information", 15, y + 7);
+    doc.text("Customer Information", leftX, y + 7);
 
+    // Left stack (business → name → address)
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
-    // Customer name only (address and business name moved to main body)
-    doc.text(`${receiptData.customerName}`, 15, y + 15);
+    let ly = y + 14;
+    for (const ln of linesLeft) {
+      doc.text(ln, leftX, ly);
+      ly += lineGap;
+    }
 
-    const rightY = y + 13;
-    if (receiptData.customerEmail) doc.text(`Email: ${receiptData.customerEmail}`, pageWidth / 2, rightY);
-    if (receiptData.customerPhone) doc.text(`Phone: ${receiptData.customerPhone}`, pageWidth / 2, rightY + 6);
+    // Right column (email / phone), aligned with the first text row
+    const rightY = y + 14;
+    if (receiptData.customerEmail) doc.text(`Email: ${receiptData.customerEmail}`, rightX, rightY);
+    if (receiptData.customerPhone) doc.text(`Phone: ${receiptData.customerPhone}`, rightX, rightY + lineGap);
 
-    // Return baseline for body content (dynamic based on actual card height)
+    // Next content Y
     return y + cardHeight + 8;
   }
 
@@ -605,37 +621,9 @@ export class ReceiptGenerator {
         currentY += rowH + 2;
       }
 
-      // --- Left side: Business, Customer, then (wrapped) address ---
-      const wrapWidth = (pageWidth / 2) - 25; // keep clear of right column
-      const business = (receiptData.customerBusinessName || "").trim();
-      const person = (receiptData.customerName || "").trim();
-      const addr = (receiptData.customerAddress || "").trim();
-
-      let ly = currentY + 15;
-
-      if (business) {
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(10);
-        doc.text(business, 15, ly);
-        ly += 6;
-      }
-
-      if (person) {
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(10);
-        doc.text(person, 15, ly);
-        ly += 6;
-      }
-
-      if (addr) {
-        const addrLines = doc.splitTextToSize(addr, wrapWidth);
-        for (const ln of addrLines.slice(0, 3)) { // up to 3 lines; increase if you prefer
-          doc.text(ln, 15, ly);
-          ly += 5;
-        }
-      }
-
-      currentY = ly + 10; // gap before items table
+      // We already drew business/name/address inside the header card
+      // Move straight to the items table:
+      currentY += 4; // small breathing room before the table
 
       // Items table header - Professional styling
       doc.setFillColor(...professionalNavy);
