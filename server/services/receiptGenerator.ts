@@ -1,444 +1,424 @@
-// receiptGenerator.ts
-import { storage } from "../storage";
-import { EmailService } from "./emailService";
+// server/services/receiptGenerator.ts
+import path from "path";
+import fs from "fs";
+import { storage } from "../storage"; // your existing storage interface
+import { EmailService } from "./emailService"; // optional (used below)
 
-// ---------- Company Constants ----------
+/** ----------- lazy-load jsPDF + autotable for Node ----------- */
+async function loadJsPDF() {
+  const { jsPDF } = await import("jspdf");
+  // side-effect import that adds autoTable(doc, ...)
+  await import("jspdf-autotable");
+  return jsPDF;
+}
+
+/** ----------- shared types (minimal) ----------- */
+type FlatTaxLine = { name: string; amount: number; description?: string };
+
+interface OrderItem {
+  id: number;
+  productId: number;
+  quantity: number;
+  price: number;
+  productName?: string;
+  product?: { id: number; name: string; sku?: string; isTobaccoProduct?: boolean };
+  isTobaccoProduct?: boolean;
+  flatTaxAmount?: number;
+  totalTaxAmount?: number;
+  flatTaxName?: string;
+}
+
+interface CalcLine { kind: string; label: string; amount: number; }
+interface CalculationBreakdown {
+  itemsSubtotal?: number;
+  flatTaxTotal?: number;
+  subtotalBeforeDelivery?: number;
+  nonTobaccoSubtotal?: number;
+  loyaltyPointsEarned?: number;
+  loyaltyRedeemValue?: number;
+  deliveryFee?: number;
+  lines?: CalcLine[];
+}
+
+interface Order {
+  id: number;
+  userId: string;
+  orderType: "delivery" | "pickup" | string;
+  createdAt: string | null;
+  total: number;
+  items: OrderItem[];
+
+  // optional fields commonly present in your API:
+  deliveryFee?: number | null;
+  notes?: string;
+  status?: string;
+
+  user?: {
+    id: string;
+    firstName?: string | null;
+    lastName?: string | null;
+    company?: string | null;
+    businessName?: string | null;
+    username: string;
+    email?: string;
+    phone?: string;
+  };
+
+  // server-provided breakdowns (if any)
+  flatTaxBreakdown?: FlatTaxLine[];
+  calculationBreakdown?: CalculationBreakdown;
+
+  // loyalty / redemption
+  loyaltyPointsRedeemed?: number;
+  loyaltyPointsValue?: number;
+  loyaltyPointsEarned?: number;
+
+  // credit
+  previousBalance?: number;
+  creditAccountInfo?: { previousBalance?: number };
+}
+
 const COMPANY = {
   name: "Gokul Wholesale Inc.",
   address: "1141 W Bryn Mawr Ave, Itasca, IL 60143",
   phone: "(630) 540-9910",
   email: "sales@gokulwholesaleinc.com",
   website: "www.shopgokul.com",
-  tp: "TP# 97239"
+  tp: "TP# 97239",
 };
 
-// ---------- Money helpers ----------
-const toC = (n: number) => Math.round((n || 0) * 100);
-const fromC = (c: number) => c / 100;
-const USD = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
-const fmt$ = (cents: number) => USD.format(fromC(cents));
+const fmt$ = (n: number) => `$${(Number(n) || 0).toFixed(2)}`;
 
-// ---------- Types ----------
-interface ReceiptItemInput {
-  name: string;
-  sku?: string;
-  quantity: number;
-  price: number;
-  total: number;
-  hasIlTobaccoTax?: boolean;
-  flatTaxAmount?: number;
-  flatTaxName?: string;
-  productId?: number;
-  isTobaccoProduct?: boolean;
-  taxPercentage?: number;
-  flatTaxIds?: number[];
-}
-
-interface ReceiptData {
-  orderId: number;
-  orderNumber?: string;
-  customerName: string;
-  customerBusinessName?: string;
-  customerEmail: string;
-  customerAddress?: string;
-  customerPhone?: string;
-  orderDate: string;
-  items: ReceiptItemInput[];
-  subtotal: number;
-  deliveryFee: number;
-  total: number;
-  paymentMethod?: string;
-  orderType: "delivery" | "pickup";
-  orderStatus?: string;
-  customerNotes?: string;
-
-  // Credit
-  creditAccountInfo?: {
-    previousBalance: number;
-    currentBalance: number;
-    creditLimit: number;
-    paymentMethod?: string;
-  };
-
-  // Loyalty
-  loyaltyPointsEarned?: number;
-
-  // Taxes
-  hasIlTobaccoProducts?: boolean;
-  totalFlatTax?: number;
-  flatTaxBreakdown?: Array<{ name: string; amount: number; description?: string }>;
-}
-
-// ---------- Receipt Generator ----------
-export class ReceiptGenerator {
-  private static instance: ReceiptGenerator;
-  static getInstance(): ReceiptGenerator {
-    if (!ReceiptGenerator.instance) ReceiptGenerator.instance = new ReceiptGenerator();
-    return ReceiptGenerator.instance;
-  }
-
-  // ---- Credit balance helper ----
-  private async calculatePreviousBalance(customerId: string, currentOrderId: number) {
-    try {
-      const customer = await storage.getUser(customerId);
-      const creditLimit = customer?.creditLimit ?? 5000;
-      const orders = await storage.getOrdersByUserId(customerId);
-
-      const prevOrders = orders.filter(
+/** ----------- credit helpers (ALWAYS show previous balance) ----------- */
+async function getPreviousBalance(userId: string, currentOrderId: number) {
+  try {
+    const orders = await storage.getOrdersByUserId(userId);
+    const prev = orders
+      .filter(
         (o: any) =>
-          o.status === "completed" &&
           o.id !== currentOrderId &&
+          ["completed", "delivered", "paid"].includes(String(o.status).toLowerCase()) &&
           (o.paymentMethod === "on_account" || o.paymentMethod === "credit")
-      );
+      )
+      .reduce((sum: number, o: any) => sum + (o.total || 0), 0);
+    return prev; // number
+  } catch {
+    return 0;
+  }
+}
 
-      const previousBalance = prevOrders.reduce((s: number, o: any) => s + (o.total || 0), 0);
-      const currentOrder = await storage.getOrderById(currentOrderId);
-      const currentOrderTotal = currentOrder?.total || 0;
-      const currentBalance = previousBalance + currentOrderTotal;
+/** ----------- build flat tax lines with graceful fallbacks ----------- */
+function buildFlatTaxLines(order: Order): FlatTaxLine[] {
+  if (Array.isArray(order.flatTaxBreakdown) && order.flatTaxBreakdown.length) {
+    return order.flatTaxBreakdown.map((l) => ({ name: l.name, amount: Number(l.amount || 0) }));
+  }
+  if (order.calculationBreakdown?.lines?.length) {
+    return order.calculationBreakdown.lines
+      .filter((l) => l.kind === "flatTax")
+      .map((l) => ({ name: l.label, amount: Number(l.amount || 0) }));
+  }
+  // group from items
+  const grouped: Record<string, number> = {};
+  for (const it of order.items) {
+    const amt = Number(it.totalTaxAmount ?? it.flatTaxAmount ?? 0);
+    if (!amt) continue;
+    const name = it.flatTaxName || "Flat Taxes";
+    grouped[name] = (grouped[name] || 0) + amt;
+  }
+  return Object.entries(grouped).map(([name, amount]) => ({ name, amount }));
+}
 
-      return { previousBalance, currentBalance, creditLimit };
-    } catch {
-      return { previousBalance: 0, currentBalance: 0, creditLimit: 5000 };
+/** ----------- loyalty earned (2 pts per $1 of non-tobacco) ----------- */
+function computeLoyaltyEarned(order: Order) {
+  if (typeof order.loyaltyPointsEarned === "number") return order.loyaltyPointsEarned;
+  const eligible =
+    order.calculationBreakdown?.nonTobaccoSubtotal ??
+    order.items.reduce((s, it) => {
+      const isTobacco = Boolean(it.isTobaccoProduct || it.product?.isTobaccoProduct);
+      return isTobacco ? s : s + (it.price || 0) * (it.quantity || 0);
+    }, 0);
+  return Math.round((eligible || 0) * 2);
+}
+
+/** ----------- server: build Buffer PDF by order id ----------- */
+export async function generateOrderPDFBuffer(orderId: number): Promise<Buffer> {
+  // 1) load order with items & user
+  const order: Order | null = await storage.getOrderWithItems(orderId);
+  if (!order) throw new Error("Order not found");
+
+  // ensure product meta if your storage can fetch product details
+  for (const it of order.items) {
+    if (!it.product && it.productId) {
+      try {
+        const p = await storage.getProductById(it.productId);
+        it.product = { id: p.id, name: p.name, sku: p.sku, isTobaccoProduct: p.isTobaccoProduct };
+        it.productName = p.name;
+        if (typeof it.isTobaccoProduct === "undefined") it.isTobaccoProduct = p.isTobaccoProduct;
+      } catch {}
     }
   }
 
-  // ---- Main entrypoint ----
-  async generateReceiptOnly(orderId: number): Promise<{ success: boolean; pdfBuffer?: Buffer; message?: string }> {
-    console.log(`[RECEIPT GENERATOR] Starting receipt generation for order ${orderId}`);
-    
+  // 2) compute display numbers
+  const itemsSubtotal = order.items.reduce(
+    (s, it) => s + (it.price || 0) * (it.quantity || 0),
+    0
+  );
+  const flatTaxLines = buildFlatTaxLines(order);
+  const flatTaxTotal = flatTaxLines.reduce((s, l) => s + l.amount, 0);
+  const deliveryFee = Number(order.deliveryFee || 0);
+  const loyaltyRedeemValue = Number(order.loyaltyPointsValue || 0);
+
+  const loyaltyEarned = computeLoyaltyEarned(order);
+
+  const thisOrderDisplayTotal = itemsSubtotal + flatTaxTotal + deliveryFee - loyaltyRedeemValue;
+  const thisOrderServerTotal = Number(order.total || thisOrderDisplayTotal);
+
+  const prevBalanceFromOrder =
+    (order as any).previousBalance ??
+    order.creditAccountInfo?.previousBalance ??
+    undefined;
+  const previousBalance =
+    typeof prevBalanceFromOrder === "number"
+      ? prevBalanceFromOrder
+      : await getPreviousBalance(order.userId, order.id);
+
+  const amountDue = previousBalance + thisOrderServerTotal;
+
+  // 3) render PDF
+  const jsPDF = await loadJsPDF();
+  const doc = new jsPDF();
+
+  // header (logo + company)
+  try {
+    const logoPath = path.join(process.cwd(), "attached_assets", "IMG_0846.png"); // transparent PNG
+    if (fs.existsSync(logoPath)) {
+      const base64 = fs.readFileSync(logoPath).toString("base64");
+      doc.addImage(`data:image/png;base64,${base64}`, "PNG", 20, 10, 25, 25);
+    }
+  } catch {}
+
+  doc.setFont("helvetica", "bold").setFontSize(18);
+  doc.text(COMPANY.name, 50, 20);
+
+  doc.setFont("helvetica", "normal").setFontSize(10);
+  doc.text(COMPANY.address, 50, 28);
+  doc.text(`${COMPANY.phone} | ${COMPANY.email}`, 50, 34);
+  doc.text(COMPANY.tp, 50, 40);
+
+  doc.setFont("helvetica", "bold").setFontSize(12);
+  doc.text(`Order #${order.id}`, 190, 20, { align: "right" });
+
+  doc.setFont("helvetica", "normal").setFontSize(10);
+  doc.text(`Date: ${order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "N/A"}`, 190, 28, { align: "right" });
+
+  // divider
+  doc.setLineWidth(0.5);
+  doc.line(15, 45, 195, 45);
+
+  // customer panel
+  const displayCustomerName =
+    order.user?.company ||
+    order.user?.businessName ||
+    (order.user?.firstName && order.user?.lastName
+      ? `${order.user.firstName} ${order.user.lastName}`
+      : "") ||
+    order.user?.username ||
+    "Customer";
+
+  let y = 54;
+  doc.setFillColor(240, 240, 240);
+  doc.rect(15, y, 180, 22, "F");
+  doc.setFont("helvetica", "bold").setFontSize(11).setTextColor(33, 37, 41);
+  doc.text("Customer Information", 20, y + 7);
+  doc.setFont("helvetica", "normal").setFontSize(10).setTextColor(0, 0, 0);
+  doc.text(displayCustomerName, 20, y + 15);
+  if (order.user?.email) doc.text(`Email: ${order.user.email}`, 120, y + 11);
+  if (order.user?.phone) doc.text(`Phone: ${order.user.phone}`, 120, y + 17);
+  y += 30;
+
+  // order type line
+  const orderType = order.orderType === "delivery" ? "DELIVERY" : "PICKUP";
+  doc.text(`Order Type: ${orderType}`, 20, y);
+  y += 6;
+
+  // items table
+  const rows = order.items.map((it) => [
+    it.product?.name || it.productName || "Product",
+    it.product?.sku || "N/A",
+    String(it.quantity),
+    fmt$(it.price),
+    fmt$((it.quantity || 0) * (it.price || 0)),
+  ]);
+
+  (doc as any).autoTable({
+    startY: y + 4,
+    head: [["Item Description", "SKU", "Qty", "Unit Price", "Total"]],
+    body: rows,
+    theme: "grid",
+    headStyles: { fillColor: [38, 60, 82], textColor: 255, fontStyle: "bold" },
+    styles: { fontSize: 9, cellPadding: 3 },
+    columnStyles: {
+      0: { cellWidth: 78 },
+      1: { cellWidth: 32 },
+      2: { cellWidth: 15, halign: "center" },
+      3: { cellWidth: 25, halign: "right" },
+      4: { cellWidth: 25, halign: "right" },
+    },
+  });
+
+  let sy = (doc as any).lastAutoTable.finalY + 10;
+  const sx = 120;
+
+  // breakdown block (right aligned)
+  doc.setFont("helvetica", "normal").setFontSize(11);
+  doc.text("Items Subtotal:", sx, sy);
+  doc.text(fmt$(itemsSubtotal), 195, sy, { align: "right" });
+  sy += 7;
+
+  for (const line of flatTaxLines) {
+    doc.text(`${line.name}:`, sx, sy);
+    doc.text(fmt$(line.amount), 195, sy, { align: "right" });
+    sy += 7;
+  }
+
+  if (flatTaxLines.length) {
+    doc.setFont("helvetica", "bold");
+    doc.text("Subtotal (Items + Taxes):", sx, sy);
+    doc.text(fmt$(itemsSubtotal + flatTaxTotal), 195, sy, { align: "right" });
+    sy += 7;
+    doc.setFont("helvetica", "normal");
+  }
+
+  if (deliveryFee > 0) {
+    doc.text("Delivery Fee:", sx, sy);
+    doc.text(fmt$(deliveryFee), 195, sy, { align: "right" });
+    sy += 7;
+  }
+
+  if (order.loyaltyPointsRedeemed != null) {
+    doc.text(`Loyalty Redeemed: ${order.loyaltyPointsRedeemed} pts`, sx, sy);
+    doc.text(`-${fmt$(loyaltyRedeemValue)}`, 195, sy, { align: "right" });
+    sy += 7;
+  }
+
+  // Previous balance (ALWAYS)
+  doc.text("Previous Balance:", sx, sy);
+  doc.text(fmt$(previousBalance), 195, sy, { align: "right" });
+  sy += 4;
+
+  // divider
+  doc.setLineWidth(0.5);
+  doc.line(sx, sy, 195, sy);
+  sy += 6;
+
+  doc.setFont("helvetica", "bold");
+  doc.text("Total (This Order):", sx, sy);
+  doc.text(fmt$(thisOrderServerTotal), 195, sy, { align: "right" });
+  sy += 7;
+
+  doc.text("Amount Due (Prev + This):", sx, sy);
+  doc.text(fmt$(amountDue), 195, sy, { align: "right" });
+  sy += 12;
+
+  // loyalty earned banner
+  if (loyaltyEarned >= 0) {
+    doc.setFillColor(240, 248, 240);
+    doc.rect(15, sy - 6, 180, 10, "F");
+    doc.setTextColor(39, 174, 96);
+    doc.setFont("helvetica", "bold").setFontSize(10);
+    doc.text(`Loyalty Points Earned: ${loyaltyEarned} points`, 20, sy + 1);
+    doc.setTextColor(0, 0, 0);
+    sy += 14;
+  }
+
+  // tobacco notice (always show)
+  const pageH = doc.internal.pageSize.height;
+  const boxY = pageH - 28;
+  doc.setDrawColor(230, 126, 34).setLineWidth(0.6);
+  doc.rect(15, boxY, 80, 10);
+  doc.setFont("helvetica", "bold").setFontSize(9).setTextColor(230, 126, 34);
+  doc.text("45% IL TOBACCO TAX PAID", 55, boxY + 6, { align: "center" });
+  doc.setTextColor(0, 0, 0);
+
+  // footer
+  doc.setFont("helvetica", "normal").setFontSize(9);
+  doc.text("Thank you for your business!", 105, pageH - 14, { align: "center" });
+  doc.text(COMPANY.website, 105, pageH - 8, { align: "center" });
+
+  // return Node Buffer
+  const arr = doc.output("arraybuffer") as ArrayBuffer;
+  return Buffer.from(arr);
+}
+
+/** ----------- Express route helpers ----------- */
+// GET /api/orders/:id/receipt  -> download PDF
+export async function handleGetReceipt(req: any, res: any) {
+  try {
+    const orderId = Number(req.params.id);
+    const pdf = await generateOrderPDFBuffer(orderId);
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="order-${orderId}-receipt.pdf"`
+    );
+    res.send(pdf);
+  } catch (err: any) {
+    res.status(500).json({ error: err?.message || "Failed to generate receipt" });
+  }
+}
+
+// POST /api/orders/:id/send-receipt  -> email PDF to customer
+export async function handleSendReceipt(req: any, res: any) {
+  try {
+    const orderId = Number(req.params.id);
+    const pdf = await generateOrderPDFBuffer(orderId);
+
     const order = await storage.getOrderWithItems(orderId);
-    if (!order) return { success: false, message: "Order not found" };
+    if (!order) return res.status(404).json({ error: "Order not found" });
 
-    const customer = await storage.getUser(order.userId);
-    if (!customer) return { success: false, message: "Customer not found" };
+    const user = await storage.getUser(order.userId);
+    if (!user?.email) return res.status(400).json({ error: "Customer email not found" });
 
-    console.log(`[RECEIPT GENERATOR] Order ${orderId} has ${order.items?.length || 0} items`);
-
-    // Items with enriched product data
-    const itemsWithInfo = await Promise.all(
-      (order.items || []).map(async (item: any) => {
-        const product = item.productId ? await storage.getProductById(item.productId) : null;
-        
-        // Fetch flat tax information if needed
-        let flatTaxAmount = 0;
-        let flatTaxName = "";
-        if (product?.flatTaxIds && product.flatTaxIds.length > 0) {
-          const flatTaxes = await storage.getFlatTaxes();
-          const relevantTaxes = flatTaxes.filter((tax: any) => product.flatTaxIds.includes(tax.id));
-          if (relevantTaxes.length > 0) {
-            flatTaxAmount = relevantTaxes.reduce((sum: number, tax: any) => sum + (tax.amount || 0), 0);
-            flatTaxName = relevantTaxes.map((tax: any) => tax.name).join(", ");
-          }
-        }
-
-        return {
-          ...item,
-          name: product?.name || item.name || "Unknown Item",
-          sku: product?.sku || "",
-          isTobaccoProduct: !!product?.isTobaccoProduct,
-          taxPercentage: product?.taxPercentage,
-          flatTaxIds: product?.flatTaxIds || [],
-          flatTaxAmount,
-          flatTaxName,
-          total: (item.price || 0) * (item.quantity || 1)
-        };
-      })
+    const emailSvc = EmailService.getInstance();
+    const ok = await emailSvc.sendEmailWithAttachment(
+      {
+        to: user.email,
+        customerName: user.firstName || user.username,
+        orderNumber: String(order.id),
+        orderTotal: order.total,
+        language: (user as any).preferredLanguage || "en",
+      },
+      "receipt",
+      pdf,
+      `invoice-${order.id}-${Date.now()}.pdf`
     );
 
-    // Calculate totals
-    const subtotalC = (itemsWithInfo || []).reduce((s, it: any) => s + toC(it.price) * it.quantity, 0);
-    const deliveryFeeC = toC(order.deliveryFee || 0);
-    const finalTotalC = toC(order.total || fromC(subtotalC + deliveryFeeC));
+    if (ok === true) return res.json({ ok: true });
+    return res.status(500).json({ error: "Failed to send email" });
+  } catch (err: any) {
+    res.status(500).json({ error: err?.message || "Failed to send receipt" });
+  }
+}
 
-    console.log(`[RECEIPT GENERATOR] Items subtotal: ${fmt$(subtotalC)}`);
-    console.log(`[RECEIPT GENERATOR] Final total: ${fmt$(finalTotalC)}`);
-
-    const receiptData: ReceiptData = {
-      orderId: order.id,
-      orderNumber: String(order.id),
-      customerName: customer.company 
-        ? `${customer.firstName || ""} ${customer.lastName || ""}`.trim() || customer.username || "Customer" 
-        : `${customer.firstName || ""} ${customer.lastName || ""}`.trim() || customer.username || "Valued Customer",
-      customerBusinessName: customer.company || undefined,
-      customerEmail: customer.email || "",
-      customerAddress: customer.address || "",
-      customerPhone: customer.phone || "",
-      orderDate: new Date(order.createdAt || new Date()).toLocaleDateString("en-US"),
-      orderType: order.orderType || "pickup",
-      items: itemsWithInfo,
-      subtotal: fromC(subtotalC),
-      deliveryFee: order.deliveryFee || 0,
-      total: fromC(finalTotalC),
-      paymentMethod: order.paymentMethod,
-      orderStatus: order.status,
-      loyaltyPointsEarned: order.loyaltyPointsEarned
-    };
-
-    // Credit account information
-    if (order.paymentMethod === "on_account" || order.paymentMethod === "credit") {
-      const creditInfo = await this.calculatePreviousBalance(customer.id, order.id);
-      receiptData.creditAccountInfo = {
-        previousBalance: creditInfo.previousBalance,
-        currentBalance: creditInfo.currentBalance,
-        creditLimit: creditInfo.creditLimit,
-        paymentMethod: order.paymentMethod
+/** ----------- Legacy compatibility wrapper ----------- */
+export class ReceiptGenerator {
+  static async generateReceiptOnly(orderId: number) {
+    try {
+      const pdfBuffer = await generateOrderPDFBuffer(orderId);
+      return {
+        success: true,
+        pdfBuffer,
+        message: "PDF generated successfully"
       };
-      console.log(`[RECEIPT GENERATOR] Credit info: Previous=${creditInfo.previousBalance}, Current=${creditInfo.currentBalance}, Limit=${creditInfo.creditLimit}`);
-    }
-
-    console.log(`[RECEIPT GENERATOR] Generating PDF for order ${orderId}`);
-    const pdfBuffer = await this.generateReceiptPDF(receiptData);
-    
-    if (!pdfBuffer) {
-      console.error(`[RECEIPT GENERATOR] PDF buffer is null/undefined for order ${orderId}`);
-      return { success: false, message: "Failed to generate PDF buffer" };
-    }
-    
-    console.log(`[RECEIPT GENERATOR] PDF generated successfully, size: ${pdfBuffer.length} bytes`);
-    return { success: true, pdfBuffer };
-  }
-
-  // ---- PDF Generator ----
-  private async generateReceiptPDF(receiptData: ReceiptData): Promise<Buffer> {
-    console.log(`[RECEIPT PDF] Starting PDF generation for order ${receiptData.orderId}`);
-    
-    const { jsPDF } = await import("jspdf");
-    const fs = await import("fs");
-    const path = await import("path");
-    const doc = new jsPDF();
-
-    const pageWidth = doc.internal.pageSize.width;
-    const pageHeight = doc.internal.pageSize.height;
-
-    console.log(`[RECEIPT PDF] Page dimensions: ${pageWidth}x${pageHeight}`);
-
-    // Professional colors
-    const professionalNavy = [52, 73, 94] as const;
-    const subtleGray = [248, 249, 250] as const;
-    const lightGray = [236, 240, 241] as const;
-    const successGreen = [39, 174, 96] as const;
-    const textDark = [33, 37, 41] as const;
-
-    // Header with subtle background
-    doc.setFillColor(...subtleGray);
-    doc.rect(0, 0, pageWidth, 45, "F");
-    doc.setDrawColor(...professionalNavy);
-    doc.setLineWidth(0.5);
-    doc.line(0, 45, pageWidth, 45);
-
-    // Company logo
-    try {
-      const logoPath = path.join(process.cwd(), "public", "gokul-logo.png");
-      if (fs.existsSync(logoPath)) {
-        const logoData = fs.readFileSync(logoPath);
-        const logoBase64 = `data:image/png;base64,${logoData.toString("base64")}`;
-        doc.setFillColor(255, 255, 255);
-        doc.circle(25, 20, 12, "F");
-        doc.addImage(logoBase64, "PNG", 15, 10, 20, 20);
-      }
-    } catch (e) {
-      console.log("[RECEIPT] Logo not found, using text header");
-    }
-
-    // Company info
-    doc.setTextColor(...professionalNavy);
-    doc.setFontSize(20).setFont('helvetica', 'bold');
-    doc.text(COMPANY.name, 40, 20);
-    
-    doc.setTextColor(...textDark);
-    doc.setFontSize(10).setFont('helvetica', 'normal');
-    doc.text(COMPANY.address, 40, 28);
-    doc.text(`${COMPANY.phone} | ${COMPANY.email}`, 40, 34);
-    doc.text(COMPANY.tp, 40, 40);
-
-    // Order info
-    doc.setTextColor(...professionalNavy);
-    doc.setFontSize(12).setFont('helvetica', 'bold');
-    doc.text(`Order #${receiptData.orderNumber}`, pageWidth - 20, 20, { align: "right" });
-    doc.setTextColor(...textDark);
-    doc.setFontSize(10).setFont('helvetica', 'normal');
-    doc.text(`Date: ${receiptData.orderDate}`, pageWidth - 20, 28, { align: "right" });
-
-    let y = 55;
-
-    // Customer Info Section
-    doc.setFillColor(...lightGray);
-    doc.rect(10, y, pageWidth - 20, 20, "F");
-    doc.setTextColor(...textDark);
-    doc.setFontSize(11).setFont('helvetica', 'bold');
-    doc.text("Customer Information", 15, y + 8);
-    
-    doc.setFontSize(10).setFont('helvetica', 'normal');
-    doc.text(receiptData.customerName, 15, y + 15);
-    if (receiptData.customerAddress) {
-      doc.text(receiptData.customerAddress, 15, y + 22);
-    }
-    if (receiptData.customerEmail) {
-      doc.text(`Email: ${receiptData.customerEmail}`, pageWidth/2, y + 15);
-    }
-    if (receiptData.customerPhone) {
-      doc.text(`Phone: ${receiptData.customerPhone}`, pageWidth/2, y + 22);
-    }
-
-    y += 30;
-
-    // Items table header
-    doc.setFillColor(...professionalNavy);
-    doc.rect(10, y, pageWidth - 20, 10, "F");
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(10).setFont('helvetica', 'bold');
-    doc.text("Item Description", 15, y + 7);
-    doc.text("SKU", 95, y + 7);
-    doc.text("Qty", pageWidth - 65, y + 7);
-    doc.text("Unit Price", pageWidth - 45, y + 7);
-    doc.text("Total", pageWidth - 20, y + 7, { align: "right" });
-    y += 12;
-
-    // Items
-    doc.setTextColor(...textDark);
-    doc.setFont('helvetica', 'normal');
-    for (const item of receiptData.items) {
-      const itemName = doc.splitTextToSize(item.name, 75)[0] || item.name;
-      doc.text(itemName, 15, y);
-      doc.text((item.sku || "N/A").substring(0, 12), 95, y);
-      doc.text(String(item.quantity), pageWidth - 65, y);
-      doc.text(USD.format(item.price), pageWidth - 45, y);
-      doc.text(USD.format(item.total), pageWidth - 20, y, { align: "right" });
-      y += 8;
-    }
-
-    y += 10;
-
-    // Totals section
-    doc.setDrawColor(...lightGray);
-    doc.line(pageWidth - 120, y, pageWidth - 15, y);
-    y += 8;
-
-    doc.setFontSize(11);
-    doc.text("Items Subtotal:", pageWidth - 90, y);
-    doc.text(USD.format(receiptData.subtotal), pageWidth - 20, y, { align: "right" });
-    y += 8;
-
-    if (receiptData.deliveryFee > 0) {
-      doc.text("Delivery Fee:", pageWidth - 90, y);
-      doc.text(USD.format(receiptData.deliveryFee), pageWidth - 20, y, { align: "right" });
-      y += 8;
-    }
-
-    // Final total
-    y += 2;
-    doc.setDrawColor(...textDark);
-    doc.line(pageWidth - 120, y, pageWidth - 15, y);
-    y += 6;
-
-    doc.setFontSize(12).setFont('helvetica', 'bold');
-    doc.text("TOTAL:", pageWidth - 90, y);
-    doc.text(USD.format(receiptData.total), pageWidth - 20, y, { align: "right" });
-    y += 15;
-
-    // Credit account section
-    if (receiptData.creditAccountInfo) {
-      y += 5;
-      doc.setFillColor(...lightGray);
-      doc.rect(15, y, pageWidth - 30, 30, "F");
-      
-      doc.setTextColor(...textDark);
-      doc.setFontSize(11).setFont("helvetica", "bold");
-      doc.text("Credit Account Summary", 20, y + 10);
-      
-      doc.setFontSize(10).setFont("helvetica", "normal");
-      doc.text(`Previous Balance: ${USD.format(receiptData.creditAccountInfo.previousBalance)}`, 20, y + 18);
-      doc.text(`This Order: ${USD.format(receiptData.total)}`, 20, y + 24);
-      
-      // Total amount due (highlighted)
-      const totalDue = receiptData.creditAccountInfo.previousBalance + receiptData.total;
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(...professionalNavy);
-      doc.text(`TOTAL AMOUNT DUE: ${USD.format(totalDue)}`, 20, y + 30);
-      
-      // Credit info on right
-      doc.setTextColor(...textDark);
-      doc.setFont("helvetica", "normal");
-      doc.text(`Credit Limit: ${USD.format(receiptData.creditAccountInfo.creditLimit)}`, pageWidth - 100, y + 18);
-      
-      const availableCredit = receiptData.creditAccountInfo.creditLimit - totalDue;
-      const creditColor = availableCredit >= 0 ? successGreen : [231, 76, 60];
-      doc.setTextColor(...creditColor);
-      doc.text(`Available Credit: ${USD.format(Math.max(0, availableCredit))}`, pageWidth - 100, y + 24);
-      
-      y += 40;
-    }
-
-    // Loyalty points
-    if (receiptData.loyaltyPointsEarned && receiptData.loyaltyPointsEarned > 0) {
-      y += 5;
-      doc.setFillColor(240, 248, 240);
-      doc.rect(15, y - 3, pageWidth - 30, 12, "F");
-      doc.setTextColor(...successGreen);
-      doc.setFontSize(11);
-      doc.text(`Loyalty Points Earned: ${receiptData.loyaltyPointsEarned} points`, 20, y + 5);
-      y += 20;
-    }
-
-    // Compliance notice
-    const taxY = pageHeight - 30;
-    doc.setFontSize(8).setTextColor(230, 126, 34).setFont("helvetica", "bold");
-    doc.text("45% IL TOBACCO TAX PAID", pageWidth/2, taxY, { align: "center" });
-
-    // Footer
-    doc.setFontSize(10).setTextColor(...textDark).setFont("helvetica", "normal");
-    doc.text("Thank you for your business!", pageWidth/2, pageHeight - 18, { align: "center" });
-    doc.text(COMPANY.website, pageWidth/2, pageHeight - 10, { align: "center" });
-
-    console.log(`✅ [RECEIPT] PDF generated successfully for order ${receiptData.orderId}`);
-    
-    try {
-      const pdfData = doc.output('arraybuffer');
-      const buffer = Buffer.from(pdfData);
-      console.log(`✅ [RECEIPT] Buffer created with size: ${buffer.length} bytes`);
-      return buffer;
-    } catch (error) {
-      console.error(`❌ [RECEIPT] Error creating PDF buffer:`, error);
-      throw error;
-    }
-  }
-
-  // ---- Generate and Email Receipt ----
-  async generateAndSendReceipt(orderId: number, isManual: boolean = false): Promise<{ success: boolean; message?: string }> {
-    try {
-      console.log(`📧 [EMAIL RECEIPT] Starting receipt generation and email for order ${orderId}, manual: ${isManual}`);
-
-      const result = await this.generateReceiptOnly(orderId);
-      if (!result.success || !result.pdfBuffer) {
-        console.error(`📧 [EMAIL RECEIPT] Failed to generate receipt: ${result.message}`);
-        return { success: false, message: result.message || "Failed to generate receipt" };
-      }
-
-      const order = await storage.getOrderWithItems(orderId);
-      const customer = await storage.getUser(order.userId);
-
-      if (!customer?.email) {
-        console.log(`📧 [EMAIL RECEIPT] No email address for customer ${customer?.id}, skipping email`);
-        return { success: true, message: "Receipt generated but no email address available" };
-      }
-
-      const emailService = EmailService.getInstance();
-      // Note: This method needs to be implemented in EmailService
-      const emailResult = { success: true, message: "Receipt PDF generated successfully" };
-
-      if (emailResult.success) {
-        console.log(`📧 [EMAIL RECEIPT] Successfully sent receipt for order ${orderId} to ${customer.email}`);
-        return { success: true, message: "Receipt generated and emailed successfully" };
-      } else {
-        console.error(`📧 [EMAIL RECEIPT] Failed to email receipt: ${emailResult.message}`);
-        return { success: false, message: `Receipt generated but email failed: ${emailResult.message}` };
-      }
     } catch (error: any) {
-      console.error(`📧 [EMAIL RECEIPT] Error:`, error);
-      return { success: false, message: `Error: ${error?.message || "Unknown error"}` };
+      return {
+        success: false,
+        pdfBuffer: null,
+        message: error?.message || "Failed to generate PDF"
+      };
     }
   }
 }
 
-// Singleton export
-export const receiptGenerator = ReceiptGenerator.getInstance();
+// Export for backward compatibility
+export const receiptGenerator = ReceiptGenerator;
