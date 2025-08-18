@@ -383,12 +383,103 @@ export class ReceiptGenerator {
   }
 
   // ---------- Helper Methods ----------
-  private ensureRoom(doc: any, currentY: number, neededHeight: number, pageHeight: number): number {
-    if (currentY + neededHeight > pageHeight - 30) {
+  // If not enough space, add a page and redraw the header; return the new Y start.
+  private ensureRoom(
+    doc: any,
+    y: number,
+    needed: number,
+    pageHeight: number,
+    receiptData: ReceiptData,
+    fs: any,
+    path: any,
+    pageWidth: number
+  ): number {
+    if (y + needed > pageHeight - 30) {
       doc.addPage();
-      return 30; // Start from top of new page
+      // Redraw header on new page and continue below it
+      const newY = this.drawCommonHeader(doc, receiptData, fs, path, pageWidth, pageHeight);
+      return newY;
     }
-    return currentY;
+    return y;
+  }
+
+  // Draws the full page header (company block + order info + customer panel).
+  // Returns the next Y position to continue writing.
+  private drawCommonHeader(
+    doc: any,
+    receiptData: ReceiptData,
+    fs: any,
+    path: any,
+    pageWidth: number,
+    pageHeight: number
+  ): number {
+    const professionalNavy = [52, 73, 94] as const;
+    const subtleGray = [248, 249, 250] as const;
+    const lightGray = [236, 240, 241] as const;
+    const textDark = [33, 37, 41] as const;
+
+    // Background strip
+    doc.setFillColor(...subtleGray);
+    doc.rect(0, 0, pageWidth, 45, "F");
+    doc.setDrawColor(...professionalNavy);
+    doc.setLineWidth(0.5);
+    doc.line(0, 45, pageWidth, 45);
+
+    // Logo
+    try {
+      const logoPath = path.join(process.cwd(), "public", "gokul-logo.png");
+      if (fs.existsSync(logoPath)) {
+        const logoData = fs.readFileSync(logoPath);
+        const logoBase64 = `data:image/png;base64,${logoData.toString("base64")}`;
+        doc.setFillColor(255, 255, 255);
+        doc.circle(25, 20, 12, "F");
+        doc.addImage(logoBase64, "PNG", 15, 10, 20, 20);
+      }
+    } catch {}
+
+    // Company text
+    doc.setTextColor(...professionalNavy);
+    doc.setFontSize(22);
+    doc.setFont("helvetica", "bold");
+    doc.text(COMPANY.name, 50, 22);
+
+    doc.setTextColor(...textDark);
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text(COMPANY.address, 50, 30);
+    doc.text(`${COMPANY.phone} | ${COMPANY.email}`, 50, 36);
+    doc.text(COMPANY.tp, 50, 42);
+
+    // Order info
+    doc.setTextColor(...professionalNavy);
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text(`Order #${receiptData.orderNumber}`, pageWidth - 20, 22, { align: "right" });
+    doc.setTextColor(...textDark);
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Date: ${receiptData.orderDate}`, pageWidth - 20, 32, { align: "right" });
+
+    // Customer info card (slightly shorter to save space)
+    let y = 55;
+    doc.setFillColor(...lightGray);
+    doc.rect(10, y, pageWidth - 20, 22, "F");
+
+    doc.setTextColor(...textDark);
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.text("Customer Information", 15, y + 7);
+
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text(`${receiptData.customerName}`, 15, y + 15);
+
+    const rightY = y + 13;
+    if (receiptData.customerEmail) doc.text(`Email: ${receiptData.customerEmail}`, pageWidth / 2, rightY);
+    if (receiptData.customerPhone) doc.text(`Phone: ${receiptData.customerPhone}`, pageWidth / 2, rightY + 6);
+
+    // Return baseline for body content
+    return y + 30; // slightly tighter than before
   }
 
   // ---------- PDF generator (switchable designs) ----------
@@ -422,14 +513,7 @@ export class ReceiptGenerator {
     }
   }
 
-  // ---------- Pagination helper ----------
-  private ensureRoom(doc: any, y: number, needed: number, pageHeight: number, newPageTop = 20) {
-    if (y + needed > pageHeight - 30) {
-      doc.addPage();
-      return newPageTop;
-    }
-    return y;
-  }
+
 
   // ---------- Premium PDF ----------
   private async generatePremiumInvoice(
@@ -454,127 +538,53 @@ export class ReceiptGenerator {
       const alertOrange = [230, 126, 34] as const;
       const textDark = [33, 37, 41] as const;
 
-    // Clean professional header with subtle background
-    doc.setFillColor(...subtleGray);
-    doc.rect(0, 0, pageWidth, 45, "F");
-    doc.setDrawColor(...professionalNavy);
-    doc.setLineWidth(0.5);
-    doc.line(0, 45, pageWidth, 45);
+      // Use the common header helper
+      let currentY = this.drawCommonHeader(doc, receiptData, fs, path, pageWidth, pageHeight);
 
-    // Company logo and info
-    try {
-      const logoPath = path.join(process.cwd(), "public", "gokul-logo.png");
-      if (fs.existsSync(logoPath)) {
-        const logoData = fs.readFileSync(logoPath);
-        const logoBase64 = `data:image/png;base64,${logoData.toString("base64")}`;
-        doc.setFillColor(255, 255, 255);
-        doc.circle(25, 20, 12, "F");
-        doc.addImage(logoBase64, "PNG", 15, 10, 20, 20);
+      // Order details
+      if (receiptData.orderType === "pickup") {
+        doc.setFontSize(10);
+        doc.text(`Order Type: ${receiptData.orderType.toUpperCase()}`, 15, currentY);
+        currentY += 10;
       }
-    } catch (e) {
-      console.log("[RECEIPT] Logo not found, using text header");
-    }
 
-    // Company name and details - Professional dark text
-    doc.setTextColor(...professionalNavy);
-    doc.setFontSize(22);
-    doc.setFont('helvetica', 'bold');
-    doc.text(COMPANY.name, 50, 22);
-    
-    doc.setTextColor(...textDark);
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.text(COMPANY.address, 50, 30);
-    doc.text(`${COMPANY.phone} | ${COMPANY.email}`, 50, 36);
-    doc.text(COMPANY.tp, 50, 42);
-    console.log(`🔥 [HEADER DEBUG] Phone: "${COMPANY.phone}", Email: "${COMPANY.email}", TP: "${COMPANY.tp}"`);
-
-    // Order info - Professional styling
-    doc.setTextColor(...professionalNavy);
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.text(`Order #${receiptData.orderNumber}`, pageWidth - 20, 22, { align: "right" });
-    doc.setTextColor(...textDark);
-    doc.setFontSize(11);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Date: ${receiptData.orderDate}`, pageWidth - 20, 32, { align: "right" });
-
-    let currentY = 55;
-
-    // Customer information section
-    doc.setFillColor(...lightGray);
-    doc.rect(10, currentY, pageWidth - 20, 25, "F");
-    
-    doc.setTextColor(...textDark);
-    doc.setFontSize(14);
-    doc.text("Customer Information", 15, currentY + 8);
-    
-    doc.setFontSize(11);
-    console.log(`🔥 [CUSTOMER DEBUG] Name: "${receiptData.customerName}", Business: "${receiptData.customerBusinessName}", Address: "${receiptData.customerAddress}"`);
-    
-    // Display customer name (or business name if different)
-    doc.text(`${receiptData.customerName}`, 15, currentY + 16);
-    
-    // Show address if available, otherwise show business name only if it's different from customer name
-    if (receiptData.customerAddress && receiptData.customerAddress.trim() !== '') {
-      doc.text(`${receiptData.customerAddress}`, 15, currentY + 22);
-    } else if (receiptData.customerBusinessName && receiptData.customerBusinessName !== receiptData.customerName) {
-      doc.text(`${receiptData.customerBusinessName}`, 15, currentY + 22);
-    }
-    
-    if (receiptData.customerEmail) {
-      doc.text(`Email: ${receiptData.customerEmail}`, pageWidth/2, currentY + 16);
-    }
-    if (receiptData.customerPhone) {
-      doc.text(`Phone: ${receiptData.customerPhone}`, pageWidth/2, currentY + 22);
-    }
-
-    currentY += 35;
-
-    // Order details
-    if (receiptData.orderType === "pickup") {
-      doc.setFontSize(10);
-      doc.text(`Order Type: ${receiptData.orderType.toUpperCase()}`, 15, currentY);
-      currentY += 10;
-    }
-
-    // Items table header - Professional styling
-    doc.setFillColor(...professionalNavy);
-    doc.rect(10, currentY, pageWidth - 20, 12, "F");
-    
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(11);
-    doc.setFont('helvetica', 'bold');
-    doc.text("Item Description", 15, currentY + 8);
-    doc.text("SKU", 105, currentY + 8);  // MOVED LEFT - closer to Item Description
-    doc.text("Qty", pageWidth - 70, currentY + 8);  // Keep same spacing
-    doc.text("Unit Price", pageWidth - 50, currentY + 8);  // Keep same spacing
-    doc.text("Total", pageWidth - 20, currentY + 8);
-
-    currentY += 15;
-
-    // Items - FIXED column alignment to prevent SKU overlap
-    doc.setTextColor(...textDark);
-    doc.setFontSize(10);
-    
-    for (const item of receiptData.items) {
-      currentY = this.ensureRoom(doc, currentY, 10, pageHeight);
+      // Items table header - Professional styling
+      doc.setFillColor(...professionalNavy);
+      doc.rect(10, currentY, pageWidth - 20, 12, "F");
       
-      // Truncate long item names to prevent overlap with SKU column - adjusted width
-      const maxNameWidth = 85; // REDUCED width to leave proper space for SKU column
-      const itemName = doc.splitTextToSize(item.name, maxNameWidth)[0] || item.name;
-      doc.text(itemName, 15, currentY);
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(9); // SMALLER font
+      doc.setFont('helvetica', 'bold');
+      doc.text("Item Description", 15, currentY + 8);
+      doc.text("SKU", 105, currentY + 8);
+      doc.text("Qty", pageWidth - 70, currentY + 8);
+      doc.text("Unit Price", pageWidth - 50, currentY + 8);
+      doc.text("Total", pageWidth - 20, currentY + 8, { align: "right" });
+
+      currentY += 15;
+
+      // Items with ensureRoom for page breaks
+      doc.setTextColor(...textDark);
+      doc.setFontSize(8); // SMALLER font
       
-      // SKU column moved left to prevent overlap
-      const truncatedSku = (item.sku || "N/A").substring(0, 15); // Allow slightly longer SKUs
-      doc.text(truncatedSku, 105, currentY);  // MOVED LEFT to match header
+      const maxNameWidth = 82;
+      const rowHeight = 8; // REDUCED row height
       
-      doc.text(String(item.quantity), pageWidth - 70, currentY);
-      doc.text(USD.format(item.price), pageWidth - 50, currentY);
-      doc.text(USD.format(item.total), pageWidth - 20, currentY, { align: "right" });
-      
-      currentY += 10; // Keep spacing between items
-    }
+      for (const item of receiptData.items) {
+        currentY = this.ensureRoom(doc, currentY, rowHeight, pageHeight, receiptData, fs, path, pageWidth);
+        
+        const itemName = doc.splitTextToSize(item.name, maxNameWidth)[0] || item.name;
+        doc.text(itemName, 15, currentY);
+        
+        const truncatedSku = (item.sku || "N/A").substring(0, 15);
+        doc.text(truncatedSku, 105, currentY);
+        
+        doc.text(String(item.quantity), pageWidth - 70, currentY);
+        doc.text(USD.format(item.price), pageWidth - 50, currentY);
+        doc.text(USD.format(item.total), pageWidth - 20, currentY, { align: "right" });
+        
+        currentY += rowHeight;
+      }
 
     currentY += 5;
 
@@ -637,7 +647,7 @@ export class ReceiptGenerator {
     const panelH = 10 + rows * rowH; // header + rows
 
     // Ensure space; add page if needed
-    currentY = this.ensureRoom(doc, currentY, panelH + 8, pageHeight);
+    currentY = this.ensureRoom(doc, currentY, panelH + 8, pageHeight, receiptData, fs, path, pageWidth);
 
     doc.setFillColor(245, 246, 248);
     doc.setDrawColor(220, 224, 230);
@@ -688,9 +698,9 @@ export class ReceiptGenerator {
     // If you want to keep it, delete the next line and keep your old block.
     // currentY = currentY; // no-op, just indicates we're not adding another credit box here.
 
-    // ---------- Loyalty Points Earned (after Account Summary) ----------
+    // ---------- Loyalty Points Earned (after Account Summary) ---------- 
     if (typeof receiptData.loyaltyPointsEarned === "number" && receiptData.loyaltyPointsEarned > 0) {
-      currentY = this.ensureRoom(doc, currentY, 16, pageHeight);
+      currentY = this.ensureRoom(doc, currentY, 16, pageHeight, receiptData, fs, path, pageWidth);
       doc.setFillColor(240, 248, 240);
       doc.rect(15, currentY, pageWidth - 30, 12, "F");
       doc.setTextColor(39, 174, 96);
