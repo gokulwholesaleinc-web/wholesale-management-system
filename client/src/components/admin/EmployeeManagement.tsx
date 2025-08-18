@@ -113,7 +113,7 @@ export function EmployeeManagement() {
   const updateUserMutation = useMutation({
     mutationFn: async (userData: any) => {
       if (!editingUser) return;
-      return await apiRequest('PATCH', `/api/admin/users/${editingUser.id}`, userData);
+      return await apiRequest('PUT', `/api/admin/users/${editingUser.id}`, userData);
     },
     onSuccess: () => {
       toast({
