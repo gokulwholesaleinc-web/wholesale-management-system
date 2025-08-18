@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { AppLayout } from '@/layout/AppLayout';
 import { useToast } from '@/hooks/use-toast';
@@ -136,6 +136,15 @@ export default function EnhancedUserManagement() {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+
+  // Handle URL parameters for direct tab navigation
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabParam = urlParams.get('tab');
+    if (tabParam && ['users', 'requests', 'emails', 'settings'].includes(tabParam)) {
+      setActiveTab(tabParam);
+    }
+  }, []);
 
   // Form State
   const [formData, setFormData] = useState<UserFormData>({
