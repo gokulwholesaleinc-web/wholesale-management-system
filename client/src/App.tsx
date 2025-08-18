@@ -55,6 +55,7 @@ import LoyaltyRedemptionHistoryPage from "@/pages/LoyaltyRedemptionHistoryPage";
 import AdminInvoices from "@/pages/AdminInvoices";
 import AdminTaxManagerPage from "@/pages/AdminTaxManagerPage";
 import AdminOrderSettings from "@/pages/AdminOrderSettings";
+import { ActivityLog } from "@/components/admin/ActivityLog";
 import InstoreLoginNew from "@/pages/InstoreLoginNew";
 import PosApp from "@/pages/pos/PosApp";
 import NewOrdersPage from "@/pages/NewOrdersPage";
@@ -227,7 +228,9 @@ function App() {
           <Route path="/admin/staff">
             <AdminProtectedRoute component={ManageStaffPage} />
           </Route>
-          {/* Activity logs route removed during cleanup */}
+          <Route path="/admin/activity-logs">
+            <AdminProtectedRoute component={ActivityLog} />
+          </Route>
 
 
           <Route path="/admin/ai-recommendations">
