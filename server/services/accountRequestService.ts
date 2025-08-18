@@ -160,19 +160,6 @@ Submitted: ${request.createdAt ? new Date(request.createdAt).toLocaleString() : 
     console.log(`📱 [ACCOUNT REQUEST] Found ${staffWithPhones.length} staff members with phone numbers`);
     
     if (staffWithPhones.length > 0) {
-      const smsMessage = `🔔 URGENT: NEW B2B ACCOUNT REQUEST
-
-Business: ${request.businessName}
-Contact: ${request.contactFirstName} ${request.contactLastName}
-Email: ${request.email}
-Phone: ${request.phone}
-FEIN: ${request.feinNumber || 'Not provided'}
-Business Type: ${request.businessType || 'Not specified'}
-
-ACTION REQUIRED: Approve/reject this wholesale account request in admin dashboard immediately.
-
-Reply STOP to opt out`;
-      
       for (const staffMember of staffWithPhones) {
         try {
           console.log(`📱 [ACCOUNT REQUEST] Sending SMS to staff member: ${staffMember.phone}`);
