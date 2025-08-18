@@ -1058,13 +1058,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: 'Username and password are required' });
       }
 
-      // Validate privacy policy acceptance for new users
-      if (!userData.privacyPolicyAccepted) {
-        return res.status(400).json({ 
-          message: 'Privacy policy must be accepted to create an account',
-          code: 'PRIVACY_POLICY_REQUIRED' 
-        });
-      }
+      // For admin-created users, privacy policy acceptance is handled on first login
+      // No validation needed here as users will be prompted to accept on first access
 
       // Capture IP address for consent tracking
       const clientIp = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'] || 'unknown';
