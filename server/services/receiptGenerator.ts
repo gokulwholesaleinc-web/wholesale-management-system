@@ -541,11 +541,25 @@ export class ReceiptGenerator {
       // Use the common header helper
       let currentY = this.drawCommonHeader(doc, receiptData, fs, path, pageWidth, pageHeight);
 
+      // --- Compact mode if short order (<=10 items) ---
+      const compact = (receiptData.items?.length || 0) <= 10;
+
+      // Global sizes (compact first)
+      const fsBody = compact ? 9 : 10;        // default body font
+      const fsSmall = compact ? 8.5 : 9.5;    // small labels
+      const fsTotal = compact ? 11 : 12;      // "Total (This Order)"
+      const rowH = compact ? 7 : 8;           // item row height
+      const afterTableGap = compact ? 6 : 10; // gap after table
+      const thinGap = compact ? 3 : 5;        // tiny gap
+      const panelRowH = compact ? 7 : 8;      // account panel rows
+      const panelHdrH = compact ? 9 : 10;     // account panel header height
+      const loyaltyH = compact ? 12 : 16;     // loyalty banner height
+
       // Order details
       if (receiptData.orderType === "pickup") {
-        doc.setFontSize(10);
+        doc.setFontSize(fsBody);
         doc.text(`Order Type: ${receiptData.orderType.toUpperCase()}`, 15, currentY);
-        currentY += 10;
+        currentY += rowH + 2;
       }
 
       // Items table header - Professional styling
@@ -553,7 +567,7 @@ export class ReceiptGenerator {
       doc.rect(10, currentY, pageWidth - 20, 12, "F");
       
       doc.setTextColor(255, 255, 255);
-      doc.setFontSize(9); // SMALLER font
+      doc.setFontSize(fsSmall);
       doc.setFont('helvetica', 'bold');
       doc.text("Item Description", 15, currentY + 8);
       doc.text("SKU", 105, currentY + 8);
@@ -565,13 +579,12 @@ export class ReceiptGenerator {
 
       // Items with ensureRoom for page breaks
       doc.setTextColor(...textDark);
-      doc.setFontSize(8); // SMALLER font
+      doc.setFontSize(fsSmall);
       
       const maxNameWidth = 82;
-      const rowHeight = 8; // REDUCED row height
       
       for (const item of receiptData.items) {
-        currentY = this.ensureRoom(doc, currentY, rowHeight, pageHeight, receiptData, fs, path, pageWidth);
+        currentY = this.ensureRoom(doc, currentY, rowH, pageHeight, receiptData, fs, path, pageWidth);
         
         const itemName = doc.splitTextToSize(item.name, maxNameWidth)[0] || item.name;
         doc.text(itemName, 15, currentY);
@@ -583,106 +596,98 @@ export class ReceiptGenerator {
         doc.text(USD.format(item.price), pageWidth - 50, currentY);
         doc.text(USD.format(item.total), pageWidth - 20, currentY, { align: "right" });
         
-        currentY += rowHeight;
+        currentY += rowH;
       }
 
-    currentY += 5;
+      currentY += afterTableGap;
 
-    // Totals section
-    doc.setDrawColor(...lightGray);
-    doc.line(pageWidth - 120, currentY, pageWidth - 15, currentY);
-    currentY += 10;
+      // Totals section (compact sizes)
+      doc.setDrawColor(...lightGray);
+      doc.line(pageWidth - 120, currentY, pageWidth - 15, currentY);
+      currentY += thinGap;
 
-    doc.setFontSize(11);
-    doc.text("Items Subtotal:", pageWidth - 90, currentY);
-    doc.text(USD.format(receiptData.subtotal), pageWidth - 20, currentY, { align: "right" });
-    currentY += 8;
+      doc.setFontSize(fsBody);
+      doc.text("Items Subtotal:", pageWidth - 90, currentY);
+      doc.text(USD.format(receiptData.subtotal), pageWidth - 20, currentY, { align: "right" });
+      currentY += compact ? 5 : 6;
 
-    // Flat tax breakdown - fix text alignment and prevent overlap
-    if (receiptData.flatTaxBreakdown && receiptData.flatTaxBreakdown.length > 0) {
-      for (const tax of receiptData.flatTaxBreakdown) {
-        // Shorten long tax descriptions and ensure proper alignment
-        const shortTaxName = tax.name
-          .replace("Cook County Large Cigar", "Cook Co. Lg Cigar")
-          .replace("Large", "Lg")
-          .substring(0, 30); // Shorter limit to prevent wrapping
-        doc.text(`${shortTaxName}:`, pageWidth - 90, currentY); // More space for label
-        doc.text(USD.format(tax.amount), pageWidth - 20, currentY, { align: "right" });
-        currentY += 8;
+      // Flat tax breakdown
+      if (receiptData.flatTaxBreakdown && receiptData.flatTaxBreakdown.length > 0) {
+        for (const tax of receiptData.flatTaxBreakdown) {
+          const shortTaxName = tax.name
+            .replace("Cook County Large Cigar", "Cook Co. Lg Cigar")
+            .replace("Large", "Lg")
+            .substring(0, 30);
+          doc.text(`${shortTaxName}:`, pageWidth - 90, currentY);
+          doc.text(USD.format(tax.amount), pageWidth - 20, currentY, { align: "right" });
+          currentY += compact ? 5 : 6;
+        }
       }
-    }
 
-    if (receiptData.deliveryFee > 0) {
-      doc.text("Delivery Fee:", pageWidth - 90, currentY);
-      doc.text(USD.format(receiptData.deliveryFee), pageWidth - 20, currentY, { align: "right" });
-      currentY += 8;
-    }
+      if (receiptData.deliveryFee > 0) {
+        doc.text("Delivery Fee:", pageWidth - 90, currentY);
+        doc.text(USD.format(receiptData.deliveryFee), pageWidth - 20, currentY, { align: "right" });
+        currentY += compact ? 5 : 6;
+      }
 
-    if (receiptData.loyaltyPointsValue && receiptData.loyaltyPointsValue > 0) {
-      doc.text("Loyalty Discount:", pageWidth - 90, currentY);
-      doc.text(`-${USD.format(receiptData.loyaltyPointsValue)}`, pageWidth - 20, currentY, { align: "right" });
-      currentY += 8;
-    }
+      if (receiptData.loyaltyPointsValue && receiptData.loyaltyPointsValue > 0) {
+        doc.text("Loyalty Discount:", pageWidth - 90, currentY);
+        doc.text(`-${USD.format(receiptData.loyaltyPointsValue)}`, pageWidth - 20, currentY, { align: "right" });
+        currentY += compact ? 5 : 6;
+      }
 
-    // ---------- Totals (compact right), then full-width Account Summary ----------
-    currentY += 2;
-    doc.setDrawColor(...textDark);
-    doc.line(pageWidth - 120, currentY, pageWidth - 15, currentY);
-    currentY += 5;
+      // Totals (smaller)
+      doc.setDrawColor(...lightGray);
+      doc.line(pageWidth - 120, currentY, pageWidth - 15, currentY);
+      currentY += thinGap;
 
-    // Right-column: Total (This Order) — slightly smaller
-    doc.setFontSize(11);
-    doc.setTextColor(...textDark);
-    doc.setFont('helvetica', 'bold');
-    doc.text("Total (This Order):", pageWidth - 90, currentY);
-    doc.text(USD.format(receiptData.total), pageWidth - 20, currentY, { align: "right" });
+      doc.setFontSize(fsTotal);
+      doc.setTextColor(...textDark);
+      doc.setFont('helvetica', 'bold');
+      doc.text("Total (This Order):", pageWidth - 90, currentY);
+      doc.text(USD.format(receiptData.total), pageWidth - 20, currentY, { align: "right" });
 
-    currentY += 10;
+      currentY += compact ? 7 : 8;
 
-    // Full-width "Account Summary" panel under totals
-    const panelX = 10;
-    const panelW = pageWidth - 20;
-    const rowH = 8;
-    const rows = 3;
-    const panelH = 10 + rows * rowH; // header + rows
+      // ---- Account Summary (compact) ----
+      const panelX = 10;
+      const panelW = pageWidth - 20;
+      const panelRows = 3;
+      const panelH = panelHdrH + panelRows * panelRowH;
 
-    // Ensure space; add page if needed
-    currentY = this.ensureRoom(doc, currentY, panelH + 8, pageHeight, receiptData, fs, path, pageWidth);
+      currentY = this.ensureRoom(doc, currentY, panelH + thinGap, pageHeight, receiptData, fs, path, pageWidth);
 
-    doc.setFillColor(245, 246, 248);
-    doc.setDrawColor(220, 224, 230);
-    doc.rect(panelX, currentY, panelW, panelH, "F");
-    doc.rect(panelX, currentY, panelW, panelH);
+      doc.setFillColor(245, 246, 248);
+      doc.setDrawColor(220, 224, 230);
+      doc.rect(panelX, currentY, panelW, panelH, "F");
+      doc.rect(panelX, currentY, panelW, panelH);
 
-    // header
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(11);
-    doc.setTextColor(52, 73, 94);
-    doc.text("Account Summary", panelX + 5, currentY + 7);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(compact ? 10.5 : 11);
+      doc.setTextColor(52, 73, 94);
+      doc.text("Account Summary", panelX + 5, currentY + (panelHdrH - 2));
 
-    const valX = panelX + panelW - 5;
-    let ry = currentY + 7 + 4; // first data row baseline
+      const valX = panelX + panelW - 5;
+      let ry = currentY + panelHdrH - 1;
 
-    // helper function for key-value pairs
-    const KV = (label: string, value: string, bold = false) => {
-      doc.setFont('helvetica', bold ? 'bold' : 'normal');
-      doc.setTextColor(33, 37, 41);
-      doc.setFontSize(10);
-      ry += rowH;
-      doc.text(label, panelX + 5, ry);
-      doc.text(value, valX, ry, { align: "right" });
-    };
+      const KV = (label: string, value: string, bold = false) => {
+        doc.setFont('helvetica', bold ? 'bold' : 'normal');
+        doc.setTextColor(33, 37, 41);
+        doc.setFontSize(fsSmall);
+        ry += panelRowH;
+        doc.text(label, panelX + 5, ry);
+        doc.text(value, valX, ry, { align: "right" });
+      };
 
-    // values
-    const prev = Number(receiptData.creditAccountInfo?.previousBalance || 0);
-    const thisOrder = Number(receiptData.total || 0);
-    const amountDue = prev + thisOrder;
+      const prev = Number(receiptData.creditAccountInfo?.previousBalance || 0);
+      const thisOrder = Number(receiptData.total || 0);
+      const amountDue = prev + thisOrder;
 
-    KV("Previous Balance", USD.format(prev));
-    KV("This Order", USD.format(thisOrder));
-    KV("Amount Due (Prev + This)", USD.format(amountDue), true);
+      KV("Previous Balance", USD.format(prev));
+      KV("This Order", USD.format(thisOrder));
+      KV("Amount Due (Prev + This)", USD.format(amountDue), true);
 
-    currentY += panelH + 8;
+      currentY += panelH + (compact ? 4 : 8);
 
     // Remove duplicate yellow tobacco tax banner - keeping only the orange compliance message at bottom
 
@@ -698,19 +703,19 @@ export class ReceiptGenerator {
     // If you want to keep it, delete the next line and keep your old block.
     // currentY = currentY; // no-op, just indicates we're not adding another credit box here.
 
-    // ---------- Loyalty Points Earned (after Account Summary) ---------- 
-    if (typeof receiptData.loyaltyPointsEarned === "number" && receiptData.loyaltyPointsEarned > 0) {
-      currentY = this.ensureRoom(doc, currentY, 16, pageHeight, receiptData, fs, path, pageWidth);
-      doc.setFillColor(240, 248, 240);
-      doc.rect(15, currentY, pageWidth - 30, 12, "F");
-      doc.setTextColor(39, 174, 96);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(10);
-      doc.text(`Loyalty Points Earned: ${receiptData.loyaltyPointsEarned} points`, 20, currentY + 8);
-      currentY += 18;
-      doc.setTextColor(...textDark);
-      doc.setFont('helvetica', 'normal');
-    }
+      // ---------- Loyalty Points Earned (compact) ----------
+      currentY = this.ensureRoom(doc, currentY, loyaltyH, pageHeight, receiptData, fs, path, pageWidth);
+      if (typeof receiptData.loyaltyPointsEarned === "number") {
+        doc.setFillColor(240, 248, 240);
+        doc.rect(15, currentY, pageWidth - 30, compact ? 9 : 10, "F");
+        doc.setTextColor(39, 174, 96);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(compact ? 9 : 10);
+        doc.text(`✓ Loyalty Points Earned: ${receiptData.loyaltyPointsEarned} points`, 20, currentY + (compact ? 6 : 7));
+        currentY += loyaltyH;
+        doc.setTextColor(...textDark);
+        doc.setFont('helvetica', 'normal');
+      }
 
     // Mandatory IL Tobacco Tax Compliance Message - Small box in bottom left corner
     const taxBoxY = pageHeight - 40;
