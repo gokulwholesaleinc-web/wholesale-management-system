@@ -417,6 +417,10 @@ export class SMSService {
       // Generate carrier-friendly SMS content
       const message = await this.generateCarrierFriendlyContent(messageType, data);
       
+      console.log(`📱 [SMS DEBUG] Message Type: ${messageType}`);
+      console.log(`📱 [SMS DEBUG] Data:`, { customerName: data.customerName, customData: data.customData });
+      console.log(`📱 [SMS DEBUG] Generated Message: ${message}`);
+      
       // Format phone number to E.164 format (+1 for US numbers)
       let formattedPhone = data.to;
       if (data.to && !data.to.startsWith('+')) {
@@ -525,14 +529,23 @@ export class SMSService {
       'promotional': `${this.companyName}: Special offer for ${customerName}! ${data.promoCode || 'Contact us for details'}. Reply STOP to opt out.`,
       'customer_note': `${this.companyName}: ${customerName}, new message about order #${data.orderNumber}. Reply STOP to opt out.`,
       'staff_new_order_alert': `${this.companyName}: New order #${data.orderNumber} from ${customerName}. $${data.orderTotal}. Check app. Reply STOP to opt out.`,
-      'staff_new_account_alert': `${this.companyName}: New account request from ${customerName} (${data.customData?.businessName || 'Business'}). Review in admin. Reply STOP to opt out.`,
+      'staff_new_account_alert': `${this.companyName}: NEW ACCOUNT REQUEST from ${data.customData?.businessName || customerName}. Contact: ${customerName}, Phone: ${data.customData?.phone || 'N/A'}. Review in admin dashboard. Reply STOP to opt out.`,
       'order_note': `${this.companyName}: ${customerName}, note added to order #${data.orderNumber}: ${data.customData?.note || 'Check app for details'}. Reply STOP to opt out.`,
       'system_test': `${this.companyName}: System test message. All systems operational. Reply STOP to opt out.`,
       'sms_opt_in_confirmation': `${this.companyName}: Thank you ${customerName}! You've opted in for SMS updates. You'll receive order confirmations and important alerts. Reply STOP to opt out anytime.`
     };
     
-    // Ensure message exists and add compliance elements
-    let message = (compliantMessages as any)[messageType] || `${this.companyName}: ${customerName}, update available. Reply STOP to opt out.`;
+    // Ensure message exists and add compliance elements - improved fallback
+    let message = (compliantMessages as any)[messageType];
+    
+    if (!message) {
+      console.warn(`⚠️ Unknown message type: ${messageType}, using fallback`);
+      if (messageType === 'staff_new_account_alert') {
+        message = `${this.companyName}: NEW ACCOUNT REQUEST from ${data.customData?.businessName || customerName}. Review in admin dashboard. Reply STOP to opt out.`;
+      } else {
+        message = `${this.companyName}: ${customerName}, update available. Reply STOP to opt out.`;
+      }
+    }
     
     // Ensure message length compliance (160 chars max for single SMS)
     if (message.length > 160) {
