@@ -703,18 +703,20 @@ export class ReceiptGenerator {
     // If you want to keep it, delete the next line and keep your old block.
     // currentY = currentY; // no-op, just indicates we're not adding another credit box here.
 
-      // ---------- Loyalty Points Earned (compact) ----------
+      // ---------- Loyalty Points Earned (compact, clean) ----------
       currentY = this.ensureRoom(doc, currentY, loyaltyH, pageHeight, receiptData, fs, path, pageWidth);
+
       if (typeof receiptData.loyaltyPointsEarned === "number") {
+        const pts = Math.max(0, Math.floor(Number(receiptData.loyaltyPointsEarned) || 0));
         doc.setFillColor(240, 248, 240);
         doc.rect(15, currentY, pageWidth - 30, compact ? 9 : 10, "F");
         doc.setTextColor(39, 174, 96);
-        doc.setFont('helvetica', 'bold');
+        doc.setFont("helvetica", "bold");
         doc.setFontSize(compact ? 9 : 10);
-        doc.text(`✓ Loyalty Points Earned: ${receiptData.loyaltyPointsEarned} points`, 20, currentY + (compact ? 6 : 7));
+        doc.text(`Loyalty Points Earned: ${pts} points`, 20, currentY + (compact ? 6.5 : 7.5));
         currentY += loyaltyH;
-        doc.setTextColor(...textDark);
-        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(33, 37, 41);
+        doc.setFont("helvetica", "normal");
       }
 
     // Mandatory IL Tobacco Tax Compliance Message - Small box in bottom left corner
