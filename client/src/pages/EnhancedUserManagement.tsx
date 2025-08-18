@@ -43,6 +43,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { EmailCampaignManagement } from '@/components/admin/EmailCampaignManagement';
 import AccountRequestsManagement from '@/components/admin/AccountRequestsManagement';
+import { CustomerCreditManager } from '@/components/admin/CustomerCreditManager';
 
 interface User {
   id: string;
@@ -773,9 +774,10 @@ export default function EnhancedUserManagement() {
               </DialogDescription>
             </DialogHeader>
             {creditAccountUser && (
-              <div className="p-4 text-center text-gray-600">
-                Credit management for {creditAccountUser.username} will be available here.
-              </div>
+              <CustomerCreditManager 
+                customerId={creditAccountUser.id} 
+                customerName={creditAccountUser.username}
+              />
             )}
           </DialogContent>
         </Dialog>
