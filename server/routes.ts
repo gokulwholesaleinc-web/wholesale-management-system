@@ -10,12 +10,12 @@ import {
   insertCustomerPriceMemorySchema,
   manualLoyaltyPointsSchema,
 } from "../shared/schema";
-import { accountRequests, users, customerCreditAccounts } from "../shared/schema";
+import { accountRequests, users, customerCreditAccounts, activityLogs } from "../shared/schema";
 import { db, pool } from "./db";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
-import { sql, eq, or, desc, gt } from "drizzle-orm";
+import { sql, eq, or, desc, gt, and, gte, lte, ilike } from "drizzle-orm";
 import cookieParser from "cookie-parser";
 import { requireAuth, requireAdmin, requireEmployeeOrAdmin, createAuthToken, validateToken } from "./simpleAuth";
 // In-app notification service removed
@@ -2494,14 +2494,105 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Staff activity logs
-  app.get('/api/staff/activity', requireEmployeeOrAdmin, async (req: any, res) => {
+  // Activity logs endpoint - using enhanced system
+  app.get('/api/activity-logs', requireEmployeeOrAdmin, async (req: any, res) => {
     try {
-      const activityLogs = await storage.getActivityLogs();
-      res.json(activityLogs);
+      const { 
+        page = 1, 
+        limit = 50, 
+        userId, 
+        action, 
+        targetType, 
+        search,
+        fromDate,
+        toDate
+      } = req.query;
+
+      console.log(`[ACTIVITY-LOGS] Fetching logs - Page: ${page}, Limit: ${limit}`);
+      
+      // Build query conditions
+      const conditions = [];
+      
+      if (userId) {
+        conditions.push(eq(activityLogs.userId, userId));
+      }
+      
+      if (action) {
+        conditions.push(eq(activityLogs.action, action));
+      }
+      
+      if (targetType) {
+        conditions.push(eq(activityLogs.targetType, targetType));
+      }
+      
+      if (search) {
+        conditions.push(
+          or(
+            ilike(activityLogs.action, `%${search}%`),
+            ilike(activityLogs.details, `%${search}%`)
+          )
+        );
+      }
+      
+      if (fromDate) {
+        conditions.push(gte(activityLogs.timestamp, new Date(fromDate)));
+      }
+      
+      if (toDate) {
+        conditions.push(lte(activityLogs.timestamp, new Date(toDate)));
+      }
+
+      // Combine conditions
+      const whereCondition = conditions.length > 0 ? and(...conditions) : undefined;
+      
+      // Get logs with user information
+      const logs = await db
+        .select({
+          id: activityLogs.id,
+          userId: activityLogs.userId,
+          action: activityLogs.action,
+          details: activityLogs.details,
+          timestamp: activityLogs.timestamp,
+          ipAddress: activityLogs.ipAddress,
+          targetId: activityLogs.targetId,
+          targetType: activityLogs.targetType,
+          username: users.username,
+          fullName: sql<string>`COALESCE(${users.firstName} || ' ' || ${users.lastName}, ${users.username})`.as('fullName')
+        })
+        .from(activityLogs)
+        .leftJoin(users, eq(activityLogs.userId, users.id))
+        .where(whereCondition)
+        .orderBy(desc(activityLogs.timestamp))
+        .limit(Number(limit))
+        .offset((Number(page) - 1) * Number(limit));
+
+      // Get total count for pagination
+      const totalResult = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(activityLogs)
+        .where(whereCondition);
+      
+      const totalCount = totalResult[0]?.count || 0;
+
+      console.log(`[ACTIVITY-LOGS] Found ${logs.length} logs, total: ${totalCount}`);
+
+      res.json({
+        success: true,
+        logs,
+        pagination: {
+          page: Number(page),
+          limit: Number(limit),
+          totalPages: Math.ceil(totalCount / Number(limit)),
+          totalCount
+        }
+      });
     } catch (error) {
-      console.error('Error fetching staff activity:', error);
-      res.status(500).json({ message: 'Failed to fetch staff activity' });
+      console.error('Error fetching activity logs:', error);
+      res.status(500).json({ 
+        success: false,
+        message: 'Failed to fetch activity logs',
+        error: error.message 
+      });
     }
   });
 
@@ -3444,109 +3535,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Order completion endpoint moved to consolidated section
 
   // ============================================================================
-  // ACTIVITY LOGS ENDPOINTS
+  // ACTIVITY LOGS ENDPOINTS - MOVED TO CONSOLIDATED ROUTER  
   // ============================================================================
-  
-  app.get('/api/activity-logs', requireEmployeeOrAdmin, async (req: any, res) => {
-    try {
-      const { 
-        page = 1, 
-        limit = 50, 
-        userId, 
-        action, 
-        targetType, 
-        search,
-        fromDate,
-        toDate
-      } = req.query;
-
-      console.log(`[ACTIVITY-LOGS] Fetching logs - Page: ${page}, Limit: ${limit}`);
-      
-      // Build query conditions
-      const conditions = [];
-      
-      if (userId) {
-        conditions.push(eq(activityLogs.userId, userId));
-      }
-      
-      if (action) {
-        conditions.push(eq(activityLogs.action, action));
-      }
-      
-      if (targetType) {
-        conditions.push(eq(activityLogs.targetType, targetType));
-      }
-      
-      if (search) {
-        conditions.push(
-          or(
-            ilike(activityLogs.action, `%${search}%`),
-            ilike(activityLogs.details, `%${search}%`)
-          )
-        );
-      }
-      
-      if (fromDate) {
-        conditions.push(gte(activityLogs.timestamp, new Date(fromDate)));
-      }
-      
-      if (toDate) {
-        conditions.push(lte(activityLogs.timestamp, new Date(toDate)));
-      }
-
-      // Combine conditions
-      const whereCondition = conditions.length > 0 ? and(...conditions) : undefined;
-      
-      // Get logs with user information
-      const logs = await db
-        .select({
-          id: activityLogs.id,
-          userId: activityLogs.userId,
-          action: activityLogs.action,
-          details: activityLogs.details,
-          timestamp: activityLogs.timestamp,
-          ipAddress: activityLogs.ipAddress,
-          targetId: activityLogs.targetId,
-          targetType: activityLogs.targetType,
-          username: users.username,
-          fullName: sql<string>`COALESCE(${users.firstName} || ' ' || ${users.lastName}, ${users.username})`.as('fullName')
-        })
-        .from(activityLogs)
-        .leftJoin(users, eq(activityLogs.userId, users.id))
-        .where(whereCondition)
-        .orderBy(desc(activityLogs.timestamp))
-        .limit(Number(limit))
-        .offset((Number(page) - 1) * Number(limit));
-
-      // Get total count for pagination
-      const totalResult = await db
-        .select({ count: sql<number>`count(*)` })
-        .from(activityLogs)
-        .where(whereCondition);
-      
-      const totalCount = totalResult[0]?.count || 0;
-
-      console.log(`[ACTIVITY-LOGS] Found ${logs.length} logs, total: ${totalCount}`);
-
-      res.json({
-        success: true,
-        logs,
-        pagination: {
-          page: Number(page),
-          limit: Number(limit),
-          totalPages: Math.ceil(totalCount / Number(limit)),
-          totalCount
-        }
-      });
-    } catch (error) {
-      console.error('Error fetching activity logs:', error);
-      res.status(500).json({ 
-        success: false,
-        message: 'Failed to fetch activity logs',
-        error: error.message 
-      });
-    }
-  });
+  // Activity logs endpoints are now handled by the consolidated activity-logs router
+  // mounted at /api/activity-logs
 
   // ============================================================================
   // CATEGORIES ENDPOINTS
