@@ -64,6 +64,12 @@ interface ReceiptData {
   orderStatus?: string;
   customerNotes?: string;
 
+  // Credit Account Information
+  creditLimit?: number;           // Customer's credit limit (dollars)
+  currentBalance?: number;        // Current balance owed (dollars, negative means credit)
+  totalAmountDue?: number;        // Total amount due including this order (dollars)
+  availableCredit?: number;       // Remaining credit available (dollars)
+
   // Loyalty
   loyaltyPointsEarned?: number;   // 2 pts/$1 on non-tobacco items only
   loyaltyPointsRedeemed?: number; // points used
@@ -550,18 +556,41 @@ export class ReceiptGenerator {
       currentY += 15;
     }
 
-    // Credit account info
+    // Credit account info with enhanced details
     if (receiptData.creditAccountInfo) {
+      currentY += 5;
       doc.setFillColor(...lightGray);
-      doc.rect(15, currentY, pageWidth - 30, 25, "F");
+      doc.rect(15, currentY, pageWidth - 30, 35, "F");
+      
+      // Header
       doc.setTextColor(...textDark);
-      doc.setFontSize(11);
-      doc.text("Credit Account Summary", 20, currentY + 8);
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text("Credit Account Summary", 20, currentY + 10);
+      
+      // Credit details
       doc.setFontSize(10);
-      doc.text(`Previous Balance: ${USD.format(receiptData.creditAccountInfo.previousBalance)}`, 20, currentY + 16);
-      doc.text(`Current Balance: ${USD.format(receiptData.creditAccountInfo.currentBalance)}`, 20, currentY + 22);
-      doc.text(`Credit Limit: ${USD.format(receiptData.creditAccountInfo.creditLimit)}`, pageWidth - 100, currentY + 16);
-      currentY += 35;
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Previous Balance: ${USD.format(receiptData.creditAccountInfo.previousBalance)}`, 20, currentY + 18);
+      doc.text(`This Order: ${USD.format(receiptData.total)}`, 20, currentY + 26);
+      
+      // Total amount due (highlighted)
+      const totalDue = receiptData.creditAccountInfo.previousBalance + receiptData.total;
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...professionalNavy);
+      doc.text(`TOTAL AMOUNT DUE: ${USD.format(totalDue)}`, 20, currentY + 34);
+      
+      // Right side - credit info
+      doc.setTextColor(...textDark);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Credit Limit: ${USD.format(receiptData.creditAccountInfo.creditLimit)}`, pageWidth - 100, currentY + 18);
+      
+      const availableCredit = receiptData.creditAccountInfo.creditLimit - totalDue;
+      const creditColor = availableCredit >= 0 ? successGreen : [231, 76, 60]; // Red if over limit
+      doc.setTextColor(...creditColor);
+      doc.text(`Available Credit: ${USD.format(Math.max(0, availableCredit))}`, pageWidth - 100, currentY + 26);
+      
+      currentY += 45;
     }
 
     // Loyalty points - improved spacing and visibility
