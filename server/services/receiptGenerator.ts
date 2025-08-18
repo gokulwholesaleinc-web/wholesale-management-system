@@ -348,10 +348,10 @@ export class ReceiptGenerator {
       };
 
       // Credit info - always show (even if $0.00)
-      // IMPORTANT: currentBalance = previousBalance + the SAME total shown on the PDF
+      // Use the same total that the PDF shows:
       const creditInfo = await this.calculatePreviousBalance(customer.id, order.id);
       const previousBalance = Number(creditInfo.previousBalance || 0);
-      const currentBalance = previousBalance + fromC(finalTotalC); // <-- use finalTotalC (PDF total)
+      const currentBalance = previousBalance + fromC(finalTotalC);
       
       receiptData.creditAccountInfo = {
         previousBalance,
@@ -380,6 +380,15 @@ export class ReceiptGenerator {
       console.error(`[RECEIPT GENERATOR] Error:`, error);
       return { success: false, message: `Error generating receipt: ${error?.message || "Unknown error"}` };
     }
+  }
+
+  // ---------- Helper Methods ----------
+  private ensureRoom(doc: any, currentY: number, neededHeight: number, pageHeight: number): number {
+    if (currentY + neededHeight > pageHeight - 30) {
+      doc.addPage();
+      return 30; // Start from top of new page
+    }
+    return currentY;
   }
 
   // ---------- PDF generator (switchable designs) ----------
@@ -605,48 +614,65 @@ export class ReceiptGenerator {
       currentY += 8;
     }
 
-    // Final total - Enhanced with Previous Balance left-side block
+    // ---------- Totals (compact right), then full-width Account Summary ----------
     currentY += 2;
     doc.setDrawColor(...textDark);
     doc.line(pageWidth - 120, currentY, pageWidth - 15, currentY);
-    currentY += 6;
+    currentY += 5;
 
-    // Main TOTAL line
-    doc.setFontSize(12);
+    // Right-column: Total (This Order) — slightly smaller
+    doc.setFontSize(11);
     doc.setTextColor(...textDark);
     doc.setFont('helvetica', 'bold');
-    doc.text("TOTAL:", pageWidth - 90, currentY);
+    doc.text("Total (This Order):", pageWidth - 90, currentY);
     doc.text(USD.format(receiptData.total), pageWidth - 20, currentY, { align: "right" });
-    
-    // ===== Left-side block: Previous Balance & Amount Due (always show) =====
-    if (receiptData.creditAccountInfo) {
-      const prev = Number(receiptData.creditAccountInfo.previousBalance || 0);
-      const amountDue = prev + Number(receiptData.total || 0);
-      
-      const leftBlockX = 15;
-      const leftBlockY = currentY - 8;
-      const leftBlockW = pageWidth - 140; // space to the left of the right totals column
-      const leftBlockH = 16;
-      
-      doc.setFillColor(250, 250, 250);
-      doc.rect(leftBlockX, leftBlockY, leftBlockW, leftBlockH, "F");
-      doc.setDrawColor(200, 200, 200);
-      doc.rect(leftBlockX, leftBlockY, leftBlockW, leftBlockH);
-      
-      // Previous Balance
-      doc.setTextColor(...textDark);
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'normal');
-      doc.text("Previous Balance:", leftBlockX + 4, leftBlockY + 6);
-      doc.text(USD.format(prev), leftBlockX + 4, leftBlockY + 12, { align: "right" });
-      
-      // Amount Due (Prev + This)
-      doc.setFont('helvetica', 'bold');
-      doc.text("Amount Due (Prev + This):", leftBlockX + 4, leftBlockY + 12);
-      doc.text(USD.format(amountDue), leftBlockX + leftBlockW - 4, leftBlockY + 12, { align: "right" });
-    }
-    
-    currentY += 15;
+
+    currentY += 10;
+
+    // Full-width "Account Summary" panel under totals
+    const panelX = 10;
+    const panelW = pageWidth - 20;
+    const rowH = 8;
+    const rows = 3;
+    const panelH = 10 + rows * rowH; // header + rows
+
+    // Ensure space; add page if needed
+    currentY = this.ensureRoom(doc, currentY, panelH + 8, pageHeight);
+
+    doc.setFillColor(245, 246, 248);
+    doc.setDrawColor(220, 224, 230);
+    doc.rect(panelX, currentY, panelW, panelH, "F");
+    doc.rect(panelX, currentY, panelW, panelH);
+
+    // header
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.setTextColor(52, 73, 94);
+    doc.text("Account Summary", panelX + 5, currentY + 7);
+
+    const valX = panelX + panelW - 5;
+    let ry = currentY + 7 + 4; // first data row baseline
+
+    // helper function for key-value pairs
+    const KV = (label: string, value: string, bold = false) => {
+      doc.setFont('helvetica', bold ? 'bold' : 'normal');
+      doc.setTextColor(33, 37, 41);
+      doc.setFontSize(10);
+      ry += rowH;
+      doc.text(label, panelX + 5, ry);
+      doc.text(value, valX, ry, { align: "right" });
+    };
+
+    // values
+    const prev = Number(receiptData.creditAccountInfo?.previousBalance || 0);
+    const thisOrder = Number(receiptData.total || 0);
+    const amountDue = prev + thisOrder;
+
+    KV("Previous Balance", USD.format(prev));
+    KV("This Order", USD.format(thisOrder));
+    KV("Amount Due (Prev + This)", USD.format(amountDue), true);
+
+    currentY += panelH + 8;
 
     // Remove duplicate yellow tobacco tax banner - keeping only the orange compliance message at bottom
 
@@ -658,30 +684,22 @@ export class ReceiptGenerator {
       currentY += 15;
     }
 
-    // Credit account info
-    if (receiptData.creditAccountInfo) {
-      doc.setFillColor(...lightGray);
-      doc.rect(15, currentY, pageWidth - 30, 25, "F");
-      doc.setTextColor(...textDark);
-      doc.setFontSize(11);
-      doc.text("Credit Account Summary", 20, currentY + 8);
-      doc.setFontSize(10);
-      doc.text(`Previous Balance: ${USD.format(receiptData.creditAccountInfo.previousBalance)}`, 20, currentY + 16);
-      doc.text(`Current Balance: ${USD.format(receiptData.creditAccountInfo.currentBalance)}`, 20, currentY + 22);
-      doc.text(`Credit Limit: ${USD.format(receiptData.creditAccountInfo.creditLimit)}`, pageWidth - 100, currentY + 16);
-      currentY += 35;
-    }
+    // (Optional) remove bottom "Credit Account Summary" box to reduce clutter
+    // If you want to keep it, delete the next line and keep your old block.
+    // currentY = currentY; // no-op, just indicates we're not adding another credit box here.
 
-    // Loyalty Points Earned banner
-    if (receiptData.loyaltyPointsEarned && receiptData.loyaltyPointsEarned > 0) {
-      currentY += 5;
+    // ---------- Loyalty Points Earned (after Account Summary) ----------
+    if (typeof receiptData.loyaltyPointsEarned === "number" && receiptData.loyaltyPointsEarned > 0) {
+      currentY = this.ensureRoom(doc, currentY, 16, pageHeight);
       doc.setFillColor(240, 248, 240);
-      doc.rect(15, currentY - 3, pageWidth - 30, 12, "F");
-      doc.setTextColor(...successGreen);
-      doc.setFontSize(11);
+      doc.rect(15, currentY, pageWidth - 30, 12, "F");
+      doc.setTextColor(39, 174, 96);
       doc.setFont('helvetica', 'bold');
-      doc.text(`Loyalty Points Earned: ${receiptData.loyaltyPointsEarned} points`, 20, currentY + 5);
-      currentY += 20;
+      doc.setFontSize(10);
+      doc.text(`Loyalty Points Earned: ${receiptData.loyaltyPointsEarned} points`, 20, currentY + 8);
+      currentY += 18;
+      doc.setTextColor(...textDark);
+      doc.setFont('helvetica', 'normal');
     }
 
     // Mandatory IL Tobacco Tax Compliance Message - Small box in bottom left corner
