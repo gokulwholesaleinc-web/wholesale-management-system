@@ -111,18 +111,27 @@ async function resolvePreviousBalance(order: Order): Promise<number> {
 // Main export function that chooses the right generator
 export const generateOrderPDF = async (order: Order, customerName?: string) => {
   try {
-    // Get invoice style setting from admin settings
-    const orderSettings = await apiRequest('/api/admin/order-settings');
-    const invoiceStyle = orderSettings?.invoiceStyle || 'legacy';
+    // Get invoice style setting from admin settings with better error handling
+    let invoiceStyle = 'legacy'; // default
+    
+    try {
+      const orderSettings = await apiRequest('/api/admin/order-settings');
+      invoiceStyle = orderSettings?.invoiceStyle || 'legacy';
+      console.log('🧾 Invoice style setting retrieved:', invoiceStyle);
+    } catch (settingsError) {
+      console.warn('⚠️ Failed to fetch admin settings, using legacy format:', settingsError);
+    }
 
     // Pre-compute credit balance for enhanced version
     const previousBalance = await resolvePreviousBalance(order);
 
     if (invoiceStyle === 'enhanced') {
+      console.log('📄 Using enhanced invoice format');
       // Dynamic import of enhanced generator
       const { generateOrderPDF: generateEnhanced } = await import('./pdfGeneratorEnhanced');
       return await generateEnhanced(order, customerName, previousBalance);
     } else {
+      console.log('📄 Using legacy invoice format');
       // Dynamic import of legacy generator
       const { generateOrderPDF: generateLegacy } = await import('./pdfGeneratorLegacy');
       return generateLegacy(order, customerName);
@@ -132,6 +141,7 @@ export const generateOrderPDF = async (order: Order, customerName?: string) => {
     
     // Fallback to legacy if enhanced fails
     try {
+      console.log('📄 Falling back to legacy format due to error');
       const { generateOrderPDF: generateLegacy } = await import('./pdfGeneratorLegacy');
       return generateLegacy(order, customerName);
     } catch (fallbackError) {

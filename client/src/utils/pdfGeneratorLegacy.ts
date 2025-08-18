@@ -143,13 +143,39 @@ export const generateOrderPDF = (order: Order, customerName?: string) => {
   doc.text(`Type: ${order.orderType === 'delivery' ? 'Delivery' : 'Pickup'}`, 80, 48);
   doc.text(`Status: ${order.status}`, 140, 48);
   
-  // Second row - customer and payment info (only if needed)
+  // Customer Information Section - Enhanced with full address
   let currentY = 48;
-  if (displayCustomerName || order.paymentMethod) {
+  if (displayCustomerName || order.deliveryAddressData || order.paymentMethod) {
     currentY += 10;
+    
+    // Customer name and address
     if (displayCustomerName) {
       doc.text(`Customer: ${displayCustomerName}`, 20, currentY);
+      
+      // Add full delivery address if available
+      if (order.deliveryAddressData) {
+        const address = order.deliveryAddressData;
+        let addressLine = '';
+        
+        if (address.street) addressLine += address.street;
+        if (address.city) addressLine += (addressLine ? ', ' : '') + address.city;
+        if (address.state) addressLine += (addressLine ? ', ' : '') + address.state;
+        if (address.zipCode) addressLine += (addressLine ? ' ' : '') + address.zipCode;
+        
+        if (addressLine) {
+          currentY += 8;
+          doc.text(addressLine, 20, currentY);
+        }
+        
+        // Add phone if available
+        if (address.phone) {
+          currentY += 8;
+          doc.text(`Phone: ${address.phone}`, 20, currentY);
+        }
+      }
     }
+    
+    // Payment method
     if (order.paymentMethod) {
       const paymentMethodLabel = getPaymentMethodLabel(order.paymentMethod);
       let paymentText = `Payment: ${paymentMethodLabel}`;
