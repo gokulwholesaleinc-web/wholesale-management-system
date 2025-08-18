@@ -17,7 +17,7 @@ import { CreditCard, DollarSign, FileText, Search, AlertTriangle, Users, Filter,
 import { useToast } from '@/hooks/use-toast';
 import { CreditTransactionHistory } from '@/components/admin/CreditTransactionHistory';
 import { CustomerCreditManager } from '@/components/admin/CustomerCreditManager';
-import { availableFrom, fmtUSD, isOverLimit, owedFromBalance, validatePaymentAmount } from '@/lib/credit';
+import { availableFrom, fmtUSD, isOverLimit, owedFromBalance, validatePaymentAmount, balanceColor, balanceText } from '@/lib/credit';
 
 type TxType = 'charge' | 'payment' | 'adjustment';
 
@@ -683,7 +683,7 @@ export default function AdminCreditManagement() {
                 <div className="mt-1 p-2 bg-gray-50 rounded">
                   <p className="font-medium">{selectedCustomer?.firstName} {selectedCustomer?.lastName}</p>
                   <p className="text-sm text-gray-600">{selectedCustomer?.company || selectedCustomer?.username}</p>
-                  <p className="text-sm">Current Balance: <span className={getBalanceColor(selectedCustomer?.currentBalance || 0)}>{getBalanceText(selectedCustomer?.currentBalance || 0)}</span></p>
+                  <p className="text-sm">Current Balance: <span className={balanceColor(selectedCustomer?.currentBalance || 0)}>{balanceText(selectedCustomer?.currentBalance || 0)}</span></p>
                 </div>
               </div>
               
