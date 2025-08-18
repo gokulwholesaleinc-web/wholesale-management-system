@@ -1729,6 +1729,8 @@ function OrderDeliverySettingsCard() {
       return apiRequest("PUT", "/api/admin/order-settings", data);
     },
     onSuccess: () => {
+      // Invalidate and refetch the cache to get updated data
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/order-settings"] });
       toast({
         title: "Settings Updated",
         description: "Order and delivery settings have been updated successfully.",

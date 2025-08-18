@@ -2186,7 +2186,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('🏪 [ORDER SETTINGS PUT] Request body:', req.body);
       console.log('🏪 [ORDER SETTINGS PUT] Request headers:', req.headers['content-type']);
       
-      const { minimumOrderAmount, deliveryFee, freeDeliveryThreshold, loyaltyPointsRate } = req.body;
+      const { minimumOrderAmount, deliveryFee, freeDeliveryThreshold, loyaltyPointsRate, invoiceStyle } = req.body;
       
       // Add input validation
       if (minimumOrderAmount !== undefined && (isNaN(minimumOrderAmount) || minimumOrderAmount < 0)) {
@@ -2208,6 +2208,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.error('❌ Invalid loyaltyPointsRate:', loyaltyPointsRate);
         return res.status(400).json({ message: 'Loyalty points rate must be a valid number between 0 and 1' });
       }
+
+      if (invoiceStyle !== undefined && !['legacy', 'enhanced'].includes(invoiceStyle)) {
+        console.error('❌ Invalid invoiceStyle:', invoiceStyle);
+        return res.status(400).json({ message: 'Invoice style must be either "legacy" or "enhanced"' });
+      }
       
       console.log('✅ Validation passed, updating settings...');
       
@@ -2215,7 +2220,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         minimumOrderAmount,
         deliveryFee,
         freeDeliveryThreshold,
-        loyaltyPointsRate
+        loyaltyPointsRate,
+        invoiceStyle
       });
       
       console.log('✅ Settings updated successfully:', updatedSettings);
@@ -4222,26 +4228,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
 
-  // Order settings endpoint
-  app.get('/api/order-settings', requireAuth, async (req: any, res) => {
-    try {
-      const settings = {
-        deliveryFee: 5.00,
-        freeDeliveryThreshold: 100.00,
-        deliveryTimeSlots: [
-          '9:00 AM - 11:00 AM',
-          '11:00 AM - 1:00 PM',
-          '1:00 PM - 3:00 PM',
-          '3:00 PM - 5:00 PM'
-        ],
-        orderTypes: ['delivery', 'pickup']
-      };
-      res.json(settings);
-    } catch (error) {
-      console.error('Error fetching order settings:', error);
-      res.status(500).json({ message: 'Failed to fetch order settings' });
-    }
-  });
+  // Order settings endpoint - REMOVED HARDCODED VALUES
+  // This endpoint was causing incorrect data display by returning fixed values
+  // Use /api/admin/order-settings instead for actual database values
 
   // DUPLICATE REMOVED - Use customer/orders endpoint from line 613 instead
 
