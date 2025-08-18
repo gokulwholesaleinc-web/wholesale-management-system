@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { apiRequest } from '@/lib/queryClient';
-import PrivacyPolicyModal from '@/components/PrivacyPolicyModal';
+import { PrivacyPolicyModal } from '@/components/auth/PrivacyPolicyModal';
 
 interface PrivacyPolicyContextType {
   needsAcceptance: boolean;
@@ -50,11 +50,13 @@ export function PrivacyPolicyProvider({ children }: PrivacyPolicyProviderProps) 
     }
   }, [privacyPolicyQuery.data, user]);
 
-  const handleAccepted = () => {
+  const handleModalClose = (accepted: boolean) => {
     setShowModal(false);
-    setNeedsAcceptance(false);
-    // Refetch the status to update the state
-    privacyPolicyQuery.refetch();
+    if (accepted) {
+      setNeedsAcceptance(false);
+      // Refetch the status to update the state
+      privacyPolicyQuery.refetch();
+    }
   };
 
   const checkStatus = () => {
@@ -66,8 +68,8 @@ export function PrivacyPolicyProvider({ children }: PrivacyPolicyProviderProps) 
       {children}
       <PrivacyPolicyModal
         isOpen={showModal}
-        onClose={() => {}} // Prevent closing the modal
-        onAccepted={handleAccepted}
+        onClose={handleModalClose}
+        userName={user?.firstName || user?.username}
       />
     </PrivacyPolicyContext.Provider>
   );
