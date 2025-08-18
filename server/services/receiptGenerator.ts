@@ -502,10 +502,7 @@ export class ReceiptGenerator {
       cardHeight += Math.max(0, extraLines * 5); // 5 units per extra line
     }
     
-    // Extra height for business name if present
-    if (receiptData.customerBusinessName && receiptData.customerBusinessName !== receiptData.customerName) {
-      cardHeight += 6;
-    }
+    // Note: Business name is now displayed in the main body, not in this header card
     
     doc.setFillColor(...lightGray);
     doc.rect(10, y, pageWidth - 20, cardHeight, "F");
@@ -517,30 +514,8 @@ export class ReceiptGenerator {
 
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
-    
-    // Left side: name + (wrapped) address
+    // Customer name only (address and business name moved to main body)
     doc.text(`${receiptData.customerName}`, 15, y + 15);
-    
-    let leftY = y + 15;
-    
-    // Show address if available with text wrapping
-    if (receiptData.customerAddress && receiptData.customerAddress.trim() !== "") {
-      const addr = (receiptData.customerAddress || "").trim();
-      if (addr) {
-        const wrapWidth = (pageWidth / 2) - 25; // keep clear of right column
-        const addrLines = doc.splitTextToSize(addr, wrapWidth);
-        let lineY = leftY + 5;
-        for (const addrLine of addrLines.slice(0, 3)) { // up to 3 lines; adjust if you want more
-          doc.text(`${addrLine}`, 15, lineY);
-          lineY += 5;
-        }
-      }
-    }
-    
-    // Show business name if different from customer name
-    if (receiptData.customerBusinessName && receiptData.customerBusinessName !== receiptData.customerName) {
-      doc.text(`${receiptData.customerBusinessName}`, 15, leftY + 20);
-    }
 
     const rightY = y + 13;
     if (receiptData.customerEmail) doc.text(`Email: ${receiptData.customerEmail}`, pageWidth / 2, rightY);
@@ -629,6 +604,38 @@ export class ReceiptGenerator {
         doc.text(`Order Type: ${receiptData.orderType.toUpperCase()}`, 15, currentY);
         currentY += rowH + 2;
       }
+
+      // --- Left side: Business, Customer, then (wrapped) address ---
+      const wrapWidth = (pageWidth / 2) - 25; // keep clear of right column
+      const business = (receiptData.customerBusinessName || "").trim();
+      const person = (receiptData.customerName || "").trim();
+      const addr = (receiptData.customerAddress || "").trim();
+
+      let ly = currentY + 15;
+
+      if (business) {
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(10);
+        doc.text(business, 15, ly);
+        ly += 6;
+      }
+
+      if (person) {
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+        doc.text(person, 15, ly);
+        ly += 6;
+      }
+
+      if (addr) {
+        const addrLines = doc.splitTextToSize(addr, wrapWidth);
+        for (const ln of addrLines.slice(0, 3)) { // up to 3 lines; increase if you prefer
+          doc.text(ln, 15, ly);
+          ly += 5;
+        }
+      }
+
+      currentY = ly + 10; // gap before items table
 
       // Items table header - Professional styling
       doc.setFillColor(...professionalNavy);
