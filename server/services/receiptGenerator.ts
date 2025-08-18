@@ -95,41 +95,71 @@ export class ReceiptGenerator {
     return ReceiptGenerator.instance;
   }
 
-  // ---------- Helper: Get full customer address ---------- 
+  // ---------- Helper: normalize ANY delivery/customer address into one line ----------
   private getFullCustomerAddress(order: any, customer: any): string {
-    console.log(`🔍 [ADDRESS DEBUG] Order type: ${order.orderType}, Has deliveryAddressData: ${!!order.deliveryAddressData}`);
-    
-    // For delivery orders, use the full delivery address
-    if (order.orderType === 'delivery' && order.deliveryAddressData) {
-      try {
-        // Parse deliveryAddressData if it's a JSON string
-        let addr = order.deliveryAddressData;
-        if (typeof addr === 'string') {
-          addr = JSON.parse(addr);
+    const lower = (v: any) => (typeof v === "string" ? v.toLowerCase() : v);
+    const isDelivery = lower(order?.orderType) === "delivery" || lower(order?.orderType) === "deliver";
+
+    // Try to read delivery address (object or JSON string or plain formatted string)
+    const parseDelivery = () => {
+      let d = order?.deliveryAddressData ?? order?.deliveryAddress ?? null;
+      if (!d) return null;
+      if (typeof d === "string") {
+        const trimmed = d.trim();
+        if (!trimmed) return null;
+        try {
+          // If it's JSON, parse it; otherwise treat as already-formatted
+          return JSON.parse(trimmed);
+        } catch {
+          return trimmed; // already a formatted address
         }
-        
-        console.log(`🔍 [ADDRESS DEBUG] Parsed deliveryAddressData:`, addr);
-        
-        let fullAddress = '';
-        
-        // Build address from addressLine1, city, state, postalCode
-        if (addr.addressLine1) fullAddress += addr.addressLine1;
-        if (addr.addressLine2) fullAddress += (fullAddress ? ' ' : '') + addr.addressLine2;
-        if (addr.city) fullAddress += (fullAddress ? ', ' : '') + addr.city;
-        if (addr.state) fullAddress += (fullAddress ? ', ' : '') + addr.state;
-        if (addr.postalCode) fullAddress += (fullAddress ? ' ' : '') + addr.postalCode;
-        
-        console.log(`🔍 [ADDRESS DEBUG] Built full address: "${fullAddress}"`);
-        return fullAddress || customer.address || '';
-      } catch (error) {
-        console.error(`🔍 [ADDRESS DEBUG] Error parsing delivery address:`, error);
-        return customer.address || '';
+      }
+      return d; // object
+    };
+
+    // Pull a value by trying multiple possible keys and case-insensitive matches
+    const pick = (obj: any, keys: string[]) => {
+      if (!obj || typeof obj !== "object") return "";
+      for (const k of keys) {
+        if (obj[k] != null && String(obj[k]).trim() !== "") return String(obj[k]).trim();
+        const alt = Object.keys(obj).find((x) => x.toLowerCase() === k.toLowerCase());
+        if (alt && obj[alt] != null && String(obj[alt]).trim() !== "") return String(obj[alt]).trim();
+      }
+      return "";
+    };
+
+    // 1) DELIVERY address first (if delivery)
+    if (isDelivery) {
+      const raw = parseDelivery();
+      if (raw) {
+        if (typeof raw === "string") return raw; // already formatted
+        // object: support many shapes
+        const line1 = pick(raw, ["addressLine1", "line1", "street", "street1", "address1"]);
+        const line2 = pick(raw, ["addressLine2", "line2", "apt", "suite", "unit", "address2"]);
+        const city  = pick(raw, ["city", "locality", "town"]);
+        const state = pick(raw, ["state", "region", "province", "stateCode", "state_code"]);
+        const zip   = pick(raw, ["postalCode", "postal_code", "zip", "zipcode"]);
+        const formatted = pick(raw, ["formatted", "formattedAddress", "fullAddress"]);
+
+        const left  = [line1, line2].filter(Boolean).join(" ").trim();
+        const right = [[city, state].filter(Boolean).join(", "), zip].filter(Boolean).join(" ").trim();
+        const combined = [left, right].filter(Boolean).join(", ").trim();
+        const finalAddr = (formatted || combined || "").trim();
+        if (finalAddr) return finalAddr;
       }
     }
-    
-    // For pickup orders or when no delivery address, use customer address
-    console.log(`🔍 [ADDRESS DEBUG] Using customer address: "${customer.address}"`);
-    return customer.address || '';
+
+    // 2) Fallback: customer default address
+    const c = customer || {};
+    const cLine1 = c.addressLine1 || c.line1 || c.street || c.address1 || c.address || "";
+    const cLine2 = c.addressLine2 || c.line2 || c.apt || c.suite || c.address2 || "";
+    const cCity  = c.city || c.locality || "";
+    const cState = c.state || c.region || c.province || c.stateCode || "";
+    const cZip   = c.postalCode || c.postal_code || c.zip || c.zipcode || "";
+
+    const left  = [cLine1, cLine2].filter((x: string) => x && x.trim()).join(" ").trim();
+    const right = [[cCity, cState].filter(Boolean).join(", "), cZip].filter(Boolean).join(" ").trim();
+    return [left, right].filter(Boolean).join(", ").trim();
   }
 
   // ---------- Credit balance (robust & canonical) ----------
@@ -460,10 +490,25 @@ export class ReceiptGenerator {
     doc.setFont("helvetica", "normal");
     doc.text(`Date: ${receiptData.orderDate}`, pageWidth - 20, 32, { align: "right" });
 
-    // Customer info card (slightly shorter to save space)
+    // Customer info card (dynamic height for address wrapping)
     let y = 55;
+    let cardHeight = 22; // base height
+    
+    // Calculate additional height needed for wrapped address
+    if (receiptData.customerAddress && receiptData.customerAddress.trim() !== "") {
+      const wrapWidth = (pageWidth / 2) - 25;
+      const addrLines = doc.splitTextToSize(receiptData.customerAddress, wrapWidth);
+      const extraLines = Math.min(addrLines.length, 3) - 1; // first line is accounted for in base
+      cardHeight += Math.max(0, extraLines * 5); // 5 units per extra line
+    }
+    
+    // Extra height for business name if present
+    if (receiptData.customerBusinessName && receiptData.customerBusinessName !== receiptData.customerName) {
+      cardHeight += 6;
+    }
+    
     doc.setFillColor(...lightGray);
-    doc.rect(10, y, pageWidth - 20, 22, "F");
+    doc.rect(10, y, pageWidth - 20, cardHeight, "F");
 
     doc.setTextColor(...textDark);
     doc.setFontSize(12);
@@ -472,14 +517,37 @@ export class ReceiptGenerator {
 
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
+    
+    // Left side: name + (wrapped) address
     doc.text(`${receiptData.customerName}`, 15, y + 15);
+    
+    let leftY = y + 15;
+    
+    // Show address if available with text wrapping
+    if (receiptData.customerAddress && receiptData.customerAddress.trim() !== "") {
+      const addr = (receiptData.customerAddress || "").trim();
+      if (addr) {
+        const wrapWidth = (pageWidth / 2) - 25; // keep clear of right column
+        const addrLines = doc.splitTextToSize(addr, wrapWidth);
+        let lineY = leftY + 5;
+        for (const addrLine of addrLines.slice(0, 3)) { // up to 3 lines; adjust if you want more
+          doc.text(`${addrLine}`, 15, lineY);
+          lineY += 5;
+        }
+      }
+    }
+    
+    // Show business name if different from customer name
+    if (receiptData.customerBusinessName && receiptData.customerBusinessName !== receiptData.customerName) {
+      doc.text(`${receiptData.customerBusinessName}`, 15, leftY + 20);
+    }
 
     const rightY = y + 13;
     if (receiptData.customerEmail) doc.text(`Email: ${receiptData.customerEmail}`, pageWidth / 2, rightY);
     if (receiptData.customerPhone) doc.text(`Phone: ${receiptData.customerPhone}`, pageWidth / 2, rightY + 6);
 
-    // Return baseline for body content
-    return y + 30; // slightly tighter than before
+    // Return baseline for body content (dynamic based on actual card height)
+    return y + cardHeight + 8;
   }
 
   // ---------- PDF generator (switchable designs) ----------
