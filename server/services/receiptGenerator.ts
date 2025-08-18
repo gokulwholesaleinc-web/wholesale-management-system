@@ -95,6 +95,43 @@ export class ReceiptGenerator {
     return ReceiptGenerator.instance;
   }
 
+  // ---------- Helper: Get full customer address ---------- 
+  private getFullCustomerAddress(order: any, customer: any): string {
+    console.log(`🔍 [ADDRESS DEBUG] Order type: ${order.orderType}, Has deliveryAddressData: ${!!order.deliveryAddressData}`);
+    
+    // For delivery orders, use the full delivery address
+    if (order.orderType === 'delivery' && order.deliveryAddressData) {
+      try {
+        // Parse deliveryAddressData if it's a JSON string
+        let addr = order.deliveryAddressData;
+        if (typeof addr === 'string') {
+          addr = JSON.parse(addr);
+        }
+        
+        console.log(`🔍 [ADDRESS DEBUG] Parsed deliveryAddressData:`, addr);
+        
+        let fullAddress = '';
+        
+        // Build address from addressLine1, city, state, postalCode
+        if (addr.addressLine1) fullAddress += addr.addressLine1;
+        if (addr.addressLine2) fullAddress += (fullAddress ? ' ' : '') + addr.addressLine2;
+        if (addr.city) fullAddress += (fullAddress ? ', ' : '') + addr.city;
+        if (addr.state) fullAddress += (fullAddress ? ', ' : '') + addr.state;
+        if (addr.postalCode) fullAddress += (fullAddress ? ' ' : '') + addr.postalCode;
+        
+        console.log(`🔍 [ADDRESS DEBUG] Built full address: "${fullAddress}"`);
+        return fullAddress || customer.address || '';
+      } catch (error) {
+        console.error(`🔍 [ADDRESS DEBUG] Error parsing delivery address:`, error);
+        return customer.address || '';
+      }
+    }
+    
+    // For pickup orders or when no delivery address, use customer address
+    console.log(`🔍 [ADDRESS DEBUG] Using customer address: "${customer.address}"`);
+    return customer.address || '';
+  }
+
   // ---------- Credit balance (single, canonical) ----------
   private async calculatePreviousBalance(customerId: string, currentOrderId: number) {
     try {
@@ -243,7 +280,7 @@ export class ReceiptGenerator {
           : `${customer.firstName || ""} ${customer.lastName || ""}`.trim() || customer.username || "Valued Customer",
         customerBusinessName: customer.company || undefined,
         customerEmail: customer.email || "",
-        customerAddress: customer.address || "",
+        customerAddress: this.getFullCustomerAddress(order, customer),
         customerPhone: customer.phone || "",
         orderDate: new Date(order.createdAt || new Date()).toLocaleDateString("en-US"),
         orderType: order.orderType || "pickup",
