@@ -1,27 +1,41 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import gokulLogo from "../../../attached_assets/IMG_0846.png"; // Transparent PNG version (no white circle)
+import gokulLogo from "@assets/IMG_0846.png";
 
-/**
- * Order + Item interfaces
- */
+/** ------------ Types (with optional server fields) ------------ */
 interface OrderItem {
   id: number;
   productId: number;
   quantity: number;
   price: number;
   createdAt: string | null;
-  product?: { id: number; name: string };
+  product?: { id: number; name: string; sku?: string; isTobaccoProduct?: boolean };
   productName?: string;
-  flatTaxAmount?: number;
-  totalTaxAmount?: number;
+  flatTaxAmount?: number;      // per-line or per-unit (server dependent)
+  totalTaxAmount?: number;     // per-line total tax if provided
+  flatTaxName?: string;        // e.g., "Cook Co. Lg Cigar 60ct"
+  isTobaccoProduct?: boolean;  // if provided on client
+}
+
+type FlatTaxLine = { name: string; amount: number; description?: string };
+
+interface CalcLine { kind: string; label: string; amount: number; }
+interface CalculationBreakdown {
+  itemsSubtotal?: number;
+  flatTaxTotal?: number;
+  subtotalBeforeDelivery?: number;
+  nonTobaccoSubtotal?: number;
+  loyaltyPointsEarned?: number;
+  loyaltyRedeemValue?: number;
+  deliveryFee?: number;
+  lines?: CalcLine[];
 }
 
 interface Order {
   id: number;
   userId: string;
   total: number;
-  orderType: string;
+  orderType: "delivery" | "pickup" | string;
   deliveryDate: string | null;
   deliveryTimeSlot: string | null;
   deliveryFee: number | null;
@@ -33,14 +47,25 @@ interface Order {
   updatedAt: string | null;
   items: OrderItem[];
   deliveryAddressData?: any;
+
+  // payment / notes
   paymentMethod?: string;
   checkNumber?: string;
   paymentDate?: string;
   paymentNotes?: string;
   notes?: string;
   adminNote?: string;
+
+  // loyalty
   loyaltyPointsRedeemed?: number;
   loyaltyPointsValue?: number;
+  loyaltyPointsEarned?: number;
+
+  // breakdowns from server (optional)
+  flatTaxBreakdown?: FlatTaxLine[];
+  calculationBreakdown?: CalculationBreakdown;
+
+  // user
   user?: {
     id: string;
     firstName: string | null;
@@ -49,12 +74,47 @@ interface Order {
     businessName?: string | null;
     username: string;
   };
+
+  // credit / previous balance (any of these may exist)
+  previousBalance?: number;
+  creditAccountInfo?: { previousBalance?: number };
 }
 
-/**
- * Generate PDF Document
- */
+/** ------------ Helpers ------------ */
+const fmt$ = (n: number) => `$${n.toFixed(2)}`;
+const asDate = (s?: string | null) => (s ? new Date(s).toLocaleDateString() : "N/A");
+
+/** ------------ Main: build PDF (client-side) ------------ */
 export const generateOrderPDF = (order: Order, customerName?: string) => {
+  const doc = new jsPDF();
+
+  // ---------- Header with transparent logo ----------
+  try {
+    doc.addImage(gokulLogo, "PNG", 20, 10, 25, 25);
+  } catch (err) {
+    // If logo fails, we still render header text
+    // (no crash)
+  }
+
+  doc.setFont("helvetica", "bold").setFontSize(18);
+  doc.text("Gokul Wholesale Inc.", 50, 20);
+
+  doc.setFont("helvetica", "normal").setFontSize(10);
+  doc.text("1141 W Bryn Mawr Ave, Itasca, IL 60143", 50, 28);
+  doc.text("(630) 540-9910 | sales@gokulwholesaleinc.com", 50, 34);
+  doc.text("TP# 97239", 50, 40);
+
+  doc.setFont("helvetica", "bold").setFontSize(12);
+  doc.text(`Order #${order.id}`, 180, 20, { align: "right" });
+
+  doc.setFont("helvetica", "normal").setFontSize(10);
+  doc.text(`Date: ${asDate(order.createdAt)}`, 180, 28, { align: "right" });
+
+  // thin divider
+  doc.setLineWidth(0.5);
+  doc.line(15, 45, 195, 45);
+
+  // ---------- Customer & order info ----------
   const displayCustomerName =
     customerName ||
     order.user?.company ||
@@ -65,171 +125,223 @@ export const generateOrderPDF = (order: Order, customerName?: string) => {
     order.user?.username ||
     "Customer";
 
-  const doc = new jsPDF();
+  let y = 54;
 
-  /**
-   * =========================
-   * Header + Logo
-   * =========================
-   */
-  try {
-    // Transparent PNG logo
-    doc.addImage(gokulLogo, "PNG", 20, 10, 25, 25);
+  // Gray panel
+  doc.setFillColor(240, 240, 240);
+  doc.rect(15, y, 180, 22, "F");
 
-    // Company text
-    doc.setFontSize(16).setFont("helvetica", "bold");
-    doc.text("Gokul Wholesale", 50, 20);
+  doc.setFont("helvetica", "bold").setFontSize(11).setTextColor(33, 37, 41);
+  doc.text("Customer Information", 20, y + 7);
 
-    doc.setFontSize(9).setFont("helvetica", "normal");
-    doc.text(
-      "1141 W Bryn Mawr Ave, Itasca, IL 60143 | Phone: (630) 540-9910",
-      50,
-      28
-    );
+  doc.setFont("helvetica", "normal").setFontSize(10);
+  doc.text(displayCustomerName, 20, y + 15);
+  doc.text(`Email: sales@gokulwholesaleinc.com`, 120, y + 11);
+  doc.text(`Phone: +12242601982`, 120, y + 17);
 
-    // License top right
-    doc.setFontSize(10).setFont("helvetica", "bold");
-    doc.text("TP#97239", 160, 32);
+  y += 30;
 
-    // Order number
-    doc.setFontSize(14).setFont("helvetica", "bold");
-    doc.text(`Order #${order.id}`, 140, 20);
+  // Order type/date/time (compact)
+  doc.setFont("helvetica", "normal").setFontSize(10);
+  const orderType = order.orderType === "delivery" ? "DELIVERY" : "PICKUP";
+  doc.text(`Order Type: ${orderType}`, 20, y);
+  y += 6;
 
-    doc.setLineWidth(0.3);
-    doc.line(20, 38, 190, 38);
-  } catch (err) {
-    console.warn("Logo load failed:", err);
-    doc.setFontSize(16).setFont("helvetica", "bold");
-    doc.text("Gokul Wholesale", 20, 20);
-  }
-
-  /**
-   * =========================
-   * Order Info
-   * =========================
-   */
-  const orderDate = order.createdAt
-    ? new Date(order.createdAt).toLocaleDateString()
-    : "N/A";
-
-  doc.setFontSize(9).setFont("helvetica", "normal");
-  doc.text(`Date: ${orderDate}`, 20, 48);
-  doc.text(
-    `Type: ${order.orderType === "delivery" ? "Delivery" : "Pickup"}`,
-    80,
-    48
-  );
-  doc.text(`Status: ${order.status}`, 140, 48);
-
-  let yPos = 58;
-  if (displayCustomerName) {
-    doc.text(`Customer: ${displayCustomerName}`, 20, yPos);
-  }
-  if (order.paymentMethod) {
-    let payment = order.paymentMethod;
-    if (payment === "check" && order.checkNumber) {
-      payment += ` #${order.checkNumber}`;
-    }
-    doc.text(`Payment: ${payment}`, 120, yPos);
-  }
-
-  /**
-   * =========================
-   * Items Table
-   * =========================
-   */
-  yPos += 10;
-  const tableData = order.items.map((item) => [
-    item.product?.name || item.productName || "Product",
-    item.quantity.toString(),
-    `$${item.price.toFixed(2)}`,
-    `$${(item.quantity * item.price).toFixed(2)}`,
+  // ---------- Items table ----------
+  const tableStartY = y + 4;
+  const tableRows = order.items.map((it) => [
+    it.product?.name || it.productName || "Product",
+    it.product?.sku || "N/A",
+    String(it.quantity),
+    fmt$(it.price),
+    fmt$(it.quantity * it.price),
   ]);
 
   autoTable(doc, {
-    startY: yPos,
-    head: [["Product", "Qty", "Unit Price", "Total"]],
-    body: tableData,
+    startY: tableStartY,
+    head: [["Item Description", "SKU", "Qty", "Unit Price", "Total"]],
+    body: tableRows,
     theme: "grid",
-    headStyles: { fillColor: [41, 128, 185], textColor: 255, fontStyle: "bold" },
-    styles: { fontSize: 9, cellPadding: 4 },
-    columnStyles: { 1: { halign: "center" }, 2: { halign: "right" }, 3: { halign: "right" } },
+    headStyles: { fillColor: [38, 60, 82], textColor: 255, fontStyle: "bold" },
+    styles: { fontSize: 9, cellPadding: 3 },
+    columnStyles: {
+      0: { cellWidth: 78 },           // Description
+      1: { cellWidth: 32 },           // SKU
+      2: { cellWidth: 15, halign: "center" }, // Qty
+      3: { cellWidth: 25, halign: "right" },  // Unit Price
+      4: { cellWidth: 25, halign: "right" },  // Total
+    },
   });
 
-  /**
-   * =========================
-   * Totals Section
-   * =========================
-   */
-  const subtotal = order.items.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
-  const deliveryFee = order.deliveryFee || 0;
-  const taxes = order.items.reduce(
-    (sum, i) => sum + (i.totalTaxAmount || i.flatTaxAmount || 0),
+  const afterTableY = (doc as any).lastAutoTable.finalY + 10;
+
+  // ---------- Totals + Breakdown ----------
+  // Subtotals
+  const itemsSubtotal = order.items.reduce(
+    (sum, it) => sum + (it.price || 0) * (it.quantity || 0),
     0
   );
 
-  let yTotal = (doc as any).lastAutoTable.finalY + 10;
-  doc.setFont("helvetica", "bold");
-  doc.text(`Subtotal: $${subtotal.toFixed(2)}`, 140, yTotal);
-  yTotal += 7;
+  // Build flat-tax lines (prefer server-provided)
+  let flatTaxLines: FlatTaxLine[] = [];
+  if (Array.isArray(order.flatTaxBreakdown) && order.flatTaxBreakdown.length) {
+    flatTaxLines = order.flatTaxBreakdown.map((l) => ({
+      name: l.name,
+      amount: Number(l.amount || 0),
+    }));
+  } else if (
+    order.calculationBreakdown?.lines &&
+    order.calculationBreakdown.lines.length
+  ) {
+    flatTaxLines = order.calculationBreakdown.lines
+      .filter((l) => l.kind === "flatTax")
+      .map((l) => ({ name: l.label, amount: Number(l.amount || 0) }));
+  } else {
+    // Fallback: try to group on item.flatTaxName or combine into one line
+    const byName: Record<string, number> = {};
+    for (const it of order.items) {
+      const amt = (it.totalTaxAmount ?? it.flatTaxAmount ?? 0) as number;
+      if (!amt) continue;
+      const lbl = it.flatTaxName || "Flat Taxes";
+      byName[lbl] = (byName[lbl] || 0) + Number(amt);
+    }
+    flatTaxLines = Object.entries(byName).map(([name, amount]) => ({
+      name,
+      amount,
+    }));
+  }
+  const flatTaxTotal = flatTaxLines.reduce((s, l) => s + l.amount, 0);
 
-  if (taxes > 0) {
-    doc.text(`Cook County Large Cigar Tax: $${taxes.toFixed(2)}`, 140, yTotal);
-    yTotal += 7;
-  }
-  if (deliveryFee > 0) {
-    doc.text(`Delivery Fee: $${deliveryFee.toFixed(2)}`, 140, yTotal);
-    yTotal += 7;
-  }
-  if ((order.loyaltyPointsRedeemed || 0) > 0) {
-    doc.text(
-      `Loyalty Redeemed: ${order.loyaltyPointsRedeemed} ($${(
-        order.loyaltyPointsValue || 0
-      ).toFixed(2)})`,
-      140,
-      yTotal
+  const deliveryFee = Number(order.deliveryFee || 0);
+  const loyaltyRedeemValue = Number(order.loyaltyPointsValue || 0);
+
+  // Loyalty points earned: prefer server value
+  const nonTobaccoSubtotal =
+    order.calculationBreakdown?.nonTobaccoSubtotal ??
+    // if items carry isTobaccoProduct on client, exclude them; otherwise include all
+    order.items.reduce(
+      (s, it) =>
+        (it.isTobaccoProduct || it.product?.isTobaccoProduct)
+          ? s
+          : s + (it.price || 0) * (it.quantity || 0),
+      0
     );
-    yTotal += 7;
+
+  const loyaltyEarned =
+    typeof order.loyaltyPointsEarned === "number"
+      ? order.loyaltyPointsEarned
+      : Math.round((nonTobaccoSubtotal || 0) * 2); // 2 points per $1 (your rule)
+
+  // This order total (recomputed for display)
+  const displayedThisOrderTotal =
+    itemsSubtotal + flatTaxTotal + deliveryFee - loyaltyRedeemValue;
+
+  // Use server snapshot as authoritative "Total (This Order)"
+  const serverThisOrderTotal = Number(order.total || 0);
+
+  // Previous balance (ALWAYS show)
+  const previousBalance =
+    (order as any).previousBalance ??
+    order.creditAccountInfo?.previousBalance ??
+    0;
+
+  // Amount due = previous balance + this order (server snapshot)
+  const amountDue = previousBalance + serverThisOrderTotal;
+
+  // Render breakdown (right-aligned block)
+  let sx = 120;
+  let sy = afterTableY;
+
+  doc.setFont("helvetica", "normal").setFontSize(11);
+
+  // Items Subtotal
+  doc.text("Items Subtotal:", sx, sy);
+  doc.text(fmt$(itemsSubtotal), 195, sy, { align: "right" });
+  sy += 7;
+
+  // Flat-tax lines
+  for (const line of flatTaxLines) {
+    doc.text(`${line.name}:`, sx, sy);
+    doc.text(fmt$(line.amount), 195, sy, { align: "right" });
+    sy += 7;
   }
 
-  doc.setFontSize(12);
-  doc.text(`Total: $${order.total.toFixed(2)}`, 140, yTotal);
+  // Subtotal (Items + Taxes)
+  if (flatTaxLines.length > 0) {
+    doc.setFont("helvetica", "bold");
+    doc.text("Subtotal (Items + Taxes):", sx, sy);
+    doc.text(fmt$(itemsSubtotal + flatTaxTotal), 195, sy, { align: "right" });
+    sy += 7;
+    doc.setFont("helvetica", "normal");
+  }
 
-  /**
-   * =========================
-   * Tobacco Notice (bottom-left small box)
-   * =========================
-   */
+  // Delivery Fee
+  if (deliveryFee > 0) {
+    doc.text("Delivery Fee:", sx, sy);
+    doc.text(fmt$(deliveryFee), 195, sy, { align: "right" });
+    sy += 7;
+  }
+
+  // Loyalty redeemed (always show if provided, even 0)
+  if (order.loyaltyPointsRedeemed != null) {
+    doc.text(
+      `Loyalty Redeemed: ${order.loyaltyPointsRedeemed} pts`,
+      sx,
+      sy
+    );
+    doc.text(`-${fmt$(loyaltyRedeemValue)}`, 195, sy, { align: "right" });
+    sy += 7;
+  }
+
+  // Previous Balance (ALWAYS)
+  doc.text("Previous Balance:", sx, sy);
+  doc.text(fmt$(previousBalance), 195, sy, { align: "right" });
+  sy += 4;
+
+  // Divider
+  doc.setLineWidth(0.5);
+  doc.line(sx, sy, 195, sy);
+  sy += 6;
+
+  // Totals
+  doc.setFont("helvetica", "bold");
+  doc.text("Total (This Order):", sx, sy);
+  doc.text(fmt$(serverThisOrderTotal), 195, sy, { align: "right" });
+  sy += 7;
+
+  doc.text("Amount Due (Prev + This):", sx, sy);
+  doc.text(fmt$(amountDue), 195, sy, { align: "right" });
+  sy += 12;
+
+  // ---------- Loyalty points earned (banner) ----------
+  if (loyaltyEarned >= 0) {
+    doc.setFillColor(240, 248, 240);
+    doc.rect(15, sy - 6, 180, 10, "F");
+    doc.setTextColor(39, 174, 96);
+    doc.setFont("helvetica", "bold").setFontSize(10);
+    doc.text(`Loyalty Points Earned: ${loyaltyEarned} points`, 20, sy + 1);
+    doc.setTextColor(0, 0, 0);
+    sy += 14;
+  }
+
+  // ---------- Tobacco notice (bottom-left small box; always show) ----------
   const pageH = doc.internal.pageSize.height;
-  const noticeY = pageH - 25;
-
-  const notice = "45% IL Tobacco Tax Paid";
-  doc.setFontSize(9).setFont("helvetica", "bold").setTextColor(220, 53, 69);
-
-  doc.setDrawColor(220, 53, 69);
-  doc.rect(20, noticeY - 6, 60, 10); // small box bottom-left
-  doc.text(notice, 50, noticeY, { align: "center" });
-
+  const boxY = pageH - 28;
+  doc.setDrawColor(230, 126, 34).setLineWidth(0.6);
+  doc.rect(15, boxY, 80, 10);
+  doc.setFont("helvetica", "bold").setFontSize(9).setTextColor(230, 126, 34);
+  doc.text("45% IL TOBACCO TAX PAID", 55, boxY + 6, { align: "center" });
   doc.setTextColor(0, 0, 0);
 
-  /**
-   * =========================
-   * Footer
-   * =========================
-   */
-  doc.setFontSize(8).setFont("helvetica", "normal");
-  doc.text("Thank you for your business!", 20, pageH - 12);
-  doc.text(`Generated on ${new Date().toLocaleDateString()}`, 20, pageH - 7);
+  // ---------- Footer ----------
+  doc.setFont("helvetica", "normal").setFontSize(9);
+  doc.text("Thank you for your business!", 105, pageH - 14, { align: "center" });
+  doc.text("www.shopgokul.com", 105, pageH - 8, { align: "center" });
 
   return doc;
 };
 
-/**
- * Save PDF
- */
+/** Save to file */
 export const downloadOrderPDF = (order: Order, customerName?: string) => {
   const doc = generateOrderPDF(order, customerName);
   doc.save(`Order-${order.id}-${Date.now()}.pdf`);
