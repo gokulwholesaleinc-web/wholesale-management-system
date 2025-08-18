@@ -132,27 +132,65 @@ export class ReceiptGenerator {
     return customer.address || '';
   }
 
-  // ---------- Credit balance (single, canonical) ----------
+  // ---------- Credit balance (robust & canonical) ----------
+  /**
+   * Computes the *outstanding* previous balance by summing only amounts still due on prior
+   * on-account/credit orders (excludes current order, ignores cancelled/voided).
+   * It looks for common paid fields: amountPaid / paidAmount / paymentsTotal.
+   */
   private async calculatePreviousBalance(customerId: string, currentOrderId: number) {
     try {
+      console.log(`💳 [CREDIT DEBUG] Calculating previous balance for customer ${customerId}, excluding order ${currentOrderId}`);
+      
       const customer = await storage.getUser(customerId);
-      const creditLimit = customer?.creditLimit ?? 5000;
+      const creditLimit = typeof customer?.creditLimit === 'number' ? customer.creditLimit : 5000;
 
       const orders = await storage.getOrdersByUserId(customerId);
-      const completedCreditOrders = orders.filter(
-        (o: any) =>
-          o.status === "completed" &&
-          o.id !== currentOrderId &&
-          (o.paymentMethod === "on_account" || o.paymentMethod === "credit")
-      );
+      console.log(`💳 [CREDIT DEBUG] Found ${orders.length} total orders for customer`);
 
-      const previousBalance = completedCreditOrders.reduce((s: number, o: any) => s + (o.total || 0), 0);
+      let previousBalance = 0;
+
+      for (const o of orders) {
+        if (!o) continue;
+        if (o.id === currentOrderId) continue;
+
+        const pm = (o.paymentMethod || '').toLowerCase();
+        const status = (o.status || '').toLowerCase();
+
+        // Only account/credit orders count toward prior balance
+        if (pm !== 'on_account' && pm !== 'credit') continue;
+
+        // Ignore cancelled/voided orders
+        if (['cancelled', 'canceled', 'void', 'voided'].includes(status)) {
+          console.log(`💳 [CREDIT DEBUG] Skipping ${status} order ${o.id}`);
+          continue;
+        }
+
+        const total = Number(o.total || 0);
+        const paid = Number(o.amountPaid ?? o.paidAmount ?? o.paymentsTotal ?? 0);
+
+        const due = Math.max(0, total - paid);
+
+        // If order is explicitly marked paid with no due, skip it
+        if (due === 0) {
+          console.log(`💳 [CREDIT DEBUG] Order ${o.id} fully paid (${total} total, ${paid} paid)`);
+          continue;
+        }
+
+        console.log(`💳 [CREDIT DEBUG] Order ${o.id} has outstanding balance: $${due.toFixed(2)} (total: $${total.toFixed(2)}, paid: $${paid.toFixed(2)})`);
+        previousBalance += due;
+      }
+
+      // Current order total to produce "currentBalance" for display
       const currentOrder = await storage.getOrderById(currentOrderId);
-      const currentOrderTotal = currentOrder?.total || 0;
+      const currentOrderTotal = Number(currentOrder?.total || 0);
       const currentBalance = previousBalance + currentOrderTotal;
+
+      console.log(`💳 [CREDIT DEBUG] Final calculation - Previous: $${previousBalance.toFixed(2)}, Current Order: $${currentOrderTotal.toFixed(2)}, New Balance: $${currentBalance.toFixed(2)}`);
 
       return { previousBalance, currentBalance, creditLimit };
     } catch (err) {
+      console.error(`💳 [CREDIT DEBUG] Error calculating previous balance:`, err);
       return { previousBalance: 0, currentBalance: 0, creditLimit: 5000 };
     }
   }
@@ -563,17 +601,42 @@ export class ReceiptGenerator {
       currentY += 8;
     }
 
-    // Final total - Smaller and directly under taxes
+    // Final total - Enhanced with Previous Balance left-side block
     currentY += 2;
     doc.setDrawColor(...textDark);
     doc.line(pageWidth - 120, currentY, pageWidth - 15, currentY);
     currentY += 6;
 
+    // Main TOTAL line
     doc.setFontSize(12);
     doc.setTextColor(...textDark);
     doc.setFont('helvetica', 'bold');
     doc.text("TOTAL:", pageWidth - 90, currentY);
     doc.text(USD.format(receiptData.total), pageWidth - 20, currentY, { align: "right" });
+    
+    // Left-side block: Previous Balance and Amount Due (only for credit orders)
+    if (receiptData.creditAccountInfo && (receiptData.paymentMethod === 'on_account' || receiptData.paymentMethod === 'credit')) {
+      const leftBlockX = 20;
+      const leftBlockY = currentY - 10;
+      
+      // Light background box
+      doc.setFillColor(250, 250, 250);
+      doc.rect(leftBlockX, leftBlockY, 100, 25, "F");
+      doc.setDrawColor(200, 200, 200);
+      doc.rect(leftBlockX, leftBlockY, 100, 25);
+      
+      // Previous Balance
+      doc.setTextColor(...textDark);
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      doc.text("Previous Balance:", leftBlockX + 3, leftBlockY + 8);
+      doc.text(USD.format(receiptData.creditAccountInfo.previousBalance), leftBlockX + 50, leftBlockY + 8);
+      
+      // Amount Due (Prev + This)
+      doc.setFont('helvetica', 'bold');
+      doc.text("Amount Due (Prev + This):", leftBlockX + 3, leftBlockY + 16);
+      doc.text(USD.format(receiptData.creditAccountInfo.currentBalance), leftBlockX + 50, leftBlockY + 16);
+    }
     
     currentY += 15;
 
@@ -601,13 +664,14 @@ export class ReceiptGenerator {
       currentY += 35;
     }
 
-    // Loyalty points - improved spacing and visibility
+    // Loyalty Points Earned banner - positioned after totals
     if (receiptData.loyaltyPointsEarned && receiptData.loyaltyPointsEarned > 0) {
       currentY += 5; // Add extra space before loyalty points
       doc.setFillColor(240, 248, 240); // Light green background
       doc.rect(15, currentY - 3, pageWidth - 30, 12, "F");
       doc.setTextColor(...successGreen);
       doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
       doc.text(`Loyalty Points Earned: ${receiptData.loyaltyPointsEarned} points`, 20, currentY + 5);
       currentY += 20; // Extra space after loyalty points
     }
