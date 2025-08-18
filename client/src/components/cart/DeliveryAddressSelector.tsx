@@ -164,6 +164,11 @@ export function DeliveryAddressSelector({ selectedAddressId, onSelectAddress }: 
                     htmlFor={`address-${address.id}`} 
                     className="font-medium cursor-pointer"
                   >
+                    {address.businessName && (
+                      <>
+                        {address.businessName} <br />
+                      </>
+                    )}
                     {address.name}
                     {address.isDefault && (
                       <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
@@ -184,7 +189,6 @@ export function DeliveryAddressSelector({ selectedAddressId, onSelectAddress }: 
                 </div>
                 
                 <div className="text-sm text-muted-foreground mt-1 space-y-1">
-                  {address.businessName && <p>{address.businessName}</p>}
                   <p>{address.addressLine1}</p>
                   {address.addressLine2 && <p>{address.addressLine2}</p>}
                   <p>{address.city}, {address.state} {address.postalCode}</p>

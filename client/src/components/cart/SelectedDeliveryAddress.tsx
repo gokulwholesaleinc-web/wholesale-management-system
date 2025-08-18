@@ -28,8 +28,14 @@ export function SelectedDeliveryAddress({ addressId }: SelectedDeliveryAddressPr
   
   return (
     <div className="text-sm text-muted-foreground mt-1 space-y-1">
-      {address.businessName && <p>{address.businessName}</p>}
-      <p>{address.name}</p>
+      <p>
+        {address.businessName && (
+          <>
+            {address.businessName} <br />
+          </>
+        )}
+        {address.name}
+      </p>
       <p>{address.addressLine1}</p>
       {address.addressLine2 && <p>{address.addressLine2}</p>}
       <p>{address.city}, {address.state} {address.postalCode}</p>

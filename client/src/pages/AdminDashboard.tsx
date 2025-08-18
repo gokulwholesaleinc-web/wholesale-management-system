@@ -85,7 +85,14 @@ function QuickCartManagement({ stats }: { stats: any }) {
                   <ShoppingCart className="h-4 w-4 text-orange-600" />
                   <div>
                     <p className="text-sm font-medium text-gray-900">Order #{order.id}</p>
-                    <p className="text-xs text-gray-600">{order.customer?.company || order.customer?.firstName || 'Customer'}</p>
+                    <p className="text-xs text-gray-600">
+                      {order.customer?.company && (
+                        <>
+                          {order.customer.company} <br />
+                        </>
+                      )}
+                      {order.customer?.firstName || 'Customer'}
+                    </p>
                   </div>
                 </div>
                 <span className="text-sm font-medium text-orange-600">${order.total?.toFixed(2) || '0.00'}</span>
@@ -108,8 +115,15 @@ function QuickCartManagement({ stats }: { stats: any }) {
                 <div className="flex items-center space-x-2">
                   <User className="h-4 w-4 text-blue-600" />
                   <div>
-                    <p className="text-sm font-medium text-gray-900">{customer.firstName || customer.username}</p>
-                    <p className="text-xs text-gray-600">Level {customer.customerLevel || 1} • {customer.company || 'No company'}</p>
+                    <p className="text-sm font-medium text-gray-900">
+                      {customer.company && (
+                        <>
+                          {customer.company} <br />
+                        </>
+                      )}
+                      {customer.firstName || customer.username}
+                    </p>
+                    <p className="text-xs text-gray-600">Level {customer.customerLevel || 1}</p>
                   </div>
                 </div>
                 <span className="text-xs text-blue-600">Customer</span>

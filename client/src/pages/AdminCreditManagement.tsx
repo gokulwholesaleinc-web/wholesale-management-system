@@ -459,12 +459,19 @@ export default function AdminCreditManagement() {
                         <TableRow key={customer.id}>
                           <TableCell>
                             <div>
-                              <p className="font-medium">{customer.firstName} {customer.lastName}</p>
+                              <p className="font-medium">
+                                {customer.company && (
+                                  <>
+                                    {customer.company} <br />
+                                  </>
+                                )}
+                                {customer.firstName} {customer.lastName}
+                              </p>
                               <p className="text-sm text-gray-600">@{customer.username}</p>
                             </div>
                           </TableCell>
                           <TableCell>
-                            <span className="text-sm">{customer.company || 'N/A'}</span>
+                            <span className="text-sm">{customer.company ? 'Business Account' : 'Personal Account'}</span>
                           </TableCell>
                           <TableCell>
                             <Badge variant="outline">Level {customer.customerLevel}</Badge>

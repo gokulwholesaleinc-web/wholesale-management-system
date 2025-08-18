@@ -994,6 +994,11 @@ export function EmailComposer({ campaign, onBack, onSaved }: EmailComposerProps)
                           <div className="flex-1 min-w-0">
                             <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-1">
                               <p className="font-medium text-xs sm:text-sm truncate leading-tight">
+                                {customer.company && (
+                                  <>
+                                    {customer.company} <br />
+                                  </>
+                                )}
                                 {customer.firstName} {customer.lastName}
                               </p>
                               <div className="self-start">
@@ -1002,10 +1007,6 @@ export function EmailComposer({ campaign, onBack, onSaved }: EmailComposerProps)
                             </div>
                             
                             <p className="text-xs text-gray-500 truncate mb-1 leading-tight">{customer.email}</p>
-                            
-                            {customer.company && (
-                              <p className="text-xs text-gray-400 truncate mb-1 leading-tight">{customer.company}</p>
-                            )}
                             
                             {/* Purchase History Summary - Compact for mobile */}
                             <div className="mt-1 space-y-1">

@@ -138,8 +138,16 @@ export function DeliveryAddressDisplay({ order }: DeliveryAddressDisplayProps) {
   // Display the address details
   return (
     <div className="text-sm space-y-1">
-      {businessName && <p>{businessName}</p>}
-      {name && <p>{name}</p>}
+      {name && (
+        <p>
+          {businessName && (
+            <>
+              {businessName} <br />
+            </>
+          )}
+          {name}
+        </p>
+      )}
       <p>{line1}</p>
       {line2 && <p>{line2}</p>}
       <p>{city}, {state} {zipCode}</p>
