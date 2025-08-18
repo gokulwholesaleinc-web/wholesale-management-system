@@ -8630,61 +8630,6 @@ Recommend 3-4 products from our inventory that match current trends. Respond wit
     }
   });
 
-  // First-time privacy policy acceptance with IP tracking
-  app.post('/api/privacy-policy/first-time-accept', requireAuth, async (req: any, res) => {
-    try {
-      console.log('=== FIRST-TIME PRIVACY POLICY ACCEPTANCE SERVER DEBUG ===');
-      console.log('User accepting privacy policy (first-time):', req.user.id);
-      console.log('Request body:', req.body);
-      
-      const { agreed, version = '2.0' } = req.body;
-      
-      if (!agreed) {
-        return res.status(400).json({ error: 'Privacy policy agreement is required' });
-      }
-
-      const clientIp = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'] || 'unknown';
-      
-      // Update user's privacy policy acceptance with IP tracking
-      await db.update(users)
-        .set({
-          privacyPolicyAccepted: true,
-          privacyPolicyVersion: version,
-          privacyPolicyAcceptedDate: new Date(),
-          privacyPolicyAcceptedIpAddress: clientIp,
-          firstTimeLoginCompleted: true,
-          updatedAt: new Date()
-        })
-        .where(eq(users.id, req.user.id));
-      
-      // Log privacy policy acceptance activity with IP
-      await storage.logActivity(
-        req.user.id,
-        req.user.username || 'User',
-        'FIRST_TIME_PRIVACY_POLICY_ACCEPTED',
-        `User completed first-time login and accepted privacy policy version ${version} from IP ${clientIp}`,
-        'privacy_policy',
-        version,
-        clientIp
-      );
-      
-      console.log('✅ First-time privacy policy acceptance recorded for user:', req.user.id);
-      console.log('✅ IP address recorded:', clientIp);
-      console.log('=== END FIRST-TIME PRIVACY POLICY ACCEPTANCE SERVER DEBUG ===');
-      
-      res.json({ 
-        success: true, 
-        message: 'First-time privacy policy agreement recorded successfully',
-        ip: clientIp,
-        timestamp: new Date().toISOString()
-      });
-      
-    } catch (error) {
-      console.error('❌ First-time privacy policy acceptance error:', error);
-      res.status(500).json({ error: 'Failed to record first-time privacy policy agreement' });
-    }
-  });
-
   // Privacy Policy Status endpoint
   app.get('/api/privacy-policy/status', requireAuth, async (req: any, res) => {
     try {

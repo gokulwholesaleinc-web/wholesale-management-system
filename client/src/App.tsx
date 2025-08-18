@@ -58,7 +58,6 @@ import AdminOrderSettings from "@/pages/AdminOrderSettings";
 import InstoreLoginNew from "@/pages/InstoreLoginNew";
 import PosApp from "@/pages/pos/PosApp";
 import NewOrdersPage from "@/pages/NewOrdersPage";
-import FirstTimePrivacyPolicyModal from "@/components/FirstTimePrivacyPolicyModal";
 
 
 import { Helmet } from "react-helmet";
@@ -74,12 +73,11 @@ import { ErrorBoundary } from "@/components/ui/error-boundary";
 // Import auth hook for root route protection
 import { useAuth } from "@/hooks/useAuth";
 // Import session management utilities
-import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { useLocation } from "wouter";
 import { initSessionManager } from "@/lib/sessionManager";
 // Import enhanced cache management system
 import "@/lib/cacheManager";
+import { useEffect } from "react";
+import { useLocation } from "wouter";
 // Import privacy policy context
 import { PrivacyPolicyProvider } from "@/contexts/PrivacyPolicyContext";
 // Import initial notification opt-in context
@@ -114,19 +112,6 @@ function HomeRoute() {
 
 function App() {
   const { user, isLoading } = useAuth();
-  const [showFirstTimeModal, setShowFirstTimeModal] = useState(false);
-  
-  // Check if user needs to complete first-time privacy policy acceptance
-  const { data: privacyStatus } = useQuery({
-    queryKey: ['/api/privacy-policy/status'],
-    enabled: !!user && !isLoading,
-  });
-
-  useEffect(() => {
-    if (user && privacyStatus && !privacyStatus.accepted && !privacyStatus.firstTimeLoginCompleted) {
-      setShowFirstTimeModal(true);
-    }
-  }, [user, privacyStatus]);
   
   // Simplified initialization to prevent React conflicts
   useEffect(() => {
@@ -386,18 +371,6 @@ function App() {
           <Route path="/:rest*" component={NotFound} />
           </Switch>
         </ErrorBoundary>
-
-        {/* First-time privacy policy modal */}
-        <FirstTimePrivacyPolicyModal
-          isOpen={showFirstTimeModal}
-          onClose={() => setShowFirstTimeModal(false)}
-          onAccepted={() => {
-            setShowFirstTimeModal(false);
-            // Invalidate privacy status query to refresh
-            queryClient.invalidateQueries({ queryKey: ['/api/privacy-policy/status'] });
-          }}
-          userName={user?.firstName || user?.username}
-        />
           </InitialNotificationOptinProvider>
         </PrivacyPolicyProvider>
       </TooltipProvider>
