@@ -1695,6 +1695,7 @@ function UserForm({
 // Order & Delivery Settings Card Component
 function OrderDeliverySettingsCard() {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     minimumOrderAmount: 0,
