@@ -2948,7 +2948,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log(`Customer user - returning ${orders.length} orders`);
       }
 
-      res.json(orders);
+      // Apply enhanced calculation system to recalculate totals for all orders
+      const { CheckoutCalculationService } = await import('./services/checkoutCalculationService');
+      await CheckoutCalculationService.verifyFlatTaxConfiguration();
+
+      const enhancedOrders = await Promise.all(orders.map(async (order: any) => {
+        try {
+          // Get customer info for each order
+          const customer = await storage.getUser(order.userId);
+          
+          // Recalculate total using checkout system
+          const checkoutResult = await CheckoutCalculationService.calculateCheckoutTotals(
+            order.items.map((item: any) => ({
+              productId: item.productId,
+              quantity: item.quantity,
+              price: item.price,
+              product: item.product
+            })),
+            {
+              hasFlatTax: customer?.applyFlatTax ?? true,
+              customerLevel: customer?.customerLevel || 1
+            }
+          );
+          
+          return {
+            ...order,
+            total: checkoutResult.total, // Use recalculated total instead of stored total
+            user: isStaff ? customer : undefined // Include customer info for staff
+          };
+        } catch (calcError) {
+          console.error(`Failed to recalculate order ${order.id}:`, calcError);
+          return {
+            ...order,
+            user: isStaff ? await storage.getUser(order.userId) : undefined
+          };
+        }
+      }));
+
+      res.json(enhancedOrders);
     } catch (error) {
       console.error('Error fetching orders:', error);
       res.status(500).json({ message: 'Failed to fetch orders' });
