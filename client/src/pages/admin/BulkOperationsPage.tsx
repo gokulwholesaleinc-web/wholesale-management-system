@@ -60,7 +60,7 @@ interface Category {
 
 interface BulkUpdateData {
   productIds: number[];
-  updateType: 'price' | 'stock' | 'status' | 'category' | 'description' | 'brand' | 'weight' | 'size' | 'featured' | 'cost' | 'taxPercentage';
+  updateType: 'price' | 'stock' | 'status' | 'category' | 'description' | 'brand' | 'weight' | 'size' | 'featured' | 'cost' | 'taxPercentage' | 'flatTax';
   value: string | number | boolean;
   adjustmentType?: 'set' | 'increase' | 'decrease' | 'percentage';
 }
@@ -105,6 +105,11 @@ export default function BulkOperationsPage() {
   // Fetch categories
   const { data: categories = [] } = useQuery<Category[]>({
     queryKey: ['/api/admin/categories']
+  });
+
+  // Fetch flat taxes
+  const { data: flatTaxes = [] } = useQuery<{id: number, name: string, amount: number}[]>({
+    queryKey: ['/api/flat-taxes']
   });
 
   // Bulk update mutation
@@ -503,6 +508,7 @@ export default function BulkOperationsPage() {
                       <SelectItem value="weight">Update Weight/Size</SelectItem>
                       <SelectItem value="featured">Toggle Featured Status</SelectItem>
                       <SelectItem value="taxPercentage">Update Tax Percentage</SelectItem>
+                      <SelectItem value="flatTax">Apply Flat Tax</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -532,7 +538,8 @@ export default function BulkOperationsPage() {
                      bulkOperation === 'brand' ? 'Brand' :
                      bulkOperation === 'weight' ? 'Weight/Size' :
                      bulkOperation === 'featured' ? 'Featured Status' :
-                     bulkOperation === 'taxPercentage' ? 'Tax Percentage' : 'Value'}
+                     bulkOperation === 'taxPercentage' ? 'Tax Percentage' :
+                     bulkOperation === 'flatTax' ? 'Flat Tax' : 'Value'}
                   </Label>
                   {bulkOperation === 'status' ? (
                     <Select value={bulkValue} onValueChange={setBulkValue}>
@@ -567,6 +574,20 @@ export default function BulkOperationsPage() {
                         <SelectItem value="false">Not Featured</SelectItem>
                       </SelectContent>
                     </Select>
+                  ) : bulkOperation === 'flatTax' ? (
+                    <Select value={bulkValue} onValueChange={setBulkValue}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select flat tax to apply" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">Remove Flat Tax</SelectItem>
+                        {flatTaxes.map(flatTax => (
+                          <SelectItem key={flatTax.id} value={flatTax.id.toString()}>
+                            {flatTax.name} (${flatTax.amount.toFixed(2)})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   ) : bulkOperation === 'description' ? (
                     <Textarea
                       placeholder="Enter new description for selected products..."
@@ -583,6 +604,7 @@ export default function BulkOperationsPage() {
                         bulkOperation === 'brand' ? 'Enter brand name' :
                         bulkOperation === 'weight' ? 'Enter weight/size (e.g., 12 oz, 2 lbs)' :
                         bulkOperation === 'taxPercentage' ? 'Enter tax percentage (e.g., 8.25)' :
+                        bulkOperation === 'flatTax' ? 'Enter flat tax ID' :
                         'Enter value'
                       }
                       value={bulkValue}

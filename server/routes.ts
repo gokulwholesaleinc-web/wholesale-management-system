@@ -5970,7 +5970,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: 'Product IDs array is required' });
       }
       
-      if (!updateType || !['price', 'cost', 'stock', 'status', 'category', 'description', 'brand', 'weight', 'featured'].includes(updateType)) {
+      if (!updateType || !['price', 'cost', 'stock', 'status', 'category', 'description', 'brand', 'weight', 'featured', 'taxPercentage', 'flatTax'].includes(updateType)) {
         return res.status(400).json({ error: 'Valid update type is required' });
       }
       
@@ -6046,6 +6046,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
             
           } else if (updateType === 'featured') {
             updateData.isFeatured = value as boolean;
+          } else if (updateType === 'taxPercentage') {
+            const taxPercentage = parseFloat(value as string);
+            if (isNaN(taxPercentage) || taxPercentage < 0 || taxPercentage > 100) {
+              console.error(`Invalid tax percentage for product ${productId}: ${value}`);
+              continue;
+            }
+            updateData.taxPercentage = taxPercentage;
+          } else if (updateType === 'flatTax') {
+            if (value === 'none' || value === 'remove') {
+              updateData.flatTaxIds = [];
+            } else {
+              const flatTaxId = value as string;
+              if (flatTaxId && flatTaxId !== 'undefined') {
+                updateData.flatTaxIds = [flatTaxId];
+              }
+            }
           }
           
           await storage.updateProduct(productId, updateData);
