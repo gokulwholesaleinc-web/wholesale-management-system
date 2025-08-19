@@ -17,7 +17,7 @@ import ManageStaffPage from "@/pages/ManageStaffPage";
 import StaffDashboard from "@/pages/StaffDashboard";
 import StaffCreateOrderPage from "@/pages/StaffCreateOrderPage";
 import StaffProductManagement from "@/pages/StaffProductManagement";
-import StaffActivityMonitor from "@/pages/StaffActivityMonitor";
+
 // RealActivityLogs removed during cleanup
 import Admin from "@/pages/Admin";
 import EnhancedUserManagement from "@/pages/EnhancedUserManagement";
@@ -256,10 +256,6 @@ function App() {
           <Route path="/order-details/:orderId">
             <StaffProtectedRoute component={OrderDetailPage} />
           </Route>
-          <Route path="/staff-activity-monitor">
-            <AdminProtectedRoute component={StaffActivityMonitor} />
-          </Route>
-          
           {/* Account Settings Route */}
           <Route path="/account-settings">
             <AuthProtectedRoute component={Account} />
@@ -272,7 +268,7 @@ function App() {
           
           {/* Staff routes for employees */}
           <Route path="/staff/activity-logs">
-            <StaffProtectedRoute component={StaffActivityMonitor} />
+            <AdminProtectedRoute component={ActivityLog} />
           </Route>
           <Route path="/staff/orders/:id">
             <StaffProtectedRoute component={OrderDetailPage} />

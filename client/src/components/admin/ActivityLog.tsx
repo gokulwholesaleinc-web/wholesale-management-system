@@ -46,24 +46,25 @@ export function ActivityLog() {
     refetch,
     isFetching
   } = useQuery<{success: boolean, logs: ActivityLogEntry[], pagination: any}>({
-    queryKey: ['/api/activity-logs', Date.now()], // Add timestamp to force fresh data
-    refetchInterval: 5000, // Refetch every 5 seconds for real-time updates
-    staleTime: 0, // Data is always considered stale
-    gcTime: 0, // Don't cache data
-    retry: false, // Don't retry on auth failures
+    queryKey: ['/api/activity-logs'],
+    refetchInterval: 30000, // Refetch every 30 seconds
+    staleTime: 10000, // Cache for 10 seconds
+    retry: 1,
   });
 
   const logEntries = response?.logs || [];
   
-  // DEBUG: Log the actual response data to console
+  // DEBUG: Log the actual response data to console  
   useEffect(() => {
     if (response) {
       console.log('[ACTIVITY-LOG-DEBUG] Raw response:', response);
       console.log('[ACTIVITY-LOG-DEBUG] Logs count:', logEntries.length);
-      console.log('[ACTIVITY-LOG-DEBUG] First 3 logs:', logEntries.slice(0, 3));
-      console.log('[ACTIVITY-LOG-DEBUG] Response structure - success:', response.success, 'logs array:', Array.isArray(response.logs));
+      console.log('[ACTIVITY-LOG-DEBUG] Response success:', response.success);
+      if (logEntries.length > 0) {
+        console.log('[ACTIVITY-LOG-DEBUG] First log sample:', logEntries[0]);
+      }
     }
-  }, [response, logEntries]);
+  }, [response]);
   
   // Format timestamp correctly handling timezone-aware timestamps from database
   const formatDate = (timestamp: string) => {
@@ -111,7 +112,13 @@ export function ActivityLog() {
     console.log('[ACTIVITY-LOG-DEBUG] Search term:', searchTerm);
     console.log('[ACTIVITY-LOG-DEBUG] Filter action:', filterAction);
     if (filteredEntries.length === 0 && logEntries.length > 0) {
-      console.log('[ACTIVITY-LOG-DEBUG] No entries passed filter. First raw entry:', logEntries[0]);
+      console.log('[ACTIVITY-LOG-DEBUG] Sample raw entry structure:', {
+        id: logEntries[0]?.id,
+        userId: logEntries[0]?.userId,
+        action: logEntries[0]?.action,
+        username: logEntries[0]?.username,
+        timestamp: logEntries[0]?.timestamp
+      });
     }
   }, [logEntries, filteredEntries, searchTerm, filterAction]);
   
@@ -253,21 +260,21 @@ export function ActivityLog() {
                       {formatDate(entry.timestamp.toString())}
                     </TableCell>
                     <TableCell className="font-medium">
-                      {entry.username || 'Unknown'}
+                      {entry.username || entry.fullName || 'System'}
                     </TableCell>
                     <TableCell>
                       {renderActionBadge(entry.action)}
                     </TableCell>
                     <TableCell>
                       {entry.details}
-                      {entry.targetId && (
+                      {entry.ipAddress && (
                         <span className="block text-sm text-gray-500">
-                          Target ID: {entry.targetId}
+                          IP: {entry.ipAddress}
                         </span>
                       )}
-                      {entry.targetType && (
+                      {entry.targetId && (
                         <span className="block text-sm text-gray-500">
-                          Type: {entry.targetType}
+                          Target: {entry.targetType} #{entry.targetId}
                         </span>
                       )}
                     </TableCell>
