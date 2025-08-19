@@ -15,7 +15,7 @@ import AdminOrdersPage from "@/pages/AdminOrdersPage";
 // AdminOrderDetailPage removed - using unified OrderDetailPage
 import ManageStaffPage from "@/pages/ManageStaffPage";
 import StaffDashboard from "@/pages/StaffDashboard";
-import StaffCreateOrderPage from "@/pages/StaffCreateOrderPage";
+// StaffCreateOrderPage removed - functionality consolidated into main staff dashboard
 import StaffProductManagement from "@/pages/StaffProductManagement";
 
 // RealActivityLogs removed during cleanup
@@ -44,7 +44,7 @@ import CustomerBalance from "@/pages/CustomerBalance";
 import AIInvoiceProcessor from "@/pages/AIInvoiceProcessor";
 
 import AIRecommendationsPage from "@/pages/AIRecommendationsPage";
-import BusinessIntelligencePage from "@/pages/BusinessIntelligencePage";
+import ConsolidatedBusinessIntelligence from "@/pages/ConsolidatedBusinessIntelligence";
 import PublicCatalog from "@/pages/PublicCatalog";
 import HomePage from "@/pages/HomePage";
 import CreateAccountRequest from "@/pages/CreateAccountRequest";
@@ -57,7 +57,7 @@ import AdminInvoices from "@/pages/AdminInvoices";
 import AdminTaxManagerPage from "@/pages/AdminTaxManagerPage";
 import AdminOrderSettings from "@/pages/AdminOrderSettings";
 import { ActivityLog } from "@/components/admin/ActivityLog";
-import InstoreLoginNew from "@/pages/InstoreLoginNew";
+// InstoreLoginNew removed - POS system handles its own authentication
 import PosApp from "@/pages/pos/PosApp";
 import NewOrdersPage from "@/pages/NewOrdersPage";
 
@@ -235,7 +235,7 @@ function App() {
             <AdminProtectedRoute component={AIRecommendationsPage} />
           </Route>
           <Route path="/business-intelligence">
-            <AdminProtectedRoute component={BusinessIntelligencePage} />
+            <AdminProtectedRoute component={ConsolidatedBusinessIntelligence} />
           </Route>
           <Route path="/admin/backup">
             <AdminProtectedRoute component={BackupManagement} />

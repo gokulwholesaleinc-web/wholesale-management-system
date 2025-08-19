@@ -231,7 +231,7 @@ Provide actionable recommendations to improve profitability in JSON format with 
 
           const result = JSON.parse(response.choices[0].message.content || '{}');
           recommendations = Array.isArray(result.recommendations) 
-            ? result.recommendations.map(rec => typeof rec === 'string' ? rec : rec.title || rec.description || JSON.stringify(rec))
+            ? result.recommendations.map((rec: any) => typeof rec === 'string' ? rec : rec.title || rec.description || JSON.stringify(rec))
             : [];
         } catch (error) {
           console.error('Error generating margin recommendations:', error);
@@ -293,8 +293,15 @@ Provide actionable recommendations to improve profitability in JSON format with 
         const orderCount = Number(row.order_count) || 0;
         const averageOrderValue = Number(row.average_order_value) || 0;
         
+        // Calculate time-based metrics
+        const now = new Date();
+        const firstOrderDate = row.first_order_date ? new Date(row.first_order_date) : now;
+        const lastOrderDate = row.last_order_date ? new Date(row.last_order_date) : now;
+        const daysSinceFirstOrder = Math.floor((now.getTime() - firstOrderDate.getTime()) / (1000 * 60 * 60 * 24));
+        const daysSinceLastOrder = Math.floor((now.getTime() - lastOrderDate.getTime()) / (1000 * 60 * 60 * 24));
+        
         // Calculate predicted lifetime value (simplified model based on order frequency)
-        const orderFrequency = orderCount > 0 ? orderCount / 12 : 0; // Monthly frequency estimate
+        const orderFrequency = orderCount > 0 ? orderCount / Math.max(1, daysSinceFirstOrder / 30) : 0; // Monthly frequency estimate
         const predictedLifetimeValue = averageOrderValue * orderFrequency * 36; // 3-year projection
         
         // Determine customer segment based on total revenue
@@ -318,6 +325,7 @@ Provide actionable recommendations to improve profitability in JSON format with 
           firstOrderDate: row.first_order_date,
           lastOrderDate: row.last_order_date,
           daysSinceFirstOrder,
+          daysSinceLastOrder,
           lifetimeValue: totalRevenue,
           predictedLifetimeValue,
           customerSegment,
