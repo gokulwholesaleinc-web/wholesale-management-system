@@ -25,11 +25,7 @@ export const createAuthToken = (userId: string) => {
 export const validateToken = async (token: string) => {
   console.log(`[validateToken] Validating token: ${token?.substring(0, 20)}...`);
   
-  // Special case for admin token
-  if (token.startsWith('admin-token-')) {
-    console.log('[validateToken] Admin token detected');
-    return { id: 'admin-user', username: 'admin', isAdmin: true };
-  }
+  // SECURITY FIX: Removed hardcoded admin token bypass - all authentication must go through proper validation
 
   // First check in-memory store
   const tokenData = tokens[token];
@@ -246,12 +242,7 @@ export const requireAuth = async (req: Request, res: Response, next: NextFunctio
             token = value;
             break;
           }
-          // Look for admin tokens
-          if (value.startsWith('admin-token-') || value.startsWith('admin_')) {
-            console.log(`Found admin token in header: ${key}`);
-            token = value;
-            break;
-          }
+          // SECURITY FIX: Removed admin token pattern matching - proper authentication required
         }
       }
     }
@@ -263,46 +254,7 @@ export const requireAuth = async (req: Request, res: Response, next: NextFunctio
       return res.status(401).json({ message: "Unauthorized" });
     }
     
-    // For special admin token
-    // Special hardcoded admin token for testing - admin-token-12345
-    if (token === 'admin-token-12345' || token.startsWith('admin-token-')) {
-      console.log('Using admin token authentication');
-      
-      // Check for real staff member ID in headers
-      const realStaffId = req.headers['x-real-user-id'];
-      console.log('Admin token - checking for real staff ID:', realStaffId);
-      
-      if (realStaffId && realStaffId !== 'admin-user') {
-        // Validate the real staff member exists and has proper permissions
-        try {
-          const realStaffUser = await storage.getUser(realStaffId);
-          if (realStaffUser && (realStaffUser.isAdmin || realStaffUser.isEmployee)) {
-            console.log(`✅ Using real staff member: ${realStaffUser.username} (${realStaffId})`);
-            req.user = { 
-              id: realStaffId,
-              username: realStaffUser.username,
-              isAdmin: realStaffUser.isAdmin || false,
-              isEmployee: realStaffUser.isEmployee || false,
-              originalAdminToken: true // Flag to indicate this came from admin token
-            };
-            return next();
-          } else {
-            console.log(`❌ Real staff user ${realStaffId} not found or lacks permissions`);
-          }
-        } catch (err) {
-          console.log(`❌ Error validating real staff user ${realStaffId}:`, err);
-        }
-      }
-      
-      // Fallback to admin-user if no valid real staff ID
-      console.log('Falling back to admin-user authentication');
-      req.user = { 
-        id: 'admin-user', 
-        username: 'admin', 
-        isAdmin: true 
-      };
-      return next();
-    }
+    // SECURITY FIX: Removed hardcoded admin token bypass - all authentication must go through proper database validation
     
     // Validate regular token
     const user = await validateToken(token);
@@ -350,34 +302,13 @@ export const requireAdmin = async (req: Request, res: Response, next: NextFuncti
         token = req.cookies.authToken;
       }
       
-      // Special case for admin tokens in various formats
-      if (token && (token === 'admin-token-12345' || token.startsWith('admin-token-'))) {
-        console.log('Using admin token authentication in requireAdmin middleware');
-        req.user = { 
-          id: 'admin-user', 
-          username: 'admin', 
-          isAdmin: true,
-          customerLevel: 1
-        };
-        return next();
-      }
+      // SECURITY FIX: Removed hardcoded admin token bypass - proper authentication required
       
       // For mobile app - special handling
       if (req.headers['user-agent']?.includes('Mobile')) {
         console.log('Mobile app detected - trying additional auth methods');
         
-        // Check cookies and other headers for admin token pattern
-        const allHeaders = JSON.stringify(req.headers);
-        if (allHeaders.includes('admin-token')) {
-          console.log('Found admin token in headers for mobile');
-          req.user = { 
-            id: 'admin-user', 
-            username: 'admin', 
-            isAdmin: true,
-            customerLevel: 1
-          };
-          return next();
-        }
+        // SECURITY FIX: Removed hardcoded admin token detection - proper authentication required
       }
       
       // No token or not admin token
@@ -446,18 +377,7 @@ export const requireEmployeeOrAdmin = async (req: Request, res: Response, next: 
         token = req.cookies.authToken;
       }
       
-      // Special case for admin tokens in various formats
-      if (token && (token === 'admin-token-12345' || token.startsWith('admin-token-'))) {
-        console.log('Using admin token authentication in requireEmployeeOrAdmin middleware');
-        req.user = { 
-          id: 'admin-user', 
-          username: 'admin', 
-          isAdmin: true,
-          isEmployee: true,
-          customerLevel: 1
-        };
-        return next();
-      }
+      // SECURITY FIX: Removed hardcoded admin token bypass - proper authentication required
       
       // No token found
       if (!token) {
