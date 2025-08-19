@@ -1,6 +1,10 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
+import { useDebounce } from '@/hooks/useDebounce';
+import { escapeCSV, downloadCSV } from '@/utils/csv';
+import { BulkActionsBar } from '@/components/BulkActionsBar';
+import { QuickStockAdjust } from '@/components/QuickStockAdjust';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -54,6 +58,7 @@ interface Product {
   isDraft: boolean;
   sku?: string;
   brand?: string;
+  createdAt?: string;
 }
 
 interface Category {
@@ -79,6 +84,7 @@ export default function BulkOperationsPage() {
   
   // Smart Search & Filters
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const debouncedSearch = useDebounce(searchTerm, 300);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
   const [stockRange, setStockRange] = useState<[number, number]>([0, 100]);
   const [brandFilter, setBrandFilter] = useState<string>('all');
@@ -114,6 +120,32 @@ export default function BulkOperationsPage() {
   const { data: flatTaxes = [] } = useQuery<{id: number, name: string, taxAmount: number}[]>({
     queryKey: ['/api/flat-taxes']
   });
+
+  // Get unique brands from products (memoized)
+  const brands = useMemo(() => 
+    [...new Set(products.map((p: Product) => p.brand).filter(Boolean))] as string[], 
+    [products]
+  );
+
+  // Memoized filtered products
+  const filteredProducts: Product[] = useMemo(() => {
+    return (products as Product[]).filter((p) => {
+      const statusMatch = statusFilter === 'all' ||
+        (statusFilter === 'live' && !p.isDraft) ||
+        (statusFilter === 'draft' && p.isDraft) ||
+        (statusFilter === 'low-stock' && (p.stock ?? 0) < 10) ||
+        (statusFilter === 'out-of-stock' && (p.stock ?? 0) === 0);
+      const categoryMatch = categoryFilter === 'all' || String(p.categoryId ?? '') === categoryFilter;
+      const brandMatch = brandFilter === 'all' || p.brand === brandFilter;
+      const q = debouncedSearch.toLowerCase();
+      const searchMatch = !q ||
+        p.name?.toLowerCase().includes(q) ||
+        p.sku?.toLowerCase().includes(q) ||
+        p.brand?.toLowerCase().includes(q) ||
+        p.categoryName?.toLowerCase().includes(q);
+      return statusMatch && categoryMatch && brandMatch && searchMatch;
+    });
+  }, [products, statusFilter, categoryFilter, brandFilter, debouncedSearch]);
 
   // Store previous selection for memory function
   const [previousSelection, setPreviousSelection] = useState<number[]>([]);
@@ -293,56 +325,7 @@ export default function BulkOperationsPage() {
     }
   };
 
-  // Get unique brands for filtering
-  const brands = [...new Set(products.filter(p => p.brand).map(p => p.brand))];
-
-  // Enhanced product filtering
-  const filteredProducts = products.filter(product => {
-    // Basic filters
-    const categoryMatch = categoryFilter === 'all' || product.categoryId?.toString() === categoryFilter;
-    const statusMatch = statusFilter === 'all' || 
-      (statusFilter === 'live' && !product.isDraft) ||
-      (statusFilter === 'draft' && product.isDraft) ||
-      (statusFilter === 'low-stock' && product.stock < 10) ||
-      (statusFilter === 'out-of-stock' && product.stock === 0);
-    
-    // Search filter - enhanced to include description
-    const searchMatch = !searchTerm || 
-      product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.sku?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.brand?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.description?.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    // Price range filter
-    const priceMatch = (product.price || 0) >= priceRange[0] && (product.price || 0) <= priceRange[1];
-    
-    // Stock range filter
-    const stockMatch = (product.stock || 0) >= stockRange[0] && (product.stock || 0) <= stockRange[1];
-    
-    // Brand filter
-    const brandMatch = brandFilter === 'all' || product.brand === brandFilter;
-    
-    const matches = categoryMatch && statusMatch && searchMatch && priceMatch && stockMatch && brandMatch;
-    
-    // Debug logging for search term
-    if (searchTerm && searchMatch) {
-      console.log('Product matches search:', product.name, { 
-        id: product.id, 
-        name: product.name, 
-        sku: product.sku, 
-        brand: product.brand,
-        matches: matches,
-        categoryMatch,
-        statusMatch,
-        searchMatch,
-        priceMatch,
-        stockMatch,
-        brandMatch
-      });
-    }
-    
-    return matches;
-  });
+  // Duplicates removed - using memoized versions defined earlier
 
   // Debug filtered products
   console.log('Filtered products count:', filteredProducts.length);
@@ -650,7 +633,7 @@ export default function BulkOperationsPage() {
 
                 <div className="space-y-3">
                   <Button 
-                    onClick={handleBulkUpdate}
+                    onClick={runBulkOperation}
                     disabled={bulkUpdateMutation.isPending || selectedProducts.length === 0}
                     className="w-full"
                   >
@@ -889,7 +872,7 @@ export default function BulkOperationsPage() {
                     <li>Category and Status</li>
                   </ul>
                 </div>
-                <Button onClick={exportToCSV} variant="outline" className="w-full">
+                <Button onClick={handleExportCSV} variant="outline" className="w-full">
                   <FileSpreadsheet className="h-4 w-4 mr-2" />
                   Export {filteredProducts.length} Products to CSV
                 </Button>
