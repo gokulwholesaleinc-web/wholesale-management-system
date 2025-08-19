@@ -55,6 +55,15 @@ export function ActivityLog() {
 
   const logEntries = response?.logs || [];
   
+  // DEBUG: Log the actual response data to console
+  useEffect(() => {
+    if (response) {
+      console.log('[ACTIVITY-LOG-DEBUG] Raw response:', response);
+      console.log('[ACTIVITY-LOG-DEBUG] Logs count:', logEntries.length);
+      console.log('[ACTIVITY-LOG-DEBUG] First 3 logs:', logEntries.slice(0, 3));
+    }
+  }, [response, logEntries]);
+  
   // Format timestamp correctly handling timezone-aware timestamps from database
   const formatDate = (timestamp: string) => {
     try {
@@ -84,7 +93,7 @@ export function ActivityLog() {
 
   // Filter log entries based on search term and action filter
   const filteredEntries = logEntries.filter((entry) => {
-    const matchesSearch = 
+    const matchesSearch = searchTerm === '' || 
       (entry.username && entry.username.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (entry.details && entry.details.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (entry.targetId && entry.targetId.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -93,6 +102,17 @@ export function ActivityLog() {
     
     return matchesSearch && matchesFilter;
   });
+  
+  // DEBUG: Log filtering results
+  useEffect(() => {
+    console.log('[ACTIVITY-LOG-DEBUG] Total entries:', logEntries.length);
+    console.log('[ACTIVITY-LOG-DEBUG] Filtered entries:', filteredEntries.length);
+    console.log('[ACTIVITY-LOG-DEBUG] Search term:', searchTerm);
+    console.log('[ACTIVITY-LOG-DEBUG] Filter action:', filterAction);
+    if (filteredEntries.length === 0 && logEntries.length > 0) {
+      console.log('[ACTIVITY-LOG-DEBUG] No entries passed filter. First raw entry:', logEntries[0]);
+    }
+  }, [logEntries, filteredEntries, searchTerm, filterAction]);
   
   // Sort entries by timestamp (newest first)
   const sortedEntries = [...filteredEntries].sort((a, b) => {
@@ -197,7 +217,22 @@ export function ActivityLog() {
           <div className="text-center py-12 text-gray-500">
             <FileText className="h-12 w-12 mx-auto mb-4 opacity-20" />
             <p className="text-lg font-medium">No activity logs found</p>
-            <p className="text-sm">Staff actions will be recorded here</p>
+            <p className="text-sm">
+              {logEntries.length > 0 
+                ? `${logEntries.length} logs loaded but filtered out. Try clearing search/filters.`
+                : 'Staff actions will be recorded here'
+              }
+            </p>
+            {/* DEBUG: Show raw data if available */}
+            {logEntries.length > 0 && (
+              <div className="mt-4 text-xs text-left bg-gray-100 p-2 rounded">
+                <p><strong>DEBUG INFO:</strong></p>
+                <p>Raw logs: {logEntries.length}</p>
+                <p>Filtered logs: {filteredEntries.length}</p>
+                <p>Search: "{searchTerm}"</p>
+                <p>Filter: {filterAction}</p>
+              </div>
+            )}
           </div>
         ) : (
           <div className="overflow-x-auto">
