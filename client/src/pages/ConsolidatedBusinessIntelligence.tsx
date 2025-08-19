@@ -321,12 +321,27 @@ export default function ConsolidatedBusinessIntelligence() {
                     </CardHeader>
                     <CardContent>
                       <ul className="space-y-2">
-                        {dashboardQuery.data.keyInsights.map((insight, idx) => (
-                          <li key={idx} className="flex items-start gap-2">
-                            <Brain className="h-4 w-4 mt-0.5 text-blue-500" />
-                            <span className="text-sm">{insight}</span>
-                          </li>
-                        ))}
+                        {dashboardQuery.data.keyInsights.map((insight, idx) => {
+                          // Clean up any JSON-like formatting that might be present
+                          let cleanInsight = insight;
+                          try {
+                            // If it's a JSON object string, try to extract meaningful text
+                            if (typeof insight === 'string' && insight.includes('recommendationId')) {
+                              const parsed = JSON.parse(insight);
+                              cleanInsight = parsed.details || parsed.recommendationTitle || parsed.title || insight;
+                            }
+                          } catch (e) {
+                            // If parsing fails, use the original string
+                            cleanInsight = insight;
+                          }
+                          
+                          return (
+                            <li key={idx} className="flex items-start gap-2">
+                              <Brain className="h-4 w-4 mt-0.5 text-blue-500" />
+                              <span className="text-sm">{cleanInsight}</span>
+                            </li>
+                          );
+                        })}
                       </ul>
                     </CardContent>
                   </Card>

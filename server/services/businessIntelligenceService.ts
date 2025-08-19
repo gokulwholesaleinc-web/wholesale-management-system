@@ -212,18 +212,14 @@ export class BusinessIntelligenceService {
       let recommendations: string[] = [];
       if (process.env.OPENAI_API_KEY) {
         try {
-          const prompt = `Analyze the following profit margin data and provide 5 specific recommendations in JSON format:
+          const prompt = `Provide 5 clear business recommendations to improve profitability based on overall margin of ${overallMarginPercentage.toFixed(2)}% and ${productProfitMargins.length} products analyzed.
 
-Product Profit Margins: ${JSON.stringify(productProfitMargins.slice(0, 20))}
-Category Margins: ${JSON.stringify(categoryProfitMargins)}
-Overall Margin: ${overallMarginPercentage.toFixed(2)}%
-
-Provide actionable recommendations to improve profitability in JSON format with a "recommendations" array.`;
+Return as JSON with a "recommendations" array where each item is a simple, actionable string recommendation.`;
 
           const response = await openai.chat.completions.create({
             model: "gpt-4o",
             messages: [
-              { role: "system", content: "You are a business profitability expert. Provide specific, actionable recommendations in JSON format." },
+              { role: "system", content: "You are a business expert. Provide exactly 5 clear, actionable recommendations as simple strings in a JSON array. Each recommendation should be one sentence, no more than 80 characters." },
               { role: "user", content: prompt }
             ],
             response_format: { type: "json_object" }
@@ -231,7 +227,7 @@ Provide actionable recommendations to improve profitability in JSON format with 
 
           const result = JSON.parse(response.choices[0].message.content || '{}');
           recommendations = Array.isArray(result.recommendations) 
-            ? result.recommendations.map((rec: any) => typeof rec === 'string' ? rec : rec.title || rec.description || JSON.stringify(rec))
+            ? result.recommendations.filter((rec: any) => typeof rec === 'string').slice(0, 5)
             : [];
         } catch (error) {
           console.error('Error generating margin recommendations:', error);
@@ -241,12 +237,25 @@ Provide actionable recommendations to improve profitability in JSON format with 
       if (recommendations.length === 0) {
         recommendations = [
           "Review pricing for products with margins below 15%",
-          "Focus on promoting high-margin products",
+          "Focus on promoting high-margin products", 
           "Negotiate better costs for low-margin categories",
           "Consider bundling low-margin items with high-margin ones",
           "Analyze competitor pricing for optimization opportunities"
         ];
       }
+
+      // Clean up any malformed JSON recommendations
+      recommendations = recommendations.map((rec: string) => {
+        if (typeof rec === 'string' && rec.includes('{') && rec.includes('}')) {
+          try {
+            const parsed = JSON.parse(rec);
+            return parsed.title || parsed.description || parsed.details || rec;
+          } catch (e) {
+            return rec;
+          }
+        }
+        return rec;
+      });
 
       return {
         productProfitMargins,
