@@ -48,7 +48,7 @@ interface Product {
   stock: number;
   categoryId: number | null;
   categoryName?: string;
-  isActive: boolean;
+  isDraft: boolean;
   sku?: string;
   brand?: string;
 }
@@ -223,7 +223,7 @@ export default function BulkOperationsPage() {
       const headers = [
         'ID', 'Name', 'SKU', 'Price', 'Stock', 'Category', 'Brand', 
         'Price Level 1', 'Price Level 2', 'Price Level 3', 'Price Level 4', 'Price Level 5',
-        'Active', 'Created At'
+        'Status', 'Created At'
       ];
 
       // Convert products to CSV rows
@@ -240,7 +240,7 @@ export default function BulkOperationsPage() {
         product.price3 || product.price || 0,
         product.price4 || product.price || 0,
         product.price5 || product.price || 0,
-        product.isActive ? 'Yes' : 'No',
+        product.isDraft ? 'Draft' : 'Live',
         product.createdAt ? new Date(product.createdAt).toLocaleDateString() : ''
       ]);
 
@@ -286,8 +286,8 @@ export default function BulkOperationsPage() {
     // Basic filters
     const categoryMatch = categoryFilter === 'all' || product.categoryId?.toString() === categoryFilter;
     const statusMatch = statusFilter === 'all' || 
-      (statusFilter === 'active' && product.isActive) ||
-      (statusFilter === 'inactive' && !product.isActive) ||
+      (statusFilter === 'live' && !product.isDraft) ||
+      (statusFilter === 'draft' && product.isDraft) ||
       (statusFilter === 'low-stock' && product.stock < 10) ||
       (statusFilter === 'out-of-stock' && product.stock === 0);
     
@@ -384,7 +384,7 @@ export default function BulkOperationsPage() {
         return;
       }
     } else if (bulkOperation === 'status') {
-      value = bulkValue === 'active';
+      value = bulkValue === 'draft';
     } else if (bulkOperation === 'featured') {
       value = bulkValue === 'true';
     } else if (bulkOperation === 'category') {
@@ -437,7 +437,7 @@ export default function BulkOperationsPage() {
     const csvContent = [
       'ID,SKU,Name,Price,Stock,Category,Status',
       ...filteredProducts.map(p => 
-        `${p.id},${p.sku || ''},${p.name},${p.price},${p.stock},${p.categoryName},${p.isActive ? 'Active' : 'Inactive'}`
+        `${p.id},${p.sku || ''},${p.name},${p.price},${p.stock},${p.categoryName},${p.isDraft ? 'Draft' : 'Live'}`
       )
     ].join('\n');
 
@@ -532,8 +532,8 @@ export default function BulkOperationsPage() {
                         <SelectValue placeholder="Select status" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="active">Active</SelectItem>
-                        <SelectItem value="inactive">Inactive</SelectItem>
+                        <SelectItem value="live">Live</SelectItem>
+                        <SelectItem value="draft">Draft</SelectItem>
                       </SelectContent>
                     </Select>
                   ) : bulkOperation === 'category' ? (
@@ -638,8 +638,8 @@ export default function BulkOperationsPage() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Products</SelectItem>
-                      <SelectItem value="active">Active Only</SelectItem>
-                      <SelectItem value="inactive">Inactive Only</SelectItem>
+                      <SelectItem value="live">Live Only</SelectItem>
+                      <SelectItem value="draft">Draft Only</SelectItem>
                       <SelectItem value="low-stock">Low Stock (&lt; 10)</SelectItem>
                       <SelectItem value="out-of-stock">Out of Stock</SelectItem>
                     </SelectContent>
@@ -674,8 +674,8 @@ export default function BulkOperationsPage() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <span className="font-medium truncate">{product.name}</span>
-                          <Badge variant={product.isActive ? 'default' : 'secondary'}>
-                            {product.isActive ? 'Active' : 'Inactive'}
+                          <Badge variant={!product.isDraft ? 'default' : 'secondary'}>
+                            {!product.isDraft ? 'Live' : 'Draft'}
                           </Badge>
                           {product.stock < 10 && (
                             <Badge variant="destructive">Low Stock</Badge>
@@ -795,9 +795,9 @@ export default function BulkOperationsPage() {
                 <div className="flex items-center gap-3">
                   <DollarSign className="h-8 w-8 text-gray-500" />
                   <div>
-                    <h3 className="font-medium">Inactive Products</h3>
+                    <h3 className="font-medium">Draft Products</h3>
                     <p className="text-sm text-gray-600">
-                      {products.filter(p => !p.isActive).length} products
+                      {products.filter(p => p.isDraft).length} products
                     </p>
                   </div>
                 </div>
@@ -885,7 +885,7 @@ export default function BulkOperationsPage() {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                   <div className="flex items-center gap-2">
                     <TrendingUp className="h-4 w-4 text-green-500" />
-                    <span>Active: {filteredProducts.filter(p => p.isActive).length}</span>
+                    <span>Live: {filteredProducts.filter(p => !p.isDraft).length}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <AlertTriangle className="h-4 w-4 text-orange-500" />
@@ -919,8 +919,8 @@ export default function BulkOperationsPage() {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
                               <span className="font-medium truncate">{product.name}</span>
-                              <Badge variant={product.isActive ? 'default' : 'secondary'}>
-                                {product.isActive ? 'Active' : 'Inactive'}
+                              <Badge variant={!product.isDraft ? 'default' : 'secondary'}>
+                                {!product.isDraft ? 'Live' : 'Draft'}
                               </Badge>
                               {product.stock < 10 && (
                                 <Badge variant="destructive">Low Stock</Badge>
@@ -968,10 +968,10 @@ export default function BulkOperationsPage() {
                 <Button 
                   variant="outline" 
                   size="sm"
-                  onClick={() => setStatusFilter('inactive')}
+                  onClick={() => setStatusFilter('draft')}
                 >
                   <Layers className="h-4 w-4 mr-2" />
-                  Show Inactive
+                  Show Draft
                 </Button>
               </div>
             </CardContent>
