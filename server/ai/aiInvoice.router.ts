@@ -189,22 +189,366 @@ Rules:
   return JSON.parse(content);
 }
 
-function mockSuggestions(extracted: any): Suggestion[] {
-  // Replace with your real product/Category matching
-  return (extracted.items || []).map((it: any, idx: number) => ({
-    id: idx + 1,
-    extractedProductName: it.productName || 'Unknown',
-    extractedSku: it.sku || '',
-    extractedQuantity: Number(it.quantity || 0),
-    extractedUnitCost: Number(it.unitPrice || 0),
-    extractedTotalCost: Number(it.totalPrice || 0),
-    extractedDescription: it.description || '',
-    suggestedProductId: null,
-    matchConfidence: 0,
-    matchReasoning: 'No matcher wired up (stub)',
-    suggestedCategoryId: null,
-    suggestedCategoryName: null,
-  }));
+// Enhanced matching algorithms
+class InvoiceProcessor {
+  // --------------------------
+  // Normalization helpers
+  // --------------------------
+  private normalizeText(s: string): string {
+    return (s || '')
+      .toLowerCase()
+      .replace(/twangerz/g, 'twang')            // brand normalization
+      .replace(/[^a-z0-9]+/g, ' ')              // collapse punctuation
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  private normalizeSKU(s: string): string {
+    return (s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  }
+
+  // --------------------------
+  // Jaro-Winkler similarity (0..1)
+  // --------------------------
+  private jaroWinkler(a: string, b: string): number {
+    if (!a || !b) return 0;
+    const s1 = a, s2 = b;
+    const mRange = Math.max(0, Math.floor(Math.max(s1.length, s2.length) / 2) - 1);
+
+    const s1Matches: boolean[] = Array(s1.length).fill(false);
+    const s2Matches: boolean[] = Array(s2.length).fill(false);
+
+    let matches = 0;
+    for (let i = 0; i < s1.length; i++) {
+      const start = Math.max(0, i - mRange);
+      const end = Math.min(i + mRange + 1, s2.length);
+      for (let j = start; j < end; j++) {
+        if (s2Matches[j] || s1[i] !== s2[j]) continue;
+        s1Matches[i] = true;
+        s2Matches[j] = true;
+        matches++;
+        break;
+      }
+    }
+    if (!matches) return 0;
+
+    let transpositions = 0;
+    let k = 0;
+    for (let i = 0; i < s1.length; i++) {
+      if (!s1Matches[i]) continue;
+      while (!s2Matches[k]) k++;
+      if (s1[i] !== s2[k]) transpositions++;
+      k++;
+    }
+    transpositions /= 2;
+
+    const j = (matches / s1.length + matches / s2.length + (matches - transpositions) / matches) / 3;
+
+    // Winkler prefix boost
+    let prefix = 0;
+    for (let i = 0; i < Math.min(4, s1.length, s2.length); i++) {
+      if (s1[i] === s2[i]) prefix++;
+      else break;
+    }
+    const p = 0.1;
+    return j + prefix * p * (1 - j);
+  }
+
+  // --------------------------
+  // Token-set/Dice similarity (for names/descriptions)
+  // --------------------------
+  private tokenSetDice(a: string, b: string): number {
+    const tok = (s: string) => this.normalizeText(s).split(' ').filter(Boolean);
+    const A = new Set(tok(a));
+    const B = new Set(tok(b));
+    if (A.size === 0 || B.size === 0) return 0;
+    let intersect = 0;
+    A.forEach(t => { if (B.has(t)) intersect++; });
+    return (2 * intersect) / (A.size + B.size); // Dice coefficient 0..1
+  }
+
+  // --------------------------
+  // Levenshtein distance for fuzzy matching
+  // --------------------------
+  private calculateFuzzyMatch(a: string, b: string): number {
+    if (!a || !b) return 0;
+    const matrix: number[][] = [];
+    
+    for (let i = 0; i <= b.length; i++) {
+      matrix[i] = [i];
+    }
+    
+    for (let j = 0; j <= a.length; j++) {
+      matrix[0][j] = j;
+    }
+    
+    for (let i = 1; i <= b.length; i++) {
+      for (let j = 1; j <= a.length; j++) {
+        if (b.charAt(i - 1) === a.charAt(j - 1)) {
+          matrix[i][j] = matrix[i - 1][j - 1];
+        } else {
+          matrix[i][j] = Math.min(
+            matrix[i - 1][j - 1] + 1, // substitution
+            matrix[i][j - 1] + 1,     // insertion
+            matrix[i - 1][j] + 1      // deletion
+          );
+        }
+      }
+    }
+    
+    const maxLen = Math.max(a.length, b.length);
+    return maxLen === 0 ? 1 : (maxLen - matrix[b.length][a.length]) / maxLen;
+  }
+
+  // --------------------------
+  // SKU similarity: Levenshtein + JW + containment
+  // --------------------------
+  private skuSimilarity(a: string, b: string): number {
+    const s1 = this.normalizeSKU(a);
+    const s2 = this.normalizeSKU(b);
+    if (!s1 || !s2) return 0;
+    if (s1 === s2) return 1;
+
+    // exact containment (OCR knocks a dash/space) → strong 0.90
+    if (s1.includes(s2) || s2.includes(s1)) return 0.90;
+
+    // Levenshtein-based similarity
+    const levSim = this.calculateFuzzyMatch(s1, s2); // you already have this (0..1)
+    const jw = this.jaroWinkler(s1, s2);
+
+    // If 1 edit distance off (very likely OCR or minor typo) → ≥0.95
+    const levDistanceLikely = Math.round((1 - levSim) * Math.max(s1.length, s2.length));
+    const nearMiss = levDistanceLikely <= 1 ? 0.95 : 0;
+
+    return Math.max(nearMiss, (levSim * 0.6) + (jw * 0.4));
+  }
+
+  // --------------------------
+  // Name/description combined similarity 0..1
+  // --------------------------
+  private nameDescriptionSimilarity(itemName: string, productName: string, itemDesc: string, productDesc: string): number {
+    const n1 = this.normalizeText(itemName);
+    const n2 = this.normalizeText(productName);
+    if (!n1 && !n2) return 0;
+
+    const jw = this.jaroWinkler(n1, n2);
+    const dice = this.tokenSetDice(n1, n2);
+
+    let descScore = 0;
+    if (itemDesc && productDesc) {
+      const d1 = this.normalizeText(itemDesc);
+      const d2 = this.normalizeText(productDesc);
+      descScore = d1 && d2 ? this.jaroWinkler(d1, d2) : 0;
+    }
+
+    // Weighted combo: token set catches reordering; JW catches minor typos
+    return (dice * 0.55) + (jw * 0.35) + (descScore * 0.10);
+  }
+
+  // --------------------------
+  // MAIN MATCHER
+  // --------------------------
+  private async findBestProductMatch(
+    item: any,
+    products: any[]
+  ): Promise<{ id: number; confidence: number; reasoning: string } | null> {
+    try {
+      const itemName = this.normalizeText(item.productName || '');
+      const itemSkuRaw = item.sku || '';
+      const itemSku = this.normalizeSKU(itemSkuRaw);
+      const itemDescription = this.normalizeText(item.description || '');
+
+      let best: { id: number; confidence: number; reasoning: string } | null = null;
+      let bestScore = 0;
+      let bestWhy = '';
+
+      for (const product of products) {
+        const pName = this.normalizeText(product.name || '');
+        const pSku = this.normalizeSKU(product.sku || '');
+        const pDesc = this.normalizeText(product.description || '');
+        const brand = this.normalizeText(product.brand || '');
+
+        const reasons: string[] = [];
+        let score = 0;
+
+        // 1) Strong SKU signal
+        let skuScore = 0;
+        if (itemSku && pSku) {
+          skuScore = this.skuSimilarity(itemSku, pSku); // 0..1
+          if (skuScore >= 0.99) { score = 1; reasons.push('Exact SKU match'); }
+          else if (skuScore >= 0.95) { score = Math.max(score, 0.95); reasons.push('1-edit SKU near-match'); }
+          else if (skuScore >= 0.90) { score = Math.max(score, 0.90); reasons.push('High SKU similarity / containment'); }
+        }
+
+        // 2) Names/descriptions
+        const ndScore = this.nameDescriptionSimilarity(itemName, pName, itemDescription, pDesc); // 0..1
+        if (ndScore >= 0.8) reasons.push(`High name/desc similarity (${Math.round(ndScore * 100)}%)`);
+        else if (ndScore >= 0.6) reasons.push(`Moderate name/desc similarity (${Math.round(ndScore * 100)}%)`);
+
+        // 3) Brand presence (light bonus)
+        let brandBonus = 0;
+        if (brand && (itemName.includes(brand) || pName.includes(brand))) {
+          brandBonus = 0.05;
+          reasons.push('Brand match');
+        }
+
+        // Final weighted score:
+        // - If SKU exists, it dominates. Otherwise rely on names/descriptions
+        const combined = Math.max(
+          skuScore,                            // respect strong SKU matches
+          (ndScore * 0.92) + brandBonus        // otherwise quality name/desc + brand
+        );
+
+        // Keep the maximum of any signal so a strong SKU doesn't get diluted
+        score = Math.max(score, combined);
+
+        // Lower the consideration floor to 0.30 so we don't drop "some similarity" to 0.
+        if (score > bestScore) {
+          bestScore = score;
+          bestWhy = reasons.length ? reasons.join(', ') : 'Similarity across fields';
+          best = {
+            id: product.id,
+            confidence: Math.round(score * 100),
+            reasoning: bestWhy,
+          };
+        }
+      }
+
+      if (best) {
+        // Debug
+        console.log(`🎯 Best match for "${item.productName}" → Product #${best.id} @ ${best.confidence}% (${best.reasoning})`);
+      }
+
+      return best; // may be <50% but never forced to 0 if there's evidence
+    } catch (err) {
+      console.error('Error in findBestProductMatch:', err);
+      return null;
+    }
+  }
+}
+
+// Create suggestions with enhanced matching
+async function createProductSuggestions(extracted: any): Promise<Suggestion[]> {
+  const processor = new InvoiceProcessor();
+  
+  try {
+    // Get products and categories from database
+    // Import storage dynamically to avoid circular imports
+    const { storage } = await import('../storage');
+    const products = await storage.getProducts();
+    const categories = await storage.getCategories();
+    
+    const suggestions: Suggestion[] = [];
+    
+    for (let idx = 0; idx < (extracted.items || []).length; idx++) {
+      const item = extracted.items[idx];
+      
+      // Find potential product matches
+      const matchingProduct = await processor['findBestProductMatch'](item, products);
+      const suggestedCategory = await findSuggestedCategory(item, categories);
+      
+      // Decide auto-suggest thresholds
+      const AUTO_SUGGEST_THRESHOLD = 90;  // auto-map candidate
+      const SOFT_SUGGEST_THRESHOLD = 75;  // show as suggested but require review
+      
+      const confidence = matchingProduct?.confidence ?? 0;
+      const shouldAutoSuggest = confidence >= AUTO_SUGGEST_THRESHOLD;
+      const isGoodSuggestion = confidence >= SOFT_SUGGEST_THRESHOLD;
+      
+      suggestions.push({
+        id: idx + 1,
+        extractedProductName: item.productName || 'Unknown Product',
+        extractedSku: item.sku || '',
+        extractedQuantity: parseInt(item.quantity) || 1,
+        extractedUnitCost: parseFloat(item.unitPrice) || 0,
+        extractedTotalCost: parseFloat(item.totalPrice) || 0,
+        extractedDescription: item.description || '',
+        suggestedProductId: isGoodSuggestion ? matchingProduct!.id : null,
+        matchConfidence: confidence,
+        matchReasoning: matchingProduct?.reasoning || 'Low similarity',
+        suggestedCategoryId: suggestedCategory?.id || null,
+        suggestedCategoryName: suggestedCategory?.name || 'General',
+        userAction: shouldAutoSuggest ? 'auto_suggest' : null, // you can read this in the UI
+        finalProductId: null,
+        userSetUnitCost: null,
+        userSetSalePrice: null,
+        approved: false
+      });
+    }
+    
+    return suggestions;
+  } catch (error) {
+    console.error('Error creating product suggestions:', error);
+    return (extracted.items || []).map((it: any, idx: number) => ({
+      id: idx + 1,
+      extractedProductName: it.productName || 'Unknown',
+      extractedSku: it.sku || '',
+      extractedQuantity: Number(it.quantity || 0),
+      extractedUnitCost: Number(it.unitPrice || 0),
+      extractedTotalCost: Number(it.totalPrice || 0),
+      extractedDescription: it.description || '',
+      suggestedProductId: null,
+      matchConfidence: 0,
+      matchReasoning: 'Processing error',
+      suggestedCategoryId: null,
+      suggestedCategoryName: null,
+    }));
+  }
+}
+
+// Helper function to suggest category
+async function findSuggestedCategory(item: any, categories: any[]): Promise<{ id: number; name: string } | null> {
+  // Simple category suggestion based on product name keywords
+  const itemName = (item.productName || '').toLowerCase();
+  
+  for (const category of categories) {
+    const categoryName = (category.name || '').toLowerCase();
+    if (itemName.includes(categoryName) || categoryName.includes(itemName)) {
+      return { id: category.id, name: category.name };
+    }
+  }
+  
+  return { id: 1, name: 'General' }; // Default fallback
+}
+
+// Enhanced AI product suggestion creation
+async function createAiProductSuggestion(suggestion: any): Promise<void> {
+  try {
+    // Import storage dynamically to avoid circular imports
+    const { storage } = await import('../storage');
+    
+    // Decide auto-suggest thresholds
+    const AUTO_SUGGEST_THRESHOLD = 90;  // auto-map candidate
+    const SOFT_SUGGEST_THRESHOLD = 75;  // show as suggested but require review
+    
+    const confidence = suggestion.matchConfidence ?? 0;
+    const shouldAutoSuggest = confidence >= AUTO_SUGGEST_THRESHOLD;
+    const isGoodSuggestion = confidence >= SOFT_SUGGEST_THRESHOLD;
+    
+    await storage.createAiProductSuggestion({
+      invoiceId: suggestion.invoiceId,
+      extractedProductName: suggestion.extractedProductName || 'Unknown Product',
+      extractedSku: suggestion.extractedSku || '',
+      extractedQuantity: suggestion.extractedQuantity || 1,
+      extractedUnitCost: suggestion.extractedUnitCost || 0,
+      extractedTotalCost: suggestion.extractedTotalCost || 0,
+      extractedDescription: suggestion.extractedDescription || '',
+      suggestedProductId: isGoodSuggestion ? suggestion.suggestedProductId : null,
+      matchConfidence: confidence,
+      matchReasoning: suggestion.matchReasoning || 'Low similarity',
+      suggestedCategoryId: suggestion.suggestedCategoryId || null,
+      suggestedCategoryName: suggestion.suggestedCategoryName || 'General',
+      userAction: shouldAutoSuggest ? 'auto_suggest' : null, // you can read this in the UI
+      finalProductId: null,
+      userSetUnitCost: null,
+      userSetSalePrice: null,
+      approved: false
+    });
+    
+    console.log(`✅ Created AI product suggestion for ${suggestion.extractedProductName} with ${confidence}% confidence`);
+  } catch (error) {
+    console.error('Error creating AI product suggestion:', error);
+  }
 }
 
 // --- Routes ---
@@ -249,7 +593,29 @@ router.post('/process-invoice', requireAuth, upload.single('invoice'), async (re
         rec.status = 'completed';
         store.records.set(id, rec);
 
-        const sugg = mockSuggestions(normalized);
+        const sugg = await createProductSuggestions(normalized);
+        
+        // Enhanced auto-suggestion logic
+        await createAiProductSuggestion({
+          invoiceId: id,
+          extractedProductName: normalized.items?.[0]?.productName || 'Unknown Product',
+          extractedSku: normalized.items?.[0]?.sku || '',
+          extractedQuantity: parseInt(normalized.items?.[0]?.quantity) || 1,
+          extractedUnitCost: parseFloat(normalized.items?.[0]?.unitPrice) || 0,
+          extractedTotalCost: parseFloat(normalized.items?.[0]?.totalPrice) || 0,
+          extractedDescription: normalized.items?.[0]?.description || '',
+          suggestedProductId: sugg[0]?.suggestedProductId || null,
+          matchConfidence: sugg[0]?.matchConfidence || 0,
+          matchReasoning: sugg[0]?.matchReasoning || 'No matches found',
+          suggestedCategoryId: sugg[0]?.suggestedCategoryId || null,
+          suggestedCategoryName: sugg[0]?.suggestedCategoryName || 'General',
+          userAction: sugg[0]?.userAction || (sugg[0]?.matchConfidence >= 90 ? 'auto_suggest' : null),
+          finalProductId: null,
+          userSetUnitCost: null,
+          userSetSalePrice: null,
+          approved: false
+        });
+        
         store.suggestions.set(id, sugg);
 
         // cleanup
@@ -375,5 +741,43 @@ router.post('/invoice/:id/approve', requireAuth, async (req: Request, res: Respo
     return res.status(500).send(e?.message || 'Server error');
   }
 });
+
+// Development testing code - remove in production
+if (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') {
+  const test = (label: string, v: number) =>
+    console.log(`[match-test] ${label}: ${Math.round(v * 100)}%`);
+
+  // Create instance for testing private methods
+  class TestProcessor extends InvoiceProcessor {
+    public testSkuSimilarity(a: string, b: string): number {
+      return this.skuSimilarity(a, b);
+    }
+    
+    public testNameDescriptionSimilarity(itemName: string, productName: string, itemDesc: string, productDesc: string): number {
+      return this.nameDescriptionSimilarity(itemName, productName, itemDesc, productDesc);
+    }
+  }
+
+  const inst = new TestProcessor();
+
+  // SKU similarity tests
+  test('SKU exact', inst.testSkuSimilarity('TM-LIME-115', 'TM-LIME-115'));
+  test('SKU one-digit off', inst.testSkuSimilarity('TM-LIME-115', 'TM-LIME-116'));
+  test('SKU containment', inst.testSkuSimilarity('TMLIME115', 'TM-LIME-115'));
+
+  // Name/desc tests
+  test('Name near', inst.testNameDescriptionSimilarity(
+    'Twang Lime Salt 1.15oz',
+    'Twangerz Lime Salt 1.15 Oz',
+    '',
+    ''
+  ));
+  test('Name moderate', inst.testNameDescriptionSimilarity(
+    'Mango Chamoy Sauce 12oz',
+    'Chamoy Mango 12 oz',
+    '',
+    ''
+  ));
+}
 
 export default router;
