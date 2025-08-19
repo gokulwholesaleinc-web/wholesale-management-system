@@ -24,7 +24,8 @@ import {
   AlertCircle,
   Loader2,
   Filter,
-  Search
+  Search,
+  X
 } from 'lucide-react';
 
 interface Product {
@@ -280,6 +281,42 @@ export default function AdminBulkOperations() {
                   </Select>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Quick Product Search */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Search className="h-5 w-5" />
+                Quick Product Search
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Input
+                  placeholder="Search products by name, SKU, or brand..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+                {searchTerm && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
+                    onClick={() => setSearchTerm('')}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+              {searchTerm && (
+                <div className="mt-2 text-sm text-muted-foreground">
+                  Found {filteredProducts.length} products matching "{searchTerm}"
+                </div>
+              )}
             </CardContent>
           </Card>
 
