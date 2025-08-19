@@ -108,7 +108,7 @@ export default function BulkOperationsPage() {
   });
 
   // Fetch flat taxes
-  const { data: flatTaxes = [] } = useQuery<{id: number, name: string, amount: number}[]>({
+  const { data: flatTaxes = [] } = useQuery<{id: number, name: string, taxAmount: number}[]>({
     queryKey: ['/api/flat-taxes']
   });
 
@@ -583,7 +583,7 @@ export default function BulkOperationsPage() {
                         <SelectItem value="none">Remove Flat Tax</SelectItem>
                         {flatTaxes.map(flatTax => (
                           <SelectItem key={flatTax.id} value={flatTax.id.toString()}>
-                            {flatTax.name} (${flatTax.amount.toFixed(2)})
+                            {flatTax.name} (${flatTax.taxAmount.toFixed(2)})
                           </SelectItem>
                         ))}
                       </SelectContent>
