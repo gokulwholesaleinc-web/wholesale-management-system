@@ -171,6 +171,7 @@ export interface IStorage {
   bulkApplyFlatTax(productIds: number[], flatTaxId: string): Promise<void>;
   bulkRemoveFlatTax(productIds: number[], flatTaxId: string): Promise<void>;
   bulkRemoveAllFlatTaxes(productIds: number[]): Promise<void>;
+  bulkUpdateProductTaxPercentage(productIds: number[], taxPercentage: number): Promise<void>;
   getProductsWithFilters(filters: any): Promise<Product[]>;
   importProductsFromCsv(csvData: string, userId: string): Promise<any>;
   exportProductsToCsv(products: Product[]): Promise<string>;
@@ -1641,6 +1642,23 @@ export class DatabaseStorage implements IStorage {
       `);
     } catch (error) {
       console.error('Error bulk removing all flat taxes:', error);
+      throw error;
+    }
+  }
+
+  async bulkUpdateProductTaxPercentage(productIds: number[], taxPercentage: number): Promise<void> {
+    try {
+      // Update the tax_percentage field for all selected products
+      // This is the same field used in individual product editing for sales tax
+      await db.execute(sql`
+        UPDATE products 
+        SET 
+          tax_percentage = ${taxPercentage},
+          updated_at = NOW()
+        WHERE id = ANY(${productIds})
+      `);
+    } catch (error) {
+      console.error('Error bulk updating product tax percentage:', error);
       throw error;
     }
   }

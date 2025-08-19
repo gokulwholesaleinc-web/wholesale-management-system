@@ -4842,6 +4842,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
           break;
 
+        case 'percentage-tax':
+          const taxPercentage = parseFloat(value);
+          if (isNaN(taxPercentage) || taxPercentage < 0 || taxPercentage > 100) {
+            return res.status(400).json({ message: 'Invalid tax percentage. Must be between 0 and 100.' });
+          }
+          await storage.bulkUpdateProductTaxPercentage(productIds, taxPercentage);
+          logDetails = `Set product tax percentage to ${taxPercentage}% for ${productIds.length} products`;
+          break;
+
         default:
           return res.status(400).json({ message: 'Invalid operation type' });
       }

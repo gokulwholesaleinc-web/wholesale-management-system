@@ -46,7 +46,7 @@ interface Category {
 }
 
 interface BulkOperation {
-  type: 'price' | 'stock' | 'status' | 'category' | 'flat-tax' | 'remove-flat-tax';
+  type: 'price' | 'stock' | 'status' | 'category' | 'flat-tax' | 'remove-flat-tax' | 'percentage-tax';
   products: number[];
   value: any;
 }
@@ -369,6 +369,7 @@ export default function AdminBulkOperations() {
                       <SelectItem value="category">Change Category</SelectItem>
                       <SelectItem value="flat-tax">Apply Flat Tax</SelectItem>
                       <SelectItem value="remove-flat-tax">Remove Flat Tax</SelectItem>
+                      <SelectItem value="percentage-tax">Set Product Tax %</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -458,6 +459,22 @@ export default function AdminBulkOperations() {
                       </SelectContent>
                     </Select>
                   )}
+                  {bulkOperation.type === 'percentage-tax' && (
+                    <div className="space-y-2">
+                      <Input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        max="100"
+                        placeholder="Tax percentage (e.g., 8.75 for 8.75%)"
+                        value={bulkOperation.value || ''}
+                        onChange={(e) => setBulkOperation(prev => ({ ...prev, value: parseFloat(e.target.value) || 0 }))}
+                      />
+                      <p className="text-sm text-muted-foreground">
+                        This is the product tax percentage that gets added to the item cost (like sales tax)
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -468,6 +485,7 @@ export default function AdminBulkOperations() {
               >
                 {bulkOperation.type === 'flat-tax' ? 'Apply Flat Tax to' :
                  bulkOperation.type === 'remove-flat-tax' ? 'Remove Flat Tax from' :
+                 bulkOperation.type === 'percentage-tax' ? 'Set Product Tax % for' :
                  'Apply Bulk Operation to'} {selectedProducts.length} Products
               </Button>
             </CardContent>
@@ -655,7 +673,16 @@ export default function AdminBulkOperations() {
                 </strong>
               </p>
             )}
-            {!['flat-tax', 'remove-flat-tax'].includes(bulkOperation.type) && (
+            {bulkOperation.type === 'percentage-tax' && (
+              <p>
+                Set product tax percentage: <strong>{bulkOperation.value}%</strong>
+                <br />
+                <span className="text-sm text-muted-foreground">
+                  (This is the tax % added to item cost, like sales tax)
+                </span>
+              </p>
+            )}
+            {!['flat-tax', 'remove-flat-tax', 'percentage-tax'].includes(bulkOperation.type) && (
               <p>
                 New value: <strong>{bulkOperation.value}</strong>
               </p>
