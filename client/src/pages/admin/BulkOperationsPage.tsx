@@ -60,7 +60,7 @@ interface Category {
 
 interface BulkUpdateData {
   productIds: number[];
-  updateType: 'price' | 'stock' | 'status' | 'category' | 'description' | 'brand' | 'weight' | 'size' | 'featured' | 'cost';
+  updateType: 'price' | 'stock' | 'status' | 'category' | 'description' | 'brand' | 'weight' | 'size' | 'featured' | 'cost' | 'taxPercentage';
   value: string | number | boolean;
   adjustmentType?: 'set' | 'increase' | 'decrease' | 'percentage';
 }
@@ -397,6 +397,16 @@ export default function BulkOperationsPage() {
         });
         return;
       }
+    } else if (bulkOperation === 'taxPercentage') {
+      value = parseFloat(bulkValue);
+      if (isNaN(value) || value < 0 || value > 100) {
+        toast({
+          title: 'Invalid Tax Percentage',
+          description: 'Please enter a valid tax percentage between 0 and 100.',
+          variant: 'destructive',
+        });
+        return;
+      }
     } else if (bulkOperation === 'description' || bulkOperation === 'brand' || bulkOperation === 'weight') {
       value = bulkValue.trim();
       if (!value) {
@@ -496,11 +506,12 @@ export default function BulkOperationsPage() {
                       <SelectItem value="brand">Update Brand</SelectItem>
                       <SelectItem value="weight">Update Weight/Size</SelectItem>
                       <SelectItem value="featured">Toggle Featured Status</SelectItem>
+                      <SelectItem value="taxPercentage">Update Tax Percentage</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
-                {(bulkOperation === 'price' || bulkOperation === 'cost' || bulkOperation === 'stock') && (
+                {(bulkOperation === 'price' || bulkOperation === 'cost' || bulkOperation === 'stock' || bulkOperation === 'taxPercentage') && (
                   <div>
                     <Label htmlFor="adjustment">Adjustment Type</Label>
                     <Select value={adjustmentType} onValueChange={setAdjustmentType}>
@@ -524,7 +535,8 @@ export default function BulkOperationsPage() {
                      bulkOperation === 'description' ? 'Description' :
                      bulkOperation === 'brand' ? 'Brand' :
                      bulkOperation === 'weight' ? 'Weight/Size' :
-                     bulkOperation === 'featured' ? 'Featured Status' : 'Value'}
+                     bulkOperation === 'featured' ? 'Featured Status' :
+                     bulkOperation === 'taxPercentage' ? 'Tax Percentage' : 'Value'}
                   </Label>
                   {bulkOperation === 'status' ? (
                     <Select value={bulkValue} onValueChange={setBulkValue}>
@@ -574,11 +586,12 @@ export default function BulkOperationsPage() {
                         bulkOperation === 'stock' ? 'Enter stock quantity' :
                         bulkOperation === 'brand' ? 'Enter brand name' :
                         bulkOperation === 'weight' ? 'Enter weight/size (e.g., 12 oz, 2 lbs)' :
+                        bulkOperation === 'taxPercentage' ? 'Enter tax percentage (e.g., 8.25)' :
                         'Enter value'
                       }
                       value={bulkValue}
                       onChange={(e) => setBulkValue(e.target.value)}
-                      type={bulkOperation === 'price' || bulkOperation === 'stock' ? 'number' : 'text'}
+                      type={bulkOperation === 'price' || bulkOperation === 'stock' || bulkOperation === 'taxPercentage' ? 'number' : 'text'}
                     />
                   )}
                 </div>
@@ -610,6 +623,36 @@ export default function BulkOperationsPage() {
               <CardTitle>Filters & Selection</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Search Bar for Bulk Operations */}
+              <div className="flex items-center gap-4">
+                <div className="flex-1">
+                  <Label htmlFor="search">Search Products</Label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Input
+                      id="search"
+                      placeholder="Search by name, SKU, brand, or description..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setSearchTerm('');
+                    setCategoryFilter('all');
+                    setStatusFilter('all');
+                    setBrandFilter('all');
+                  }}
+                  className="mt-6"
+                >
+                  Clear Filters
+                </Button>
+              </div>
+              
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <Label>Category Filter</Label>
