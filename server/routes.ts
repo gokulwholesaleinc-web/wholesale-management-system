@@ -1882,7 +1882,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/admin/products', requireEmployeeOrAdmin, async (req: any, res) => {
     try {
       const products = await storage.getProducts();
-      res.json(products);
+      
+      // Fetch all categories and create a map for efficient lookup
+      const categories = await storage.getAllCategories();
+      const categoryMap = new Map(categories.map(cat => [cat.id, cat.name]));
+      
+      // Add category names to products
+      const productsWithCategories = products.map(product => ({
+        ...product,
+        categoryName: product.categoryId ? categoryMap.get(product.categoryId) : 'Uncategorized'
+      }));
+      
+      res.json(productsWithCategories);
     } catch (error) {
       console.error('Error fetching admin products:', error);
       res.status(500).json({ message: 'Failed to fetch products' });

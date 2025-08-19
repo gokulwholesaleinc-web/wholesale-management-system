@@ -99,11 +99,7 @@ export default function BulkOperationsPage() {
 
   // Fetch products
   const { data: products = [], isLoading: productsLoading } = useQuery({
-    queryKey: ['/api/admin/products'],
-    select: (data: any[]) => data.map(product => ({
-      ...product,
-      categoryName: product.category?.name || 'Uncategorized'
-    }))
+    queryKey: ['/api/admin/products']
   });
 
   // Fetch categories
