@@ -107,7 +107,7 @@ export default function BulkOperationsPage() {
   const [location, setLocation] = useLocation();
 
   // Fetch products
-  const { data: products = [], isLoading: productsLoading } = useQuery({
+  const { data: products = [], isLoading: productsLoading } = useQuery<Product[]>({
     queryKey: ['/api/admin/products']
   });
 
@@ -123,13 +123,13 @@ export default function BulkOperationsPage() {
 
   // Get unique brands from products (memoized)
   const brands = useMemo(() => 
-    [...new Set(products.map((p: Product) => p.brand).filter(Boolean))] as string[], 
+    [...new Set(products.map((p) => p.brand).filter(Boolean))] as string[], 
     [products]
   );
 
   // Memoized filtered products
   const filteredProducts: Product[] = useMemo(() => {
-    return (products as Product[]).filter((p) => {
+    return products.filter((p) => {
       const statusMatch = statusFilter === 'all' ||
         (statusFilter === 'live' && !p.isDraft) ||
         (statusFilter === 'draft' && p.isDraft) ||
@@ -261,7 +261,7 @@ export default function BulkOperationsPage() {
   const handleExportCSV = async () => {
     try {
       const dataToExport = selectedProducts.length > 0 
-        ? products.filter(p => selectedProducts.includes(p.id))
+        ? filteredProducts.filter(p => selectedProducts.includes(p.id))
         : filteredProducts.length > 0 
         ? filteredProducts 
         : products;
@@ -282,11 +282,11 @@ export default function BulkOperationsPage() {
         product.stock || 0,
         `"${product.categoryName || ''}"`,
         `"${product.brand || ''}"`,
-        product.price1 || product.price || 0,
-        product.price2 || product.price || 0,
-        product.price3 || product.price || 0,
-        product.price4 || product.price || 0,
-        product.price5 || product.price || 0,
+        0, // price1 - not available in Product type
+        0, // price2 - not available in Product type  
+        0, // price3 - not available in Product type
+        0, // price4 - not available in Product type
+        0, // price5 - not available in Product type
         product.isDraft ? 'Draft' : 'Live',
         product.createdAt ? new Date(product.createdAt).toLocaleDateString() : ''
       ]);
@@ -633,7 +633,7 @@ export default function BulkOperationsPage() {
 
                 <div className="space-y-3">
                   <Button 
-                    onClick={runBulkOperation}
+                    onClick={handleBulkUpdate}
                     disabled={bulkUpdateMutation.isPending || selectedProducts.length === 0}
                     className="w-full"
                   >
@@ -975,7 +975,7 @@ export default function BulkOperationsPage() {
                 <Label>Price Range: ${priceRange[0]} - ${priceRange[1]}</Label>
                 <Slider
                   value={priceRange}
-                  onValueChange={setPriceRange}
+                  onValueChange={(value) => setPriceRange(value as [number, number])}
                   max={1000}
                   min={0}
                   step={5}
@@ -988,7 +988,7 @@ export default function BulkOperationsPage() {
                 <Label>Stock Range: {stockRange[0]} - {stockRange[1]} units</Label>
                 <Slider
                   value={stockRange}
-                  onValueChange={setStockRange}
+                  onValueChange={(value) => setStockRange(value as [number, number])}
                   max={100}
                   min={0}
                   step={1}
