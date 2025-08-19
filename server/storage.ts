@@ -1693,10 +1693,10 @@ export class DatabaseStorage implements IStorage {
       }
 
       // Apply status filter
-      if (filters.status === 'active') {
-        query = query.where(eq(products.isActive, true));
-      } else if (filters.status === 'inactive') {
-        query = query.where(eq(products.isActive, false));
+      if (filters.status === 'live') {
+        query = query.where(eq(products.isDraft, false));
+      } else if (filters.status === 'draft') {
+        query = query.where(eq(products.isDraft, true));
       }
 
       const results = await query.orderBy(products.name);
@@ -1750,7 +1750,7 @@ export class DatabaseStorage implements IStorage {
             stock: parseInt(rowData.stock) || 0,
             categoryId: rowData.category_id ? parseInt(rowData.category_id) : null,
             imageUrl: rowData.image_url || null,
-            isActive: rowData.is_active !== 'false'
+            isDraft: rowData.is_draft === 'true'
           };
 
           if (existingProduct) {
@@ -1779,7 +1779,7 @@ export class DatabaseStorage implements IStorage {
     try {
       const headers = [
         'id', 'name', 'sku', 'description', 'price', 'cost', 'stock', 
-        'category_id', 'image_url', 'is_active', 'created_at', 'updated_at'
+        'category_id', 'image_url', 'is_draft', 'created_at', 'updated_at'
       ];
 
       const csvLines = [headers.join(',')];
@@ -1795,7 +1795,7 @@ export class DatabaseStorage implements IStorage {
           product.stock || 0,
           product.categoryId || '',
           `"${product.imageUrl || ''}"`,
-          product.isActive || true,
+          product.isDraft || false,
           product.createdAt ? product.createdAt.toISOString() : '',
           product.updatedAt ? product.updatedAt.toISOString() : ''
         ];
@@ -5460,7 +5460,7 @@ export class DatabaseStorage implements IStorage {
           maxStockLevel: products.maxStockLevel,
           reorderPoint: products.reorderPoint,
           categoryId: products.categoryId,
-          isActive: products.isActive,
+          isDraft: products.isDraft,
           createdAt: products.createdAt,
           updatedAt: products.updatedAt
         }

@@ -38,7 +38,7 @@ interface Product {
   categoryId?: number;
   category?: { name: string };
   imageUrl?: string;
-  isActive?: boolean;
+  isDraft?: boolean;
 }
 
 interface Category {
