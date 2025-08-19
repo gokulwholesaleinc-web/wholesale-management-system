@@ -1,15 +1,22 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { queryClient } from '@/lib/queryClient';
+import { queryClient, apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { AppLayout } from '@/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { AlertCircle, Plus, Eye, Trash2, Package, CheckCircle, XCircle, Clock, Truck } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { AlertCircle, Plus, Eye, Trash2, Package, CheckCircle, XCircle, Clock, Truck, Edit3, FileText, DollarSign, Calendar } from 'lucide-react';
 import { PageHeader } from '@/components/ui/page-header';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 
 // Type definitions based on the actual backend data structure
 interface PurchaseOrder {
@@ -30,6 +37,18 @@ interface PurchaseOrder {
   receivedAt?: string;
   createdByName?: string;
 }
+
+// Purchase Order form schema
+const purchaseOrderSchema = z.object({
+  orderNumber: z.string().min(1, 'Order number is required'),
+  supplierName: z.string().min(1, 'Supplier name is required'),
+  supplierAddress: z.string().optional(),
+  totalCost: z.number().min(0, 'Total cost must be positive'),
+  notes: z.string().optional(),
+  expectedDeliveryDate: z.string().optional(),
+});
+
+type PurchaseOrderFormData = z.infer<typeof purchaseOrderSchema>;
 
 // Status badge component
 function StatusBadge({ status }: { status: string }) {
@@ -54,6 +73,9 @@ function StatusBadge({ status }: { status: string }) {
 
 export default function AdminPurchaseOrdersPage() {
   const { toast } = useToast();
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [editingOrder, setEditingOrder] = useState<PurchaseOrder | null>(null);
+  const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
 
   // Fetch purchase orders
   const { data: purchaseOrders = [], isLoading, error } = useQuery<PurchaseOrder[]>({
@@ -61,18 +83,92 @@ export default function AdminPurchaseOrdersPage() {
     staleTime: 30000, // Cache for 30 seconds
   });
 
-  // Update purchase order status
-  const updateStatusMutation = useMutation({
-    mutationFn: async ({ orderId, status }: { orderId: number; status: string }) => {
-      const response = await fetch(`/api/admin/purchase-orders/${orderId}/status`, {
-        method: 'PATCH',
+  // Create purchase order form
+  const createForm = useForm<PurchaseOrderFormData>({
+    resolver: zodResolver(purchaseOrderSchema),
+    defaultValues: {
+      orderNumber: `PO-${Date.now()}`,
+      supplierName: '',
+      supplierAddress: '',
+      totalCost: 0,
+      notes: '',
+      expectedDeliveryDate: '',
+    },
+  });
+
+  // Edit purchase order form  
+  const editForm = useForm<PurchaseOrderFormData>({
+    resolver: zodResolver(purchaseOrderSchema),
+  });
+
+  // Create purchase order mutation
+  const createMutation = useMutation({
+    mutationFn: async (data: PurchaseOrderFormData) => {
+      return await apiRequest('/api/admin/purchase-orders', {
+        method: 'POST',
+        body: JSON.stringify(data),
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ status }),
       });
-      if (!response.ok) throw new Error('Failed to update status');
-      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Purchase Order Created",
+        description: "Manual purchase order has been created successfully.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/purchase-orders'] });
+      setIsCreateModalOpen(false);
+      createForm.reset();
+    },
+    onError: (error) => {
+      toast({
+        title: "Creation Failed",
+        description: "Failed to create purchase order.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Update purchase order mutation
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: PurchaseOrderFormData }) => {
+      return await apiRequest(`/api/admin/purchase-orders/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Purchase Order Updated",
+        description: "Purchase order has been updated successfully.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/purchase-orders'] });
+      setEditingOrder(null);
+      editForm.reset();
+    },
+    onError: (error) => {
+      toast({
+        title: "Update Failed",
+        description: "Failed to update purchase order.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Update purchase order status
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ orderId, status }: { orderId: number; status: string }) => {
+      return await apiRequest(`/api/admin/purchase-orders/${orderId}/status`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
     },
     onSuccess: () => {
       toast({
@@ -93,11 +189,9 @@ export default function AdminPurchaseOrdersPage() {
   // Delete purchase order
   const deleteMutation = useMutation({
     mutationFn: async (orderId: number) => {
-      const response = await fetch(`/api/admin/purchase-orders/${orderId}`, {
+      return await apiRequest(`/api/admin/purchase-orders/${orderId}`, {
         method: 'DELETE',
       });
-      if (!response.ok) throw new Error('Failed to delete purchase order');
-      return response.json();
     },
     onSuccess: () => {
       toast({
@@ -125,6 +219,28 @@ export default function AdminPurchaseOrdersPage() {
     }
   };
 
+  const handleEditOrder = (order: PurchaseOrder) => {
+    editForm.reset({
+      orderNumber: order.orderNumber,
+      supplierName: order.supplier || order.supplierName || '',
+      supplierAddress: order.supplierAddress || '',
+      totalCost: order.totalAmount || order.totalCost || 0,
+      notes: order.notes || '',
+      expectedDeliveryDate: order.expectedDeliveryDate || '',
+    });
+    setEditingOrder(order);
+  };
+
+  const onCreateSubmit = (data: PurchaseOrderFormData) => {
+    createMutation.mutate(data);
+  };
+
+  const onEditSubmit = (data: PurchaseOrderFormData) => {
+    if (editingOrder) {
+      updateMutation.mutate({ id: editingOrder.id, data });
+    }
+  };
+
   if (error) {
     return (
       <AppLayout title="Purchase Orders">
@@ -144,114 +260,460 @@ export default function AdminPurchaseOrdersPage() {
           title="Purchase Orders"
           description="Manage supplier orders and inventory receiving"
         >
-          <Button className="flex items-center gap-2" onClick={() => {
-            // Navigate to AI Invoice Processor for creating purchase orders
-            window.location.href = '/admin/ai-invoice-processor';
-          }}>
-            <Plus className="h-4 w-4" />
-            Create Purchase Order
-          </Button>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center space-x-2 bg-gray-100 rounded-lg p-1">
+              <Button
+                variant={viewMode === 'cards' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('cards')}
+                className="text-xs"
+              >
+                Cards
+              </Button>
+              <Button
+                variant={viewMode === 'table' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('table')}
+                className="text-xs"
+              >
+                Table
+              </Button>
+            </div>
+            <Button
+              className="flex items-center gap-2"
+              onClick={() => window.location.href = '/admin/ai-invoice-processor'}
+              variant="outline"
+            >
+              <FileText className="h-4 w-4" />
+              AI Processor
+            </Button>
+            <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+              <DialogTrigger asChild>
+                <Button className="flex items-center gap-2">
+                  <Plus className="h-4 w-4" />
+                  Create Manually
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Create Purchase Order</DialogTitle>
+                  <DialogDescription>
+                    Manually create a new purchase order from supplier.
+                  </DialogDescription>
+                </DialogHeader>
+                <Form {...createForm}>
+                  <form onSubmit={createForm.handleSubmit(onCreateSubmit)} className="space-y-4">
+                    <FormField
+                      control={createForm.control}
+                      name="orderNumber"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Order Number</FormLabel>
+                          <FormControl>
+                            <Input placeholder="PO-12345" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={createForm.control}
+                      name="supplierName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Supplier Name</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Supplier Company" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={createForm.control}
+                      name="supplierAddress"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Supplier Address</FormLabel>
+                          <FormControl>
+                            <Textarea placeholder="Full address (optional)" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={createForm.control}
+                      name="totalCost"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Total Cost</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              step="0.01" 
+                              placeholder="0.00" 
+                              {...field} 
+                              onChange={e => field.onChange(parseFloat(e.target.value) || 0)}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={createForm.control}
+                      name="expectedDeliveryDate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Expected Delivery</FormLabel>
+                          <FormControl>
+                            <Input type="date" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={createForm.control}
+                      name="notes"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Notes</FormLabel>
+                          <FormControl>
+                            <Textarea placeholder="Additional notes (optional)" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <div className="flex justify-end gap-3">
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        onClick={() => setIsCreateModalOpen(false)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button 
+                        type="submit" 
+                        disabled={createMutation.isPending}
+                      >
+                        {createMutation.isPending ? 'Creating...' : 'Create Order'}
+                      </Button>
+                    </div>
+                  </form>
+                </Form>
+              </DialogContent>
+            </Dialog>
+          </div>
         </PageHeader>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>All Purchase Orders</CardTitle>
-            <CardDescription>
-              Manage and track orders from suppliers. Purchase orders are typically created via the AI Invoice Processor.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="flex justify-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-              </div>
-            ) : purchaseOrders.length === 0 ? (
-              <div className="text-center py-8">
-                <Package className="mx-auto h-12 w-12 text-gray-300" />
-                <h3 className="mt-2 text-sm font-medium text-gray-900">No purchase orders</h3>
-                <p className="mt-1 text-sm text-gray-500">
-                  Get started by processing an invoice with the AI Invoice Processor.
+        {isLoading ? (
+          <div className="flex justify-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          </div>
+        ) : purchaseOrders.length === 0 ? (
+          <Card>
+            <CardContent className="py-12">
+              <div className="text-center">
+                <Package className="mx-auto h-16 w-16 text-gray-300" />
+                <h3 className="mt-4 text-lg font-medium text-gray-900">No purchase orders found</h3>
+                <p className="mt-2 text-sm text-gray-500">
+                  Start by creating a purchase order manually or via the AI Invoice Processor.
                 </p>
-                <div className="mt-6">
-                  <Button onClick={() => window.location.href = '/admin/ai-invoice-processor'}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Process Invoice
+                <div className="mt-6 flex justify-center gap-3">
+                  <Button 
+                    onClick={() => setIsCreateModalOpen(true)}
+                    className="flex items-center gap-2"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Create Manually
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    onClick={() => window.location.href = '/admin/ai-invoice-processor'}
+                    className="flex items-center gap-2"
+                  >
+                    <FileText className="h-4 w-4" />
+                    AI Processor
                   </Button>
                 </div>
               </div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Order #</TableHead>
-                    <TableHead>Supplier</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Total Cost</TableHead>
-                    <TableHead>Created</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {purchaseOrders.map((order) => (
-                    <TableRow key={order.id}>
-                      <TableCell className="font-medium">{order.orderNumber}</TableCell>
-                      <TableCell>{order.supplier || order.supplierName || 'Unknown Supplier'}</TableCell>
-                      <TableCell>
-                        <Select
-                          value={order.status}
-                          onValueChange={(value) => handleStatusChange(order.id, value)}
-                          disabled={updateStatusMutation.isPending}
-                        >
-                          <SelectTrigger className="w-auto">
-                            <StatusBadge status={order.status} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="pending">Pending</SelectItem>
-                            <SelectItem value="submitted">Submitted</SelectItem>
-                            <SelectItem value="receiving">Receiving</SelectItem>
-                            <SelectItem value="received">Received</SelectItem>
-                            <SelectItem value="cancelled">Cancelled</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </TableCell>
-                      <TableCell className="font-medium">${((order.totalAmount || order.totalCost || 0).toFixed(2))}</TableCell>
-                      <TableCell>{new Date(order.createdAt || order.orderDate || '').toLocaleDateString()}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              // View details - could expand this later
-                              toast({
-                                title: "View Details",
-                                description: `Viewing details for PO #${order.orderNumber}`,
-                              });
-                            }}
-                            className="flex items-center gap-1"
+            </CardContent>
+          </Card>
+        ) : viewMode === 'cards' ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {purchaseOrders.map((order) => (
+              <Card key={order.id} className="hover:shadow-lg transition-shadow">
+                <CardHeader className="pb-4">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <CardTitle className="text-lg font-semibold">
+                        {order.orderNumber}
+                      </CardTitle>
+                      <CardDescription className="text-sm mt-1">
+                        {order.supplier || order.supplierName || 'Unknown Supplier'}
+                      </CardDescription>
+                    </div>
+                    <StatusBadge status={order.status} />
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <DollarSign className="h-4 w-4 text-gray-400" />
+                      <span className="font-semibold text-lg">
+                        ${((order.totalAmount || order.totalCost || 0).toFixed(2))}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <Calendar className="h-4 w-4" />
+                      <span>
+                        Created: {new Date(order.createdAt || order.orderDate || '').toLocaleDateString()}
+                      </span>
+                    </div>
+                    {order.notes && (
+                      <p className="text-sm text-gray-600 line-clamp-2">
+                        {order.notes}
+                      </p>
+                    )}
+                  </div>
+                  <div className="mt-4 pt-4 border-t flex items-center gap-2">
+                    <Select
+                      value={order.status}
+                      onValueChange={(value) => handleStatusChange(order.id, value)}
+                      disabled={updateStatusMutation.isPending}
+                    >
+                      <SelectTrigger className="flex-1 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="submitted">Submitted</SelectItem>
+                        <SelectItem value="receiving">Receiving</SelectItem>
+                        <SelectItem value="received">Received</SelectItem>
+                        <SelectItem value="cancelled">Cancelled</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEditOrder(order)}
+                      className="flex items-center gap-1"
+                    >
+                      <Edit3 className="h-3 w-3" />
+                      Edit
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDeleteOrder(order.id)}
+                      disabled={deleteMutation.isPending}
+                      className="flex items-center gap-1 text-red-600 hover:text-red-700"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <Card>
+            <CardHeader>
+              <CardTitle>Purchase Orders Table</CardTitle>
+              <CardDescription>
+                Detailed view of all purchase orders with advanced actions.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left py-3 px-2 font-medium">Order #</th>
+                      <th className="text-left py-3 px-2 font-medium">Supplier</th>
+                      <th className="text-left py-3 px-2 font-medium">Status</th>
+                      <th className="text-left py-3 px-2 font-medium">Total</th>
+                      <th className="text-left py-3 px-2 font-medium">Created</th>
+                      <th className="text-left py-3 px-2 font-medium">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {purchaseOrders.map((order) => (
+                      <tr key={order.id} className="border-b hover:bg-gray-50">
+                        <td className="py-3 px-2 font-medium">{order.orderNumber}</td>
+                        <td className="py-3 px-2">{order.supplier || order.supplierName || 'Unknown'}</td>
+                        <td className="py-3 px-2">
+                          <Select
+                            value={order.status}
+                            onValueChange={(value) => handleStatusChange(order.id, value)}
+                            disabled={updateStatusMutation.isPending}
                           >
-                            <Eye className="h-3 w-3" />
-                            View
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleDeleteOrder(order.id)}
-                            disabled={deleteMutation.isPending}
-                            className="flex items-center gap-1 text-red-600 hover:text-red-700"
-                          >
-                            <Trash2 className="h-3 w-3" />
-                            Delete
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
+                            <SelectTrigger className="w-32">
+                              <StatusBadge status={order.status} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="pending">Pending</SelectItem>
+                              <SelectItem value="submitted">Submitted</SelectItem>
+                              <SelectItem value="receiving">Receiving</SelectItem>
+                              <SelectItem value="received">Received</SelectItem>
+                              <SelectItem value="cancelled">Cancelled</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </td>
+                        <td className="py-3 px-2 font-semibold">
+                          ${((order.totalAmount || order.totalCost || 0).toFixed(2))}
+                        </td>
+                        <td className="py-3 px-2 text-sm text-gray-500">
+                          {new Date(order.createdAt || order.orderDate || '').toLocaleDateString()}
+                        </td>
+                        <td className="py-3 px-2">
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleEditOrder(order)}
+                              className="flex items-center gap-1"
+                            >
+                              <Edit3 className="h-3 w-3" />
+                              Edit
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDeleteOrder(order.id)}
+                              disabled={deleteMutation.isPending}
+                              className="flex items-center gap-1 text-red-600 hover:text-red-700"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Edit Purchase Order Modal */}
+        <Dialog open={!!editingOrder} onOpenChange={(open) => !open && setEditingOrder(null)}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Edit Purchase Order</DialogTitle>
+              <DialogDescription>
+                Update purchase order details.
+              </DialogDescription>
+            </DialogHeader>
+            <Form {...editForm}>
+              <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4">
+                <FormField
+                  control={editForm.control}
+                  name="orderNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Order Number</FormLabel>
+                      <FormControl>
+                        <Input placeholder="PO-12345" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={editForm.control}
+                  name="supplierName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Supplier Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Supplier Company" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={editForm.control}
+                  name="supplierAddress"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Supplier Address</FormLabel>
+                      <FormControl>
+                        <Textarea placeholder="Full address (optional)" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={editForm.control}
+                  name="totalCost"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Total Cost</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          step="0.01" 
+                          placeholder="0.00" 
+                          {...field} 
+                          onChange={e => field.onChange(parseFloat(e.target.value) || 0)}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={editForm.control}
+                  name="expectedDeliveryDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Expected Delivery</FormLabel>
+                      <FormControl>
+                        <Input type="date" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={editForm.control}
+                  name="notes"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Notes</FormLabel>
+                      <FormControl>
+                        <Textarea placeholder="Additional notes (optional)" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <div className="flex justify-end gap-3">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => setEditingOrder(null)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    disabled={updateMutation.isPending}
+                  >
+                    {updateMutation.isPending ? 'Updating...' : 'Update Order'}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </DialogContent>
+        </Dialog>
       </div>
     </AppLayout>
   );

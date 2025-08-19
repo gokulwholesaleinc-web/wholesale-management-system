@@ -61,6 +61,7 @@ export function ActivityLog() {
       console.log('[ACTIVITY-LOG-DEBUG] Raw response:', response);
       console.log('[ACTIVITY-LOG-DEBUG] Logs count:', logEntries.length);
       console.log('[ACTIVITY-LOG-DEBUG] First 3 logs:', logEntries.slice(0, 3));
+      console.log('[ACTIVITY-LOG-DEBUG] Response structure - success:', response.success, 'logs array:', Array.isArray(response.logs));
     }
   }, [response, logEntries]);
   
