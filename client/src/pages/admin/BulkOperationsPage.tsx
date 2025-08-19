@@ -38,7 +38,10 @@ import {
   AlertTriangle,
   Zap,
   Settings,
-  Layers
+  Layers,
+  RotateCcw,
+  X,
+  Loader2
 } from 'lucide-react';
 
 interface Product {
@@ -112,6 +115,10 @@ export default function BulkOperationsPage() {
     queryKey: ['/api/flat-taxes']
   });
 
+  // Store previous selection for memory function
+  const [previousSelection, setPreviousSelection] = useState<number[]>([]);
+  const [rememberSelection, setRememberSelection] = useState(false);
+
   // Bulk update mutation
   const bulkUpdateMutation = useMutation({
     mutationFn: async (data: BulkUpdateData) => {
@@ -123,7 +130,14 @@ export default function BulkOperationsPage() {
         description: `Bulk operation completed for ${selectedProducts.length} products.`,
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/products'] });
-      setSelectedProducts([]);
+      
+      // Store current selection before clearing
+      setPreviousSelection([...selectedProducts]);
+      
+      // Clear selection unless remember is enabled
+      if (!rememberSelection) {
+        setSelectedProducts([]);
+      }
       setBulkValue('');
     },
     onError: (error: any) => {
@@ -461,6 +475,26 @@ export default function BulkOperationsPage() {
     URL.revokeObjectURL(url);
   };
 
+  // Function to restore previous selection
+  const restorePreviousSelection = () => {
+    if (previousSelection.length > 0) {
+      setSelectedProducts([...previousSelection]);
+      toast({
+        title: 'Selection Restored',
+        description: `Restored ${previousSelection.length} previously selected items.`,
+      });
+    }
+  };
+
+  // Function to clear selection memory
+  const clearSelectionMemory = () => {
+    setPreviousSelection([]);
+    toast({
+      title: 'Memory Cleared',
+      description: 'Previous selection memory has been cleared.',
+    });
+  };
+
   return (
     <div className="container mx-auto p-6 space-y-6">
       <PageHeader 
@@ -614,14 +648,57 @@ export default function BulkOperationsPage() {
                   )}
                 </div>
 
-                <div className="flex items-end">
+                <div className="space-y-3">
                   <Button 
                     onClick={handleBulkUpdate}
                     disabled={bulkUpdateMutation.isPending || selectedProducts.length === 0}
                     className="w-full"
                   >
-                    {bulkUpdateMutation.isPending ? 'Updating...' : `Update ${selectedProducts.length} Products`}
+                    {bulkUpdateMutation.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Updating...
+                      </>
+                    ) : (
+                      `Update ${selectedProducts.length} Products`
+                    )}
                   </Button>
+                  
+                  {/* Selection Memory Controls */}
+                  <div className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      id="remember-selection"
+                      checked={rememberSelection}
+                      onChange={(e) => setRememberSelection(e.target.checked)}
+                      className="rounded"
+                    />
+                    <label htmlFor="remember-selection" className="text-sm text-gray-600">
+                      Keep selection after update
+                    </label>
+                  </div>
+                  
+                  {previousSelection.length > 0 && (
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={restorePreviousSelection}
+                        className="flex-1"
+                      >
+                        <RotateCcw className="mr-1 h-3 w-3" />
+                        Restore ({previousSelection.length} items)
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={clearSelectionMemory}
+                        className="px-3"
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </div>
 
