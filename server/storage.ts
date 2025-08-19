@@ -962,15 +962,7 @@ export class DatabaseStorage implements IStorage {
   async authenticateCustomer(username: string, password: string): Promise<User | undefined> {
     console.log("Looking up user:", username);
 
-    // Special case for admin login (already case-insensitive with toLowercase)
-    if (username.toLowerCase() === 'admin' && password === 'admin123') {
-      console.log("Admin login successful");
-      const [adminUser] = await db
-        .select()
-        .from(users)
-        .where(sql`LOWER(${users.username}) = 'admin'`);
-      return adminUser;
-    }
+    // SECURITY FIX: Removed hardcoded admin password bypass - all users must use proper password authentication
 
     // Make username comparison case-insensitive
     const [user] = await db
