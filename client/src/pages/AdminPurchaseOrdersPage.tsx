@@ -75,6 +75,8 @@ export default function AdminPurchaseOrdersPage() {
   const { toast } = useToast();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [editingOrder, setEditingOrder] = useState<PurchaseOrder | null>(null);
+  const [viewingOrder, setViewingOrder] = useState<PurchaseOrder | null>(null);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
 
   // Fetch purchase orders
@@ -229,6 +231,11 @@ export default function AdminPurchaseOrdersPage() {
       expectedDeliveryDate: order.expectedDeliveryDate || '',
     });
     setEditingOrder(order);
+  };
+
+  const handleViewOrder = (order: PurchaseOrder) => {
+    setViewingOrder(order);
+    setIsViewModalOpen(true);
   };
 
   const onCreateSubmit = (data: PurchaseOrderFormData) => {
@@ -499,6 +506,15 @@ export default function AdminPurchaseOrdersPage() {
                     <Button
                       variant="outline"
                       size="sm"
+                      onClick={() => handleViewOrder(order)}
+                      className="flex items-center gap-1"
+                    >
+                      <Eye className="h-3 w-3" />
+                      View
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
                       onClick={() => handleEditOrder(order)}
                       className="flex items-center gap-1"
                     >
@@ -571,6 +587,15 @@ export default function AdminPurchaseOrdersPage() {
                         </td>
                         <td className="py-3 px-2">
                           <div className="flex items-center gap-1">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleViewOrder(order)}
+                              className="flex items-center gap-1"
+                            >
+                              <Eye className="h-3 w-3" />
+                              View
+                            </Button>
                             <Button
                               variant="outline"
                               size="sm"
@@ -712,6 +737,118 @@ export default function AdminPurchaseOrdersPage() {
                 </div>
               </form>
             </Form>
+          </DialogContent>
+        </Dialog>
+
+        {/* View Purchase Order Modal */}
+        <Dialog open={isViewModalOpen} onOpenChange={setIsViewModalOpen}>
+          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Purchase Order Details</DialogTitle>
+              <DialogDescription>
+                Detailed view of purchase order items, pricing, and stock information.
+              </DialogDescription>
+            </DialogHeader>
+            {viewingOrder && (
+              <div className="space-y-6">
+                {/* Order Header Info */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
+                  <div>
+                    <h3 className="font-semibold text-lg mb-2">Order Information</h3>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Order Number:</span>
+                        <span className="font-medium">{viewingOrder.orderNumber}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Status:</span>
+                        <StatusBadge status={viewingOrder.status} />
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Total Amount:</span>
+                        <span className="font-semibold text-green-600">
+                          ${(viewingOrder.totalAmount || viewingOrder.totalCost || 0).toFixed(2)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Created:</span>
+                        <span>{new Date(viewingOrder.createdAt || viewingOrder.orderDate || '').toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg mb-2">Supplier Information</h3>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Supplier:</span>
+                        <span className="font-medium">{viewingOrder.supplier || viewingOrder.supplierName || 'Unknown'}</span>
+                      </div>
+                      {viewingOrder.supplierAddress && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Address:</span>
+                          <span className="font-medium text-right">{viewingOrder.supplierAddress}</span>
+                        </div>
+                      )}
+                      {viewingOrder.expectedDeliveryDate && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Expected Delivery:</span>
+                          <span>{new Date(viewingOrder.expectedDeliveryDate).toLocaleDateString()}</span>
+                        </div>
+                      )}
+                      {viewingOrder.createdByName && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Created By:</span>
+                          <span>{viewingOrder.createdByName}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Notes Section */}
+                {viewingOrder.notes && (
+                  <div className="p-4 bg-blue-50 rounded-lg">
+                    <h3 className="font-semibold mb-2">Notes</h3>
+                    <p className="text-sm text-gray-700">{viewingOrder.notes}</p>
+                  </div>
+                )}
+
+                {/* Placeholder for Purchase Order Items */}
+                <div className="border rounded-lg">
+                  <div className="p-4 border-b bg-gray-50">
+                    <h3 className="font-semibold text-lg">Order Items</h3>
+                    <p className="text-sm text-gray-600">Detailed breakdown of items in this purchase order</p>
+                  </div>
+                  <div className="p-4">
+                    <div className="text-center py-8 text-gray-500">
+                      <Package className="h-12 w-12 mx-auto mb-2 text-gray-400" />
+                      <p className="text-sm">Purchase order items not available</p>
+                      <p className="text-xs text-gray-400 mt-1">
+                        This is a manually created purchase order. Item details would be shown here for AI-processed orders.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex items-center gap-3 pt-4 border-t">
+                  <Button
+                    variant="outline"
+                    onClick={() => handleEditOrder(viewingOrder)}
+                    className="flex items-center gap-2"
+                  >
+                    <Edit3 className="h-4 w-4" />
+                    Edit Order
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsViewModalOpen(false)}
+                  >
+                    Close
+                  </Button>
+                </div>
+              </div>
+            )}
           </DialogContent>
         </Dialog>
       </div>
