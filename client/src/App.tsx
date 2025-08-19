@@ -10,6 +10,7 @@ import Account from "@/pages/Account";
 import AdminDashboard from "@/pages/AdminDashboard";
 import AdminProductAdd from "@/pages/AdminProductAdd";
 import AdminProductManagement from "@/pages/AdminProductManagement";
+import AdminPurchaseOrdersPage from "@/pages/AdminPurchaseOrdersPage";
 import AdminOrdersPage from "@/pages/AdminOrdersPage";
 // AdminOrderDetailPage removed - using unified OrderDetailPage
 import ManageStaffPage from "@/pages/ManageStaffPage";
@@ -199,7 +200,7 @@ function App() {
           </Route>
 
           <Route path="/admin/purchase-orders">
-            <AdminProtectedRoute component={AdminProductManagement} />
+            <AdminProtectedRoute component={AdminPurchaseOrdersPage} />
           </Route>
           <Route path="/admin/ai-invoice-processor">
             <AdminProtectedRoute component={AIInvoiceProcessor} />
