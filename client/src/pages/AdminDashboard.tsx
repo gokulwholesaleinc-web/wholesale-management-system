@@ -13,7 +13,7 @@ import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
-// import gokulLogo from "@assets/IMG_0846.png"; // Logo import disabled temporarily
+import gokulLogo from "@assets/IMG_0846.png";
 import { PageHeader } from "@/components/ui/page-header";
 import { BreadcrumbNavigation } from "@/components/navigation/BreadcrumbNavigation";
 import { AdminQuickActions } from "@/components/ui/admin-quick-actions";
