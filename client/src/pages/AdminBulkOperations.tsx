@@ -46,7 +46,7 @@ interface Category {
 }
 
 interface BulkOperation {
-  type: 'price' | 'stock' | 'status' | 'category';
+  type: 'price' | 'stock' | 'status' | 'category' | 'flat-tax' | 'remove-flat-tax';
   products: number[];
   value: any;
 }
@@ -84,6 +84,12 @@ export default function AdminBulkOperations() {
   const { data: categories = [] } = useQuery({
     queryKey: ['/api/admin/categories'],
     queryFn: () => apiRequest('GET', '/api/admin/categories')
+  });
+
+  // Fetch flat taxes
+  const { data: flatTaxes = [] } = useQuery({
+    queryKey: ['/api/admin/tax/flat-taxes'],
+    queryFn: () => apiRequest('GET', '/api/admin/tax/flat-taxes')
   });
 
   // Bulk update mutation
@@ -361,6 +367,8 @@ export default function AdminBulkOperations() {
                       <SelectItem value="stock">Update Stock</SelectItem>
                       <SelectItem value="status">Change Status</SelectItem>
                       <SelectItem value="category">Change Category</SelectItem>
+                      <SelectItem value="flat-tax">Apply Flat Tax</SelectItem>
+                      <SelectItem value="remove-flat-tax">Remove Flat Tax</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -415,15 +423,52 @@ export default function AdminBulkOperations() {
                       </SelectContent>
                     </Select>
                   )}
+                  {bulkOperation.type === 'flat-tax' && (
+                    <Select 
+                      value={bulkOperation.value || ''} 
+                      onValueChange={(value) => setBulkOperation(prev => ({ ...prev, value }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select flat tax to apply" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {flatTaxes.map((tax: any) => (
+                          <SelectItem key={tax.id} value={tax.id.toString()}>
+                            {tax.name} (${tax.amount || tax.taxAmount})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                  {bulkOperation.type === 'remove-flat-tax' && (
+                    <Select 
+                      value={bulkOperation.value || ''} 
+                      onValueChange={(value) => setBulkOperation(prev => ({ ...prev, value }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select flat tax to remove" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Remove All Flat Taxes</SelectItem>
+                        {flatTaxes.map((tax: any) => (
+                          <SelectItem key={tax.id} value={tax.id.toString()}>
+                            {tax.name} (${tax.amount || tax.taxAmount})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
                 </div>
               </div>
 
               <Button 
                 onClick={handleBulkOperation}
-                disabled={selectedProducts.length === 0 || !bulkOperation.value}
+                disabled={selectedProducts.length === 0 || (!bulkOperation.value && bulkOperation.type !== 'remove-flat-tax')}
                 className="w-full"
               >
-                Apply Bulk Operation to {selectedProducts.length} Products
+                {bulkOperation.type === 'flat-tax' ? 'Apply Flat Tax to' :
+                 bulkOperation.type === 'remove-flat-tax' ? 'Remove Flat Tax from' :
+                 'Apply Bulk Operation to'} {selectedProducts.length} Products
               </Button>
             </CardContent>
           </Card>
@@ -595,9 +640,26 @@ export default function AdminBulkOperations() {
               You are about to perform a <strong>{bulkOperation.type}</strong> operation on{' '}
               <strong>{selectedProducts.length}</strong> products.
             </p>
-            <p>
-              New value: <strong>{bulkOperation.value}</strong>
-            </p>
+            {bulkOperation.type === 'flat-tax' && (
+              <p>
+                Apply flat tax: <strong>
+                  {flatTaxes.find((tax: any) => tax.id.toString() === bulkOperation.value)?.name || bulkOperation.value}
+                </strong>
+              </p>
+            )}
+            {bulkOperation.type === 'remove-flat-tax' && (
+              <p>
+                Remove flat tax: <strong>
+                  {bulkOperation.value === 'all' ? 'All Flat Taxes' : 
+                   flatTaxes.find((tax: any) => tax.id.toString() === bulkOperation.value)?.name || bulkOperation.value}
+                </strong>
+              </p>
+            )}
+            {!['flat-tax', 'remove-flat-tax'].includes(bulkOperation.type) && (
+              <p>
+                New value: <strong>{bulkOperation.value}</strong>
+              </p>
+            )}
             <p className="text-sm text-gray-600">
               This action cannot be undone. Are you sure you want to proceed?
             </p>

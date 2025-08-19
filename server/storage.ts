@@ -168,6 +168,9 @@ export interface IStorage {
   bulkUpdateProductStock(productIds: number[], stock: number): Promise<void>;
   bulkUpdateProductStatus(productIds: number[], isActive: boolean): Promise<void>;
   bulkUpdateProductCategory(productIds: number[], categoryId: number): Promise<void>;
+  bulkApplyFlatTax(productIds: number[], flatTaxId: string): Promise<void>;
+  bulkRemoveFlatTax(productIds: number[], flatTaxId: string): Promise<void>;
+  bulkRemoveAllFlatTaxes(productIds: number[]): Promise<void>;
   getProductsWithFilters(filters: any): Promise<Product[]>;
   importProductsFromCsv(csvData: string, userId: string): Promise<any>;
   exportProductsToCsv(products: Product[]): Promise<string>;
@@ -1586,6 +1589,58 @@ export class DatabaseStorage implements IStorage {
       `);
     } catch (error) {
       console.error('Error bulk updating product category:', error);
+      throw error;
+    }
+  }
+
+  async bulkApplyFlatTax(productIds: number[], flatTaxId: string): Promise<void> {
+    try {
+      // For each product, add the flat tax ID to the flatTaxIds array if not already present
+      await db.execute(sql`
+        UPDATE products 
+        SET 
+          flat_tax_ids = CASE 
+            WHEN flat_tax_ids IS NULL THEN ARRAY[${flatTaxId}]
+            WHEN NOT (${flatTaxId} = ANY(flat_tax_ids)) THEN array_append(flat_tax_ids, ${flatTaxId})
+            ELSE flat_tax_ids
+          END,
+          updated_at = NOW()
+        WHERE id = ANY(${productIds})
+      `);
+    } catch (error) {
+      console.error('Error bulk applying flat tax:', error);
+      throw error;
+    }
+  }
+
+  async bulkRemoveFlatTax(productIds: number[], flatTaxId: string): Promise<void> {
+    try {
+      // Remove the specific flat tax ID from the flatTaxIds array
+      await db.execute(sql`
+        UPDATE products 
+        SET 
+          flat_tax_ids = array_remove(flat_tax_ids, ${flatTaxId}),
+          updated_at = NOW()
+        WHERE id = ANY(${productIds})
+      `);
+    } catch (error) {
+      console.error('Error bulk removing flat tax:', error);
+      throw error;
+    }
+  }
+
+  async bulkRemoveAllFlatTaxes(productIds: number[]): Promise<void> {
+    try {
+      // Clear all flat tax IDs from the products
+      await db.execute(sql`
+        UPDATE products 
+        SET 
+          flat_tax_ids = NULL,
+          updated_at = NOW()
+        WHERE id = ANY(${productIds})
+      `);
+    } catch (error) {
+      console.error('Error bulk removing all flat taxes:', error);
       throw error;
     }
   }

@@ -4822,6 +4822,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
           logDetails = `Updated category for ${productIds.length} products`;
           break;
 
+        case 'flat-tax':
+          const flatTaxId = value;
+          if (!flatTaxId) {
+            return res.status(400).json({ message: 'Flat tax ID is required' });
+          }
+          await storage.bulkApplyFlatTax(productIds, flatTaxId);
+          logDetails = `Applied flat tax ${flatTaxId} to ${productIds.length} products`;
+          break;
+
+        case 'remove-flat-tax':
+          if (value === 'all') {
+            await storage.bulkRemoveAllFlatTaxes(productIds);
+            logDetails = `Removed all flat taxes from ${productIds.length} products`;
+          } else {
+            const removeFlatTaxId = value;
+            await storage.bulkRemoveFlatTax(productIds, removeFlatTaxId);
+            logDetails = `Removed flat tax ${removeFlatTaxId} from ${productIds.length} products`;
+          }
+          break;
+
         default:
           return res.status(400).json({ message: 'Invalid operation type' });
       }
