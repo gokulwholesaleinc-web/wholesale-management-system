@@ -11,16 +11,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { AlertCircle, Plus, Eye, Trash2, Package, CheckCircle, XCircle, Clock, Truck } from 'lucide-react';
 import { PageHeader } from '@/components/ui/page-header';
 
-// Type definitions based on the backend schema
+// Type definitions based on the actual backend data structure
 interface PurchaseOrder {
   id: number;
   orderNumber: string;
-  supplierName: string;
-  supplierId?: string;
+  supplier: string;
+  supplierName?: string;
+  supplierAddress?: string;
   status: 'pending' | 'submitted' | 'receiving' | 'received' | 'cancelled';
-  totalCost: number;
+  totalAmount: number;
+  totalCost?: number; // fallback
   notes?: string;
   createdAt: string;
+  orderDate?: string;
+  expectedDeliveryDate?: string;
   createdBy?: string;
   receivedBy?: string;
   receivedAt?: string;
@@ -191,7 +195,7 @@ export default function AdminPurchaseOrdersPage() {
                   {purchaseOrders.map((order) => (
                     <TableRow key={order.id}>
                       <TableCell className="font-medium">{order.orderNumber}</TableCell>
-                      <TableCell>{order.supplierName}</TableCell>
+                      <TableCell>{order.supplier || order.supplierName || 'Unknown Supplier'}</TableCell>
                       <TableCell>
                         <Select
                           value={order.status}
@@ -210,8 +214,8 @@ export default function AdminPurchaseOrdersPage() {
                           </SelectContent>
                         </Select>
                       </TableCell>
-                      <TableCell className="font-medium">${order.totalCost.toFixed(2)}</TableCell>
-                      <TableCell>{new Date(order.createdAt).toLocaleDateString()}</TableCell>
+                      <TableCell className="font-medium">${((order.totalAmount || order.totalCost || 0).toFixed(2))}</TableCell>
+                      <TableCell>{new Date(order.createdAt || order.orderDate || '').toLocaleDateString()}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Button
