@@ -166,7 +166,7 @@ export interface IStorage {
   // Bulk operations
   bulkUpdateProductPrices(productIds: number[], value: number, isPercentage: boolean): Promise<void>;
   bulkUpdateProductStock(productIds: number[], stock: number): Promise<void>;
-  bulkUpdateProductStatus(productIds: number[], isActive: boolean): Promise<void>;
+  bulkUpdateProductStatus(productIds: number[], isDraft: boolean): Promise<void>;
   bulkUpdateProductCategory(productIds: number[], categoryId: number): Promise<void>;
   bulkApplyFlatTax(productIds: number[], flatTaxId: string): Promise<void>;
   bulkRemoveFlatTax(productIds: number[], flatTaxId: string): Promise<void>;
@@ -1564,12 +1564,12 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async bulkUpdateProductStatus(productIds: number[], isActive: boolean): Promise<void> {
+  async bulkUpdateProductStatus(productIds: number[], isDraft: boolean): Promise<void> {
     try {
       await db.execute(sql`
         UPDATE products 
         SET 
-          is_active = ${isActive},
+          is_draft = ${isDraft},
           updated_at = NOW()
         WHERE id = ANY(${productIds})
       `);

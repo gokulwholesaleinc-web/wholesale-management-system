@@ -4808,8 +4808,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           break;
 
         case 'status':
-          const isActive = value === 'active';
-          await storage.bulkUpdateProductStatus(productIds, isActive);
+          const isDraft = value === 'draft';
+          await storage.bulkUpdateProductStatus(productIds, isDraft);
           logDetails = `Set status to ${value} for ${productIds.length} products`;
           break;
 

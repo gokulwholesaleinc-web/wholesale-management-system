@@ -334,6 +334,9 @@ export default function AdminBulkOperations() {
                           {product.category && (
                             <span>Category: {product.category.name}</span>
                           )}
+                          <Badge variant={product.isDraft ? "secondary" : "default"} className="text-xs">
+                            {product.isDraft ? "Draft" : "Live"}
+                          </Badge>
                         </div>
                       </div>
                     </div>
@@ -365,7 +368,7 @@ export default function AdminBulkOperations() {
                     <SelectContent>
                       <SelectItem value="price">Update Prices</SelectItem>
                       <SelectItem value="stock">Update Stock</SelectItem>
-                      <SelectItem value="status">Change Status</SelectItem>
+                      <SelectItem value="status">Set Draft/Live Status</SelectItem>
                       <SelectItem value="category">Change Category</SelectItem>
                       <SelectItem value="flat-tax">Apply Flat Tax</SelectItem>
                       <SelectItem value="remove-flat-tax">Remove Flat Tax</SelectItem>
@@ -402,8 +405,8 @@ export default function AdminBulkOperations() {
                         <SelectValue placeholder="Select status" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="active">Active</SelectItem>
-                        <SelectItem value="inactive">Inactive</SelectItem>
+                        <SelectItem value="live">Live (Published)</SelectItem>
+                        <SelectItem value="draft">Draft (Not Published)</SelectItem>
                       </SelectContent>
                     </Select>
                   )}
@@ -486,6 +489,7 @@ export default function AdminBulkOperations() {
                 {bulkOperation.type === 'flat-tax' ? 'Apply Flat Tax to' :
                  bulkOperation.type === 'remove-flat-tax' ? 'Remove Flat Tax from' :
                  bulkOperation.type === 'percentage-tax' ? 'Set Product Tax % for' :
+                 bulkOperation.type === 'status' ? 'Set Status for' :
                  'Apply Bulk Operation to'} {selectedProducts.length} Products
               </Button>
             </CardContent>
@@ -682,7 +686,12 @@ export default function AdminBulkOperations() {
                 </span>
               </p>
             )}
-            {!['flat-tax', 'remove-flat-tax', 'percentage-tax'].includes(bulkOperation.type) && (
+            {bulkOperation.type === 'status' && (
+              <p>
+                Set status: <strong>{bulkOperation.value === 'draft' ? 'Draft (Not Published)' : 'Live (Published)'}</strong>
+              </p>
+            )}
+            {!['flat-tax', 'remove-flat-tax', 'percentage-tax', 'status'].includes(bulkOperation.type) && (
               <p>
                 New value: <strong>{bulkOperation.value}</strong>
               </p>
