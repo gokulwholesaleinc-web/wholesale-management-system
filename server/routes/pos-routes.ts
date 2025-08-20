@@ -4,6 +4,7 @@ import { db } from '../db';
 import { sql } from 'drizzle-orm';
 import { requireAuth, requireAdmin } from '../simpleAuth';
 import rateLimit from 'express-rate-limit';
+import { logActivity } from '../modules/activity/log';
 
 const router = Router();
 
@@ -135,6 +136,22 @@ router.post('/sale', async (req: any, res) => {
       const invoice = await createPosInvoice(p.data, tx);
       return { invoice };
     });
+
+    // Log POS sale activity (fire-and-forget for performance)
+    logActivity(req, {
+      action: 'pos.sale.created',
+      subjectType: 'invoice',
+      subjectId: result.invoice.id,
+      targetType: p.data.customerId ? 'customer' : null,
+      targetId: p.data.customerId || null,
+      severity: 20,
+      meta: {
+        tender: p.data.tender,
+        totalCents: result.invoice.total_cents,
+        lineCount: p.data.lines.length,
+        lane: p.data.lane
+      }
+    }).catch(console.error);
     
     // Store idempotency result
     if (idem) {
@@ -172,6 +189,22 @@ router.post('/hold', async (req: any, res) => {
       )
       RETURNING id, hold_name, created_at
     `);
+
+    // Log POS hold activity
+    logActivity(req, {
+      action: 'pos.hold.created',
+      subjectType: 'pos_hold',
+      subjectId: rows[0].id,
+      targetType: p.data.customerId ? 'customer' : null,
+      targetId: p.data.customerId || null,
+      severity: 20,
+      meta: {
+        holdName: p.data.holdName,
+        totalCents: p.data.totalCents,
+        lane: p.data.lane,
+        itemCount: p.data.cartData?.items?.length || 0
+      }
+    }).catch(console.error);
     
     return res.json(rows[0]);
   } catch (error) {

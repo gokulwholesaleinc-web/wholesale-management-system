@@ -40,6 +40,7 @@ import AdminReceiptQueue from "@/pages/admin/AdminReceiptQueue";
 import BulkOperationsPage from "@/pages/admin/BulkOperationsPage";
 import AdminCreditManagement from "@/pages/AdminCreditManagement";
 import AdminCreditUnified from "@/pages/AdminCreditUnified";
+import AdminActivityLog from "@/pages/AdminActivityLog";
 import CustomerBalance from "@/pages/CustomerBalance";
 
 import AIInvoiceProcessor from "@/pages/AIInvoiceProcessor";
@@ -232,7 +233,7 @@ function App() {
             <AdminProtectedRoute component={ManageStaffPage} />
           </Route>
           <Route path="/admin/activity-logs">
-            <AdminProtectedRoute component={ActivityLog} />
+            <AdminProtectedRoute component={AdminActivityLog} />
           </Route>
 
 

@@ -29,6 +29,8 @@ import { aiRecommendationService } from "./services/aiRecommendationService";
 import authResetRouter from "./routes/auth-reset";
 // REMOVED: PasswordResetService import - replaced by auth-reset router
 import emailSmsRoutes from "./routes/emailSmsRoutes";
+import { requestContext } from "./middleware/requestContext";
+import activityRouter from "./routes/activity-routes";
 import { posRoutes } from "./routes/posRoutes";
 // POS auth routes removed to avoid duplication - using main auth system
 import { receiptGenerator } from "./services/receiptGenerator";
@@ -134,6 +136,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     next();
   });
+
+  // Request context middleware - adds correlation ID and user context
+  app.use(requestContext);
 
   // API endpoint for email-based unsubscribe (must be before other middleware)
   app.post('/api/unsubscribe', async (req, res) => {
@@ -7906,6 +7911,9 @@ Recommend 3-4 products from our inventory that match current trends. Respond wit
   
   // New secure password reset routes
   app.use(authResetRouter);
+
+  // Activity log router
+  app.use('/api/activity', activityRouter);
   
   // Accounts Receivable routes
   app.use('/api', arRoutes);

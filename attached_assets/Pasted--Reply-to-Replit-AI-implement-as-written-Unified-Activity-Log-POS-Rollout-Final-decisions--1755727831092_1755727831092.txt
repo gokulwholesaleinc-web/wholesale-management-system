@@ -1,0 +1,131 @@
+# Reply to Replit AI — implement as written (Unified Activity Log + POS Rollout)
+
+> Final decisions and exact patches. This message confirms we are moving to **one unified /instore POS** and deprecating the old one. Please proceed.
+
+---
+
+## ✅ Decisions (lock these)
+
+* **Unified logger:** Implement the **single, unified activity log** now (Admin, POS, A/R, Auth)—no parallel/legacy system.
+* **POS taxonomy:** Use action keys under `pos.*`, `credit.*`, `ar.*`, `auth.*`, `admin.*`.
+* **Proceed now** (before Phase 2 POS features) so we capture rollout and early issues.
+* **POS unification:** We will **remove the old `/instore` POS**. Short parallel run is OK for validation, but **end state is one unified `/instore`**.
+
+---
+
+## 🎯 POS action categories (use these exact keys)
+
+* **Sales workflow:** `pos.sale.created`, `pos.sale.voided`, `pos.sale.refunded`
+* **Holds:** `pos.hold.created`, `pos.hold.resumed`, `pos.hold.canceled`
+* **Drawer/till:** `pos.drawer.opened`, `pos.drawer.closed`, `pos.drawer.adjustment`
+* **Overrides:** `pos.override.price`, `pos.override.tax`, `pos.override.credit`
+* *(Optional but throttle)*: `pos.item.scanned`, `pos.item.removed`
+
+> Credit/A/R: `credit.limit.update`, `credit.hold.enabled`, `credit.hold.disabled`, `ar.payment.created`, `ar.payment.applied`
+
+---
+
+## ⚡ Performance guidance (keep POS latency low)
+
+1. **Fire-and-forget** logs for non-critical events (don’t block checkout):
+
+```ts
+// after successful invoice commit — non-critical
+logActivity(req, evt).catch(console.error);
+```
+
+2. **Await** logs where audit must land inside the request boundary (e.g., credit limit/terms/hold changes).
+3. **Reduce round-trips** when computing `hash_prev` — use a CTE so it’s one query:
+
+```ts
+// inside logActivity helper
+WITH prev AS (
+  SELECT hash_self FROM activity_events ORDER BY at DESC, id DESC LIMIT 1
+)
+INSERT INTO activity_events (..., hash_prev, hash_self)
+VALUES (..., (SELECT hash_self FROM prev), ${hashSelf})
+```
+
+4. **SSE**: Keep the 2s poll; we can tune to 3–5s if needed.
+
+---
+
+## 🔍 Audit verification endpoint (admin-only)
+
+Add a quick chain validator so we can prove integrity on demand.
+
+**`server/src/modules/activity/verify.router.ts`**
+
+```ts
+import { Router } from 'express';
+import { db } from '../../db/client';
+import { sql } from 'drizzle-orm';
+import crypto from 'crypto';
+
+const vr = Router();
+// TODO: rbac guard, e.g. requireRole(['Admin'])
+
+vr.get('/activity/verify', async (req, res) => {
+  const limit = Math.min(Number(req.query.limit || 5000), 20000);
+  const { rows } = await db.execute(sql`
+    SELECT id, at, request_id, actor_id, actor_role, action, subject_type, subject_id,
+           target_type, target_id, severity, ip, user_agent, meta, diff, hash_prev, hash_self
+    FROM activity_events ORDER BY at ASC, id ASC LIMIT ${limit}
+  `);
+
+  let prevHash: string | null = null;
+  let ok = true;
+  for (const r of rows) {
+    const payload: any = { ...r };
+    delete payload.hash_prev; delete payload.hash_self;
+    // canonicalize by sorting keys
+    const json = JSON.stringify(payload, Object.keys(payload).sort());
+    const calc = crypto.createHash('sha256').update(json).digest('hex');
+    if (r.hash_prev !== prevHash || r.hash_self !== calc) { ok = false; break; }
+    prevHash = r.hash_self;
+  }
+  res.json({ ok, checked: rows.length });
+});
+
+export default vr;
+```
+
+**Mount**
+
+```ts
+// server/src/app.ts
+import verifyRouter from './modules/activity/verify.router';
+app.use('/admin', verifyRouter);
+```
+
+---
+
+## 🧭 Implementation order
+
+1. **Activity Log v2**: Run migration, mount request-context middleware, mount `/activity` and `/activity/stream`.
+2. **Compatibility shim**: Route any existing logger calls into `activity_events` (same table). New code should use `logActivity(req, …)`.
+3. **Instrument POS & Credit** with unified events:
+
+   * POS: `pos.sale.created`, `pos.sale.voided`, `pos.drawer.*`, `pos.override.*`.
+   * Credit: `credit.limit.update`, `credit.hold.enabled/disabled`.
+4. **Admin UI**: Add `/admin/activity` page and verify filtering + live stream.
+5. **POS unification**: Stage new POS at `/instore-next` (optional), then cut over to **`/instore`** and **remove the old POS/SW**. End state: one unified `/instore`.
+
+---
+
+## ✅ Acceptance checks
+
+* Logging a sale produces `pos.sale.created` with `requestId` that links related A/R entries.
+* Credit limit change writes `credit.limit.update` with before/after diff.
+* SSE shows new POS events within \~2s.
+* `/admin/activity/verify` returns `{ ok: true }` after typical ops.
+* After cutover, old `/instore` assets and its service worker are **removed**.
+
+---
+
+### Final confirmation for the agent
+
+* **Yes, implement the unified activity log now.**
+* **Yes, we are removing the old `/instore` POS.** End state is **one unified `/instore`** (new POS). Short parallel run is OK only for validation.
+
+Please proceed.
