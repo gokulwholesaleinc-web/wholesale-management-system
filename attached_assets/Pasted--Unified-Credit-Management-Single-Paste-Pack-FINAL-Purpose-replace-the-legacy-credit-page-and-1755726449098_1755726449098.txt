@@ -1,0 +1,389 @@
+# Unified Credit Management – Single‑Paste Pack (FINAL)
+
+Purpose: replace the legacy credit page and the new A/R page with **one** unified system using canonical fields on `customers` and exposure from A/R invoices. Includes:
+
+* SQL migration (unify fields + compatibility views)
+* Express API (`/credit/:customerId`)
+* React Admin page `AdminCreditUnified.tsx`
+
+> Paste this whole pack to your Replit agent. Adjust ⚙️ paths/names to your repo.
+
+---
+
+## 1) SQL Migration – unify & backfill
+
+Create **`migrations/20250820_unify_credit.sql`**
+
+```sql
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+-- Canonical fields live on customers
+ALTER TABLE IF EXISTS customers
+  ADD COLUMN IF NOT EXISTS term VARCHAR(16) NOT NULL DEFAULT 'Prepaid',
+  ADD COLUMN IF NOT EXISTS credit_limit_cents BIGINT NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS on_credit_hold BOOLEAN NOT NULL DEFAULT FALSE;
+
+-- Backfill cents from any legacy dollar column if present (creditLimit / credit_limit)
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='customers' AND column_name='creditlimit') THEN
+    EXECUTE 'UPDATE customers SET credit_limit_cents = CASE WHEN credit_limit_cents=0 THEN ROUND((creditlimit::numeric)*100) ELSE credit_limit_cents END WHERE creditlimit IS NOT NULL';
+  ELSIF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='customers' AND column_name='credit_limit') THEN
+    EXECUTE 'UPDATE customers SET credit_limit_cents = CASE WHEN credit_limit_cents=0 THEN ROUND((credit_limit::numeric)*100) ELSE credit_limit_cents END WHERE credit_limit IS NOT NULL';
+  END IF;
+END$$;
+
+-- Exposure from A/R open invoices
+CREATE OR REPLACE VIEW customer_ar_exposure AS
+SELECT c.id AS customer_id,
+       COALESCE((SELECT SUM(ai.balance_cents) FROM ar_invoices ai WHERE ai.customer_id=c.id AND ai.status='open'),0) AS exposure_cents
+FROM customers c;
+
+-- Compatibility view exposing BOTH shapes (legacy dollars + new cents)
+CREATE OR REPLACE VIEW customer_credit_unified AS
+SELECT c.id AS customer_id,
+       c.term,
+       c.on_credit_hold,
+       c.credit_limit_cents,
+       (c.credit_limit_cents::numeric/100.0) AS creditlimit,     -- legacy dollars (RO pref)
+       (e.exposure_cents::numeric/100.0)  AS currentbalance,     -- legacy dollars (computed)
+       e.exposure_cents
+FROM customers c
+LEFT JOIN customer_ar_exposure e ON e.customer_id=c.id;
+
+-- Allow updates through the view (dollars → cents; term/hold passthrough)
+CREATE OR REPLACE FUNCTION customer_credit_unified_upd() RETURNS trigger AS $$
+BEGIN
+  IF NEW.creditlimit IS DISTINCT FROM OLD.creditlimit THEN
+    UPDATE customers SET credit_limit_cents = ROUND((NEW.creditlimit::numeric)*100) WHERE id = OLD.customer_id;
+  END IF;
+  IF (NEW.term IS DISTINCT FROM OLD.term) OR (NEW.on_credit_hold IS DISTINCT FROM OLD.on_credit_hold) THEN
+    UPDATE customers SET term = COALESCE(NEW.term, term), on_credit_hold = COALESCE(NEW.on_credit_hold, on_credit_hold) WHERE id = OLD.customer_id;
+  END IF;
+  RETURN NEW;
+END;$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_ccu_update ON customer_credit_unified;
+CREATE TRIGGER trg_ccu_update INSTEAD OF UPDATE ON customer_credit_unified FOR EACH ROW EXECUTE FUNCTION customer_credit_unified_upd();
+```
+
+---
+
+## 2) Unified Credit API (Express)
+
+Create **`server/src/modules/credit/unified.router.ts`**
+
+```ts
+import { Router } from 'express';
+import { z } from 'zod';
+import { db } from '../../db/client'; // ⚙️ adjust
+import { sql } from 'drizzle-orm';
+
+const r = Router();
+
+// Get unified credit payload for a customer
+r.get('/:customerId', async (req, res) => {
+  const id = String(req.params.customerId);
+  const { rows } = await db.execute(sql`SELECT * FROM customer_credit_unified WHERE customer_id = ${id}`);
+  if (!rows.length) return res.status(404).json({ error: 'customer not found' });
+  return res.json(rows[0]);
+});
+
+// Patch limit (dollars or cents), term, hold
+const PatchSchema = z.object({
+  creditLimit: z.number().nonnegative().optional(),          // dollars (legacy)
+  creditLimitCents: z.number().int().nonnegative().optional(),
+  term: z.enum(['Prepaid','Net7','Net15','Net30','Net45']).optional(),
+  onCreditHold: z.boolean().optional(),
+});
+
+r.patch('/:customerId', async (req, res) => {
+  const id = String(req.params.customerId);
+  const p = PatchSchema.safeParse(req.body);
+  if (!p.success) return res.status(400).json({ error: 'invalid payload' });
+
+  // If dollars provided, update through the view so trigger converts to cents
+  if (p.data.creditLimit !== undefined || p.data.term !== undefined || p.data.onCreditHold !== undefined) {
+    await db.execute(sql`
+      UPDATE customer_credit_unified
+      SET creditlimit = COALESCE(${p.data.creditLimit}, creditlimit),
+          term = COALESCE(${p.data.term}, term),
+          on_credit_hold = COALESCE(${p.data.onCreditHold}, on_credit_hold)
+      WHERE customer_id = ${id}
+    `);
+  }
+
+  // Or accept cents directly
+  if (p.data.creditLimitCents !== undefined && p.data.creditLimit === undefined) {
+    await db.execute(sql`UPDATE customers SET credit_limit_cents = ${p.data.creditLimitCents} WHERE id = ${id}`);
+  }
+
+  const { rows } = await db.execute(sql`SELECT * FROM customer_credit_unified WHERE customer_id = ${id}`);
+  return res.json(rows[0]);
+});
+
+// Optional: a legacy-shaped GET for existing pages expecting {creditLimit,currentBalance}
+r.get('/legacy/:customerId', async (req, res) => {
+  const id = String(req.params.customerId);
+  const { rows } = await db.execute(sql`SELECT customer_id AS id, creditlimit AS "creditLimit", currentbalance AS "currentBalance" FROM customer_credit_unified WHERE customer_id = ${id}`);
+  if (!rows.length) return res.status(404).json({ error: 'customer not found' });
+  return res.json(rows[0]);
+});
+
+export default r;
+```
+
+Mount in **`server/src/app.ts`**
+
+```ts
+import unifiedCreditRouter from './modules/credit/unified.router'; // ⚙️
+app.use('/credit', unifiedCreditRouter);
+```
+
+---
+
+## 3) Unified Admin Page (React)
+
+Create **`client/src/admin/AdminCreditUnified.tsx`**
+
+```tsx
+import React, { useEffect, useState } from 'react';
+
+async function jget(url: string){ const r = await fetch(url); if(!r.ok) throw new Error(await r.text()); return r.json(); }
+async function jpatch(url: string, body: any){ const r = await fetch(url,{ method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)}); if(!r.ok) throw new Error(await r.text()); return r.json(); }
+
+export default function AdminCreditUnified({ customerId }: { customerId: string }){
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState<string>('');
+  const [limitUSD, setLimitUSD] = useState<string>('');
+  const [term, setTerm] = useState<string>('Prepaid');
+  const [hold, setHold] = useState<boolean>(false);
+
+  async function load(){
+    try {
+      setLoading(true);
+      const d = await jget(`/credit/${customerId}`);
+      setData(d);
+      setLimitUSD(((Number(d.credit_limit_cents)||0)/100).toFixed(2));
+      setTerm(d.term);
+      setHold(!!d.on_credit_hold);
+    } catch(e:any){ setErr(e.message||'Failed'); } finally { setLoading(false); }
+  }
+  useEffect(()=>{ load(); }, [customerId]);
+
+  async function save(){
+    setErr('');
+    const limitNum = Math.max(0, Math.round(parseFloat(limitUSD||'0')*100));
+    try {
+      const upd = await jpatch(`/credit/${customerId}`, { creditLimitCents: limitNum, term, onCreditHold: hold });
+      setData(upd);
+    } catch(e:any){ setErr(e.message||'Save failed'); }
+  }
+
+  if (loading) return <div>Loading…</div>;
+  if (err) return <div className="text-red-600">{err}</div>;
+
+  const exposureCents = Number(data?.exposure_cents||0);
+  const remaining = Number(data.credit_limit_cents||0) - exposureCents;
+
+  return (
+    <div className="space-y-4">
+      <h2 className="text-lg font-semibold">Credit Settings</h2>
+      <div className="grid grid-cols-2 gap-4">
+        <label className="flex flex-col">Credit Limit (USD)
+          <input value={limitUSD} onChange={e=>setLimitUSD(e.target.value)} className="input input-bordered" />
+        </label>
+        <label className="flex items-center gap-2">On Credit Hold
+          <input type="checkbox" checked={hold} onChange={e=>setHold(e.target.checked)} />
+        </label>
+        <label className="flex flex-col">Terms
+          <select value={term} onChange={e=>setTerm(e.target.value)} className="select select-bordered">
+            <option>Prepaid</option>
+            <option>Net7</option>
+            <option>Net15</option>
+            <option>Net30</option>
+            <option>Net45</option>
+          </select>
+        </label>
+      </div>
+      <button className="btn" onClick={save}>Save</button>
+
+      <h3 className="text-lg font-semibold mt-6">Exposure</h3>
+      <div className="grid grid-cols-3 gap-4">
+        <div className="p-3 border rounded">Limit: <b>${((Number(data.credit_limit_cents)||0)/100).toFixed(2)}</b></div>
+        <div className="p-3 border rounded">Open A/R: <b>${(exposureCents/100).toFixed(2)}</b></div>
+        <div className="p-3 border rounded">Remaining: <b className={remaining<0?'text-red-600':''}>${(remaining/100).toFixed(2)}</b></div>
+      </div>
+    </div>
+  );
+}
+```
+
+Wire into your Admin routes/nav (⚙️):
+
+```tsx
+// import AdminCreditUnified from '@/admin/AdminCreditUnified';
+// <AdminCreditUnified customerId={id} />
+```
+
+---
+
+## 4) Rollout (clean cutover)
+
+1. Run migration.
+2. Mount `/credit` router.
+3. Replace both legacy pages with `AdminCreditUnified.tsx` in your Admin dashboard.
+4. Grep for `creditLimit`/`currentBalance` usages and point them to `/credit/:id` or the view. Make old page read‑only or remove.
+5. After a week with no legacy callers, drop unused columns if any remain.
+
+---
+
+## 5) Acceptance Tests
+
+* Updating limit/term/hold via the unified page changes canonical fields and recomputes remaining = limit − open A/R.
+* Legacy dashboards that read dollars continue to work via `customer_credit_unified`.
+* POS “On Account” sales create open invoices; exposure updates instantly in the unified page.
+
+---
+
+**End of pack.**
+
+---
+
+## 6) Security & Ops Reinforcements (patches)
+
+The Replit agent’s suggestions are spot‑on. Below are **drop‑in patches** to the unified pack you already have so you can meet those points without rewriting anything.
+
+### 6.1 Require Admin/Manager on `/credit` routes
+
+In **`server/src/app.ts`**, mount the router with RBAC:
+
+```ts
+import unifiedCreditRouter from './modules/credit/unified.router';
+import { requireRole } from './modules/auth/requireRole'; // ⚙️ adjust to your guard
+
+app.use('/credit', requireRole(['Admin','Manager']), unifiedCreditRouter);
+```
+
+### 6.2 Stronger server‑side validation (limit bounds)
+
+In **`server/src/modules/credit/unified.router.ts`**, cap limits (example: **\$100,000** max):
+
+```ts
+const MAX_LIMIT_CENTS = 100_000 * 100; // $100k
+const PatchSchema = z.object({
+  creditLimit: z.number().nonnegative().max(100_000).optional(), // dollars
+  creditLimitCents: z.number().int().nonnegative().max(MAX_LIMIT_CENTS).optional(),
+  term: z.enum(['Prepaid','Net7','Net15','Net30','Net45']).optional(),
+  onCreditHold: z.boolean().optional(),
+});
+```
+
+### 6.3 Audit logging of credit changes
+
+If you don’t already have an `audit_logs` table, add this migration **`migrations/20250820_audit_credit.sql`**:
+
+```sql
+CREATE TABLE IF NOT EXISTS audit_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID,
+  action VARCHAR(128) NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  ip VARCHAR(64),
+  user_agent VARCHAR(512),
+  metadata JSONB
+);
+```
+
+Patch **`server/src/modules/credit/unified.router.ts`** to log before/after:
+
+```ts
+r.patch('/:customerId', async (req, res) => {
+  const id = String(req.params.customerId);
+  const p = PatchSchema.safeParse(req.body);
+  if (!p.success) return res.status(400).json({ error: 'invalid payload' });
+
+  // fetch BEFORE snapshot for audit
+  const beforeQ = await db.execute(sql`SELECT * FROM customer_credit_unified WHERE customer_id = ${id}`);
+  const before = beforeQ.rows[0] || null;
+
+  if (p.data.creditLimit !== undefined || p.data.term !== undefined || p.data.onCreditHold !== undefined) {
+    await db.execute(sql`
+      UPDATE customer_credit_unified
+      SET creditlimit = COALESCE(${p.data.creditLimit}, creditlimit),
+          term = COALESCE(${p.data.term}, term),
+          on_credit_hold = COALESCE(${p.data.onCreditHold}, on_credit_hold)
+      WHERE customer_id = ${id}
+    `);
+  }
+  if (p.data.creditLimitCents !== undefined && p.data.creditLimit === undefined) {
+    await db.execute(sql`UPDATE customers SET credit_limit_cents = ${p.data.creditLimitCents} WHERE id = ${id}`);
+  }
+
+  const afterQ = await db.execute(sql`SELECT * FROM customer_credit_unified WHERE customer_id = ${id}`);
+  const after = afterQ.rows[0];
+
+  // write audit log (user fields depend on your auth middleware)
+  await db.execute(sql`
+    INSERT INTO audit_logs (user_id, action, ip, user_agent, metadata)
+    VALUES (${(req as any).user?.id || null}, 'credit.update', ${req.ip}, ${req.headers['user-agent'] || null},
+            ${sql.json({ customerId: id, before, patch: p.data, after })})
+  `);
+
+  return res.json(after);
+});
+```
+
+### 6.4 Admin UI – friendlier errors & save‑state
+
+In **`client/src/admin/AdminCreditUnified.tsx`**, add a saving state, bounds hint, and tighter error handling:
+
+```tsx
+// state
+const [saving, setSaving] = useState(false);
+
+async function save(){
+  setErr('');
+  let dollars = parseFloat(limitUSD||'0');
+  if (Number.isNaN(dollars) || dollars < 0) { setErr('Enter a valid non‑negative number'); return; }
+  if (dollars > 100000) { setErr('Limit cannot exceed $100,000'); return; }
+  const limitNum = Math.round(dollars*100);
+  try {
+    setSaving(true);
+    const upd = await jpatch(`/credit/${customerId}`, { creditLimitCents: limitNum, term, onCreditHold: hold });
+    setData(upd);
+  } catch(e:any){ setErr(e.message||'Save failed'); }
+  finally { setSaving(false); }
+}
+```
+
+And disable the button while saving:
+
+```tsx
+<button className="btn" onClick={save} disabled={saving}>{saving ? 'Saving…' : 'Save'}</button>
+```
+
+Add a tiny helper note under the input:
+
+```tsx
+<small className="text-gray-500">Max: $100,000</small>
+```
+
+### 6.5 (Optional) Simple rate‑limit on PATCH
+
+If you have a generic rate limiter, wrap the PATCH route:
+
+```ts
+import { rateLimit } from '../_lib/rateLimit'; // ⚙️ or your util
+r.patch('/:customerId', rateLimit({ windowMs: 60_000, max: 30 }), async (req, res) => { /* … */ });
+```
+
+---
+
+## 7) Phase order
+
+1. Ship the unified pack **plus** the patches above (RBAC + bounds + audit).
+2. Remove legacy pages/routes or set them read‑only.
+3. Verify POS “On Account” and Admin exposure reflect the same A/R instantly.
+4. Proceed to POS upgrades (offline, hotkeys) with confidence.

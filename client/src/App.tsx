@@ -39,6 +39,7 @@ import AdminReceiptQueue from "@/pages/admin/AdminReceiptQueue";
 
 import BulkOperationsPage from "@/pages/admin/BulkOperationsPage";
 import AdminCreditManagement from "@/pages/AdminCreditManagement";
+import AdminCreditUnified from "@/pages/AdminCreditUnified";
 import CustomerBalance from "@/pages/CustomerBalance";
 
 import AIInvoiceProcessor from "@/pages/AIInvoiceProcessor";
@@ -247,7 +248,7 @@ function App() {
             <AdminProtectedRoute component={BulkOperationsPage} />
           </Route>
           <Route path="/admin/credit-management">
-            <AdminProtectedRoute component={AdminCreditManagement} />
+            <AdminProtectedRoute component={AdminCreditUnified} />
           </Route>
           <Route path="/admin/accounts-receivable">
             <AdminProtectedRoute component={AccountsReceivable} />

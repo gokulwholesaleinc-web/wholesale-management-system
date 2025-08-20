@@ -7909,6 +7909,10 @@ Recommend 3-4 products from our inventory that match current trends. Respond wit
   
   // Accounts Receivable routes
   app.use('/api', arRoutes);
+  
+  // Unified Credit Management routes
+  const creditUnifiedRouter = (await import('./routes/credit-unified')).default;
+  app.use('/api/credit', creditUnifiedRouter);
 
   // ✅ NOTIFICATION ENDPOINTS FOR REGISTRY INTEGRATION
   // These endpoints bridge the notification registry to the actual SMS/email services
