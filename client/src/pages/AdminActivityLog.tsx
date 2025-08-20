@@ -33,7 +33,7 @@ export default function AdminActivityLog() {
   const [filters, setFilters] = useState({
     action: '',
     subject_type: '',
-    severity: '',
+    severity: 'all',
     limit: 100
   });
   const [streaming, setStreaming] = useState(false);
@@ -44,7 +44,7 @@ export default function AdminActivityLog() {
     queryFn: async () => {
       const params = new URLSearchParams();
       Object.entries(filters).forEach(([key, value]) => {
-        if (value) params.append(key, value.toString());
+        if (value && value !== 'all') params.append(key, value.toString());
       });
       
       const response = await fetch(`/api/activity?${params}`);
@@ -137,7 +137,7 @@ export default function AdminActivityLog() {
             <SelectValue placeholder="All severities" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All severities</SelectItem>
+            <SelectItem value="all">All severities</SelectItem>
             <SelectItem value="10">Info</SelectItem>
             <SelectItem value="20">Notice</SelectItem>
             <SelectItem value="30">Warning</SelectItem>

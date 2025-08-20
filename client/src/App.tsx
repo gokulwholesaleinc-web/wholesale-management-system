@@ -58,7 +58,7 @@ import LoyaltyRedemptionHistoryPage from "@/pages/LoyaltyRedemptionHistoryPage";
 import AdminInvoices from "@/pages/AdminInvoices";
 import AdminTaxManagerPage from "@/pages/AdminTaxManagerPage";
 import AdminOrderSettings from "@/pages/AdminOrderSettings";
-import { ActivityLog } from "@/components/admin/ActivityLog";
+
 import AccountsReceivable from "@/pages/AccountsReceivable";
 import CreditTermsManagement from "@/pages/CreditTermsManagement";
 // InstoreLoginNew removed - POS system handles its own authentication
@@ -277,7 +277,7 @@ function App() {
           
           {/* Staff routes for employees */}
           <Route path="/staff/activity-logs">
-            <AdminProtectedRoute component={ActivityLog} />
+            <AdminProtectedRoute component={AdminActivityLog} />
           </Route>
           <Route path="/staff/orders/:id">
             <StaffProtectedRoute component={OrderDetailPage} />
