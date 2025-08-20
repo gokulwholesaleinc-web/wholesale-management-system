@@ -112,7 +112,19 @@ export class PasswordResetService {
   }
 
   private static buildEmailHtml(name: string, link: string, expiresAt: Date) {
-    const expires = expiresAt.toLocaleString();
+    // Format expiration time more clearly - show minutes from now
+    const now = new Date();
+    const minutesUntilExpiry = Math.ceil((expiresAt.getTime() - now.getTime()) / (60 * 1000));
+    const expiryText = `in ${minutesUntilExpiry} minutes (at ${expiresAt.toLocaleString('en-US', {
+      timeZone: 'America/Chicago',
+      month: '2-digit',
+      day: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    })})`;
+    
     // Extract token from link for fallback
     const token = link.split('token=')[1];
     
@@ -126,7 +138,7 @@ export class PasswordResetService {
             Reset your password
           </a>
         </p>
-        <p>This link expires at <b>${expires}</b> and can be used once.</p>
+        <p>This link expires <b>${expiryText}</b> and can be used once.</p>
         
         <div style="margin-top:24px;padding:16px;background:#f3f4f6;border-radius:8px;font-size:14px">
           <p style="margin:0 0 8px 0;font-weight:bold">If the button doesn't work, copy this token:</p>
@@ -140,17 +152,23 @@ export class PasswordResetService {
   }
 
   private static buildEmailText(link: string, expiresAt: Date) {
+    const now = new Date();
+    const minutesUntilExpiry = Math.ceil((expiresAt.getTime() - now.getTime()) / (60 * 1000));
+    
     return `Password Reset
 
 We received a request to reset your password.
-Reset link (single-use, expires ${expiresAt.toLocaleString()}):
+Reset link (expires in ${minutesUntilExpiry} minutes):
 ${link}
 
 If you didn't request this, ignore this email.`;
   }
 
   private static buildSmsText(link: string, expiresAt: Date) {
-    return `Gokul Wholesale: Password reset link (expires ${expiresAt.toLocaleTimeString()}): ${link}`;
+    const now = new Date();
+    const minutesUntilExpiry = Math.ceil((expiresAt.getTime() - now.getTime()) / (60 * 1000));
+    
+    return `Gokul Wholesale: Password reset link (expires in ${minutesUntilExpiry} min): ${link}`;
   }
 }
 
