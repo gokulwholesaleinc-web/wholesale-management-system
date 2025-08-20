@@ -137,45 +137,23 @@ Submitted: ${request.createdAt ? new Date(request.createdAt).toLocaleString() : 
         try {
           console.log(`📱 [ACCOUNT REQUEST] Sending SMS to staff member: ${staffMember.phone}`);
           
-          const smsData = {
-            to: staffMember.phone!,
-            customerName: `${request.contactFirstName} ${request.contactLastName}`,
-            customData: {
-              businessName: request.businessName,
-              phone: request.phone,
-              email: request.email,
-              requestId: request.id
-            }
-          };
-          
-          console.log(`📱 [ACCOUNT REQUEST] SMS Data:`, {
-            to: smsData.to,
-            customerName: smsData.customerName,
-            businessName: smsData.customData.businessName,
-            phone: smsData.customData.phone
-          });
-          
           // Get staff member's preferred language
           const staffLanguage = detectUserLanguage(staffMember);
           console.log(`🌐 [Account Request] Staff ${staffMember.phone} language: ${staffLanguage}`);
           
           // Use multilingual SMS template
-          const smsData = {
+          const smsTemplateData = {
             businessName: request.businessName,
             contactName: `${request.contactFirstName} ${request.contactLastName}`
           };
-          const smsMessage = getTemplate(accountRequestStaffNotification.sms.message(smsData), staffLanguage);
+          const smsMessage = getTemplate(accountRequestStaffNotification.sms.message(smsTemplateData), staffLanguage);
           
-          const smsResult = await smsService.send({
+          await smsService.send({
             to: staffMember.phone!,
             message: smsMessage
           });
           
-          if (smsResult?.success) {
-            console.log(`✅ [ACCOUNT REQUEST] SMS sent successfully to staff: ${staffMember.phone}`);
-          } else {
-            console.log(`❌ [ACCOUNT REQUEST] SMS failed to staff: ${staffMember.phone} - ${smsResult?.error || 'Unknown error'}`);
-          }
+          console.log(`✅ [ACCOUNT REQUEST] SMS sent successfully to staff: ${staffMember.phone}`);
         } catch (smsError) {
           console.error(`❌ [ACCOUNT REQUEST] SMS error for staff ${staffMember.phone}:`, smsError);
         }

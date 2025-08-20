@@ -27,7 +27,7 @@ export default function ResetPasswordPage() {
     
     (async () => {
       try {
-        const res = await fetch(`/api/auth/password-reset/validate?token=${encodeURIComponent(t)}`, { credentials: "include" });
+        const res = await fetch(`/auth/validate-reset-token?token=${encodeURIComponent(t)}`, { credentials: "include" });
         const data = await res.json();
         setValid(data.valid === true);
         setValidating(false);
@@ -61,7 +61,7 @@ export default function ResetPasswordPage() {
     }
     setSubmitting(true);
     try {
-      const res = await apiRequest("POST", "/api/auth/password-reset/complete", { token, newPassword });
+      const res = await apiRequest("POST", "/auth/reset-password", { token, newPassword });
       if (res.success) {
         setSuccess(true);
         setTimeout(() => setLocation("/login"), 1500);
@@ -86,7 +86,7 @@ export default function ResetPasswordPage() {
       // Validate the pasted token
       (async () => {
         try {
-          const res = await fetch(`/api/auth/password-reset/validate?token=${encodeURIComponent(cleanToken)}`, { credentials: "include" });
+          const res = await fetch(`/auth/validate-reset-token?token=${encodeURIComponent(cleanToken)}`, { credentials: "include" });
           const data = await res.json();
           setValid(data.valid === true);
           setValidating(false);

@@ -133,6 +133,28 @@ router.post('/auth/reset-password', async (req: Request, res: Response) => {
   }
 });
 
+// GET /auth/validate-reset-token
+router.get('/auth/validate-reset-token', async (req: Request, res: Response) => {
+  try {
+    const { token } = req.query as { token?: string };
+    
+    if (!token) {
+      return res.status(400).json({ valid: false, message: 'No token provided' });
+    }
+    
+    const tokenHash = hashToken(token);
+    const record = await storage.getValidPasswordResetByHash(tokenHash);
+    
+    return res.status(200).json({ 
+      valid: !!record,
+      message: record ? 'Token is valid' : 'Invalid or expired token'
+    });
+  } catch (err: any) {
+    console.error('[validate-reset-token] error', { message: err?.message });
+    return res.status(500).json({ valid: false, message: 'Unable to validate token' });
+  }
+});
+
 function wait(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
 }
