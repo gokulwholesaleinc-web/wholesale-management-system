@@ -252,9 +252,6 @@ function App() {
           <Route path="/admin/accounts-receivable">
             <AdminProtectedRoute component={AccountsReceivable} />
           </Route>
-          <Route path="/admin/credit-terms">
-            <AdminProtectedRoute component={CreditTermsManagement} />
-          </Route>
           {/* In-Store POS System Routes - Completely isolated from main app */}
           <Route path="/instore/:path*">
             <PosApp />

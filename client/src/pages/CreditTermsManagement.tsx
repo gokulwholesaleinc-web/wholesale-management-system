@@ -51,11 +51,7 @@ export default function CreditTermsManagement() {
       creditLimitCents?: number; 
       onCreditHold?: boolean; 
     }) => {
-      return await apiRequest(`/api/ar/customers/${data.customerId}/credit`, {
-        method: 'PUT',
-        body: JSON.stringify(data),
-        headers: { 'Content-Type': 'application/json' },
-      });
+      return await apiRequest('PUT', `/api/ar/customers/${data.customerId}/credit`, data);
     },
     onSuccess: () => {
       toast({

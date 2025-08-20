@@ -13,7 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CreditCard, DollarSign, FileText, Search, AlertTriangle, Users, Filter, History } from 'lucide-react';
+import { CreditCard, DollarSign, FileText, Search, AlertTriangle, Users, Filter, History, TrendingUp } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { CreditTransactionHistory } from '@/components/admin/CreditTransactionHistory';
 import { CustomerCreditManager } from '@/components/admin/CustomerCreditManager';
