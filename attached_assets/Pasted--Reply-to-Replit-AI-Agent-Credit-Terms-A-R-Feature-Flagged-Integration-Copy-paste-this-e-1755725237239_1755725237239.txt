@@ -1,0 +1,197 @@
+# Reply to Replit AI Agent – Credit Terms & A/R (Feature‑Flagged Integration)
+
+> Copy/paste this **entire message** to your Replit AI agent. It includes the response **and** the exact code patches so we can merge safely without changing current behavior.
+
+---
+
+## Message to Replit AI Agent
+
+Good call on schema alignment, order UX, migration, roles, and cents handling. Let’s integrate the A/R pack now but gate it so there’s **zero behavior change** until enabled, so deployments stay clean and we can test safely.
+
+**Plan**
+
+1. **Feature flag** the `/ar` routes and credit middleware.
+2. **Run migrations** and backfill defaults (no behavior change).
+3. **Smoke test** endpoints while disabled.
+4. After deployment stabilizes, flip flag for one pilot customer and validate. Then we’ll add Manager Override UI and deprecate legacy credit logic.
+
+---
+
+## 1) Feature Flag
+
+Add to your env (e.g., `.env`):
+
+```
+AR_ENABLED=false
+```
+
+In your server bootstrap (e.g., `server/src/app.ts`):
+
+```ts
+// --- Feature-flagged A/R mounting ---
+import arRouter from './modules/ar/ar.router';
+import { requireRole } from './modules/auth/requireRole'; // adjust to your guard
+
+const AR_ENABLED = process.env.AR_ENABLED === 'true';
+if (AR_ENABLED) {
+  app.use('/ar', requireRole(['Admin','Manager']), arRouter);
+}
+```
+
+---
+
+## 2) Credit Middleware (no‑op until enabled)
+
+Create `server/src/modules/ar/enforceIfEnabled.ts`:
+
+```ts
+import { enforceCredit } from './credit.middleware';
+
+export function enforceCreditIfEnabled(req: any, res: any, next: any) {
+  if (process.env.AR_ENABLED === 'true') return enforceCredit(req, res, next);
+  return next();
+}
+```
+
+Patch your order route file to normalize totals and attach the guard:
+
+```ts
+import { enforceCreditIfEnabled } from '../ar/enforceIfEnabled';
+
+// Normalize order totals to cents for middleware compatibility
+ordersRouter.use((req, _res, next) => {
+  if (typeof req.body.totalCents !== 'number') {
+    if (typeof req.body.total === 'number') req.body.totalCents = Math.round(req.body.total * 100);
+    else if (typeof req.body.grandTotalCents === 'number') req.body.totalCents = req.body.grandTotalCents;
+  }
+  next();
+});
+
+ordersRouter.post('/', enforceCreditIfEnabled, createOrderHandler);
+```
+
+> Until `AR_ENABLED=true`, this middleware is a passthrough and cannot block orders.
+
+---
+
+## 3) Schema Integration & Backfill
+
+Run the provided migration that adds:
+
+* `customers.term` (default `Prepaid`)
+* `customers.credit_limit_cents` (default `0`)
+* `customers.on_credit_hold` (default `false`)
+* `ar_invoices`, `ar_invoice_lines`, `ar_payments`, `ar_payment_apps`
+
+If needed, include at the top of the SQL migration:
+
+```sql
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+```
+
+Backfill (safe, idempotent):
+
+```sql
+UPDATE customers
+SET term = COALESCE(term, 'Prepaid'),
+    credit_limit_cents = COALESCE(credit_limit_cents, 0),
+    on_credit_hold = COALESCE(on_credit_hold, false);
+```
+
+If our `customers` schema lives in a different file/path, update imports in:
+
+* `server/src/modules/ar/ar.router.ts`
+* `server/src/modules/ar/credit.middleware.ts`
+
+No other code changes required.
+
+---
+
+## 4) Minimal Smoke Tests (Flag OFF)
+
+With `AR_ENABLED=false`, hit these to confirm compile + DB wiring only:
+
+```bash
+# Set terms/limit for a test customer (does not affect order flow while flag is OFF)
+curl -X POST http://localhost:5000/ar/terms \
+ -H 'Content-Type: application/json' \
+ -d '{"customerId":"<uuid>","term":"Net30","creditLimitCents":500000}'
+
+# Create a test invoice (A/R only)
+curl -X POST http://localhost:5000/ar/invoices \
+ -H 'Content-Type: application/json' \
+ -d '{"customerId":"<uuid>","invoiceNo":"INV-1001","term":"Net30","lines":[{"description":"Pallet of Energy Drink","quantity":10,"unitPriceCents":2500}]}'
+
+# Record a payment and auto-apply oldest
+curl -X POST http://localhost:5000/ar/payments \
+ -H 'Content-Type: application/json' \
+ -d '{"customerId":"<uuid>","method":"ach","amountCents":100000}'
+
+# Review exposure/invoices
+curl http://localhost:5000/ar/summary/<uuid>
+```
+
+---
+
+## 5) Flip On for Pilot (Flag ON)
+
+Set `AR_ENABLED=true`, restart the server.
+
+1. Choose a single pilot customer; set `term=Net30`, reasonable `credit_limit_cents`.
+2. Attempt an order that would push **exposure + new order** over the limit → expect `HTTP 402` with details.
+3. Record a payment via `/ar/payments`; retry order → should pass.
+
+---
+
+## 6) Manager Override (Optional Now, UI later)
+
+Server helper to allow authorized override via header or request field:
+
+```ts
+// server/src/modules/ar/override.guard.ts
+export function allowManagerOverride(req: any, _res: any, next: any) {
+  // Example: set by auth middleware; adjust to your role system
+  const role = req.user?.role;
+  const wantsOverride = req.headers['x-credit-override'] === 'true' || req.body?.override === true;
+  if (process.env.AR_ENABLED === 'true' && wantsOverride && (role === 'Admin' || role === 'Manager')) {
+    req.allowOverride = true;
+  }
+  next();
+}
+```
+
+Attach before `enforceCreditIfEnabled`:
+
+```ts
+import { allowManagerOverride } from '../ar/override.guard';
+ordersRouter.post('/', allowManagerOverride, enforceCreditIfEnabled, createOrderHandler);
+```
+
+Frontend later: Managers send `x-credit-override: true` or `override: true` when approving a blocked order.
+
+---
+
+## 7) Currency Handling
+
+Server always uses **cents**; ensure UI formats in dollars using your existing currency formatter. No behavior change while the flag is OFF.
+
+---
+
+## 8) Migration of Existing Credit Logic
+
+Once the pilot is stable:
+
+* Redirect any legacy credit checks to `/ar` services.
+* Mark old fields deprecated; keep read-only until full cutover.
+* Add Admin page widgets: exposure, limit, hold toggle, recent invoices/payments (use `/ar/summary/:customerId`).
+
+---
+
+## 9) Why this unblocks deployment
+
+* All new code is gated by `AR_ENABLED` → compiles & deploys without altering current order flow.
+* You can iterate on A/R independently and flip on per customer when ready.
+
+---
+
+**End of message.**
