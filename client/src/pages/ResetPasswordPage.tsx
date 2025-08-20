@@ -64,6 +64,31 @@ export default function ResetPasswordPage() {
     }
   };
 
+  const handleTokenPaste = (pastedToken: string) => {
+    const cleanToken = pastedToken.trim();
+    if (cleanToken) {
+      setToken(cleanToken);
+      setValidating(true);
+      setValid(false);
+      setError("");
+      
+      // Validate the pasted token
+      (async () => {
+        try {
+          const res = await fetch(`/api/auth/password-reset/validate?token=${encodeURIComponent(cleanToken)}`, { credentials: "include" });
+          const data = await res.json();
+          setValid(data.valid === true);
+          setValidating(false);
+          if (!data.valid) setError("This reset token is invalid or has expired.");
+        } catch (e) {
+          setValid(false);
+          setValidating(false);
+          setError("Could not validate reset token. Please request a new one.");
+        }
+      })();
+    }
+  };
+
   return (
     <div className="min-h-[70vh] flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
@@ -85,6 +110,19 @@ export default function ResetPasswordPage() {
           )}
 
           {validating && <div className="flex items-center justify-center py-6"><Loader2 className="h-5 w-5 animate-spin" /></div>}
+          
+          {!validating && !valid && !token && (
+            <div className="space-y-4">
+              <p className="text-sm text-gray-600">Don't have a reset link? Paste your reset token here:</p>
+              <div>
+                <label className="text-sm font-medium">Reset Token</label>
+                <Input
+                  placeholder="Paste your reset token here"
+                  onChange={(e) => handleTokenPaste(e.target.value)}
+                />
+              </div>
+            </div>
+          )}
 
           {!validating && valid && !success && (
             <>

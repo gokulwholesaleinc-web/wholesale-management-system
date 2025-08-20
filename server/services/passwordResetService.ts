@@ -51,6 +51,7 @@ export class PasswordResetService {
           subject: "Password Reset",
           html: this.buildEmailHtml(user.firstName || user.username || "User", resetLink, expiresAt),
           text: this.buildEmailText(resetLink, expiresAt),
+          disableTracking: true, // Prevent SendGrid click tracking from corrupting reset links
         });
       } else if (finalChannel === "sms" && canSms && user.phone) {
         await smsService.send({
@@ -112,6 +113,9 @@ export class PasswordResetService {
 
   private static buildEmailHtml(name: string, link: string, expiresAt: Date) {
     const expires = expiresAt.toLocaleString();
+    // Extract token from link for fallback
+    const token = link.split('token=')[1];
+    
     return `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px">
         <h2>Password reset requested</h2>
@@ -123,7 +127,14 @@ export class PasswordResetService {
           </a>
         </p>
         <p>This link expires at <b>${expires}</b> and can be used once.</p>
-        <p>If you didn't request this, you can ignore this email.</p>
+        
+        <div style="margin-top:24px;padding:16px;background:#f3f4f6;border-radius:8px;font-size:14px">
+          <p style="margin:0 0 8px 0;font-weight:bold">If the button doesn't work, copy this token:</p>
+          <code style="background:#e5e7eb;padding:8px;border-radius:4px;display:block;word-break:break-all;margin:8px 0">${token}</code>
+          <p style="margin:8px 0 0 0;font-size:12px;color:#666">Go to <a href="${APP_ORIGIN}/reset-password">${APP_ORIGIN}/reset-password</a> and paste the token above.</p>
+        </div>
+        
+        <p style="margin-top:20px">If you didn't request this, you can ignore this email.</p>
       </div>
     `;
   }
