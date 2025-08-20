@@ -1,0 +1,121 @@
+import { storage } from "../storage";
+import { emailService } from "./emailService";
+import { hashPassword } from "../helpers/bcrypt-helper";
+import { createRawToken, hashToken, DEFAULT_RESET_TTL_MS } from "../utils/resetToken";
+
+const APP_ORIGIN = process.env.APP_ORIGIN || "http://localhost:3000"; // front-end base
+const NEUTRAL_MSG = {
+  success: true,
+  message: "If an account exists for that email/username, a reset link has been sent.",
+};
+
+export class PasswordResetService {
+  static async initiatePasswordReset(emailOrUsername: string) {
+    try {
+      let user =
+        (await storage.getUserByEmail(emailOrUsername)) ||
+        (await storage.getUserByUsername(emailOrUsername));
+
+      // Always respond neutrally to avoid enumeration
+      if (!user || !user.email) {
+        return NEUTRAL_MSG;
+      }
+
+      // Create token
+      const raw = createRawToken(32);
+      const tokenHash = hashToken(raw);
+      const expiresAt = new Date(Date.now() + DEFAULT_RESET_TTL_MS);
+
+      await storage.createPasswordResetToken(user.id, tokenHash, expiresAt);
+      // Optional: invalidate previous tokens for this user
+      if (storage.invalidateOtherResetTokensForUser) {
+        await storage.invalidateOtherResetTokensForUser(user.id, tokenHash);
+      }
+
+      // Compose link
+      const resetLink = `${APP_ORIGIN}/reset-password?token=${raw}`;
+
+      // Send email (use your SendGrid or SES adapter)
+      await emailService.send({
+        to: user.email,
+        subject: "Password Reset",
+        html: this.buildEmailHtml(user.firstName || user.username || "User", resetLink, expiresAt),
+        text: this.buildEmailText(resetLink, expiresAt),
+      });
+
+      return NEUTRAL_MSG;
+    } catch (err) {
+      console.error("initiatePasswordReset error:", err);
+      return NEUTRAL_MSG;
+    }
+  }
+
+  static async validateToken(rawToken: string) {
+    try {
+      const tokenHash = hashToken(rawToken);
+      const record = await storage.getValidPasswordResetByHash(tokenHash);
+      if (!record) {
+        return { valid: false, reason: "invalid_or_expired" };
+      }
+      return { valid: true, userId: record.user_id };
+    } catch (e) {
+      console.error("validateToken error:", e);
+      return { valid: false, reason: "invalid_or_expired" };
+    }
+  }
+
+  static async completeReset(rawToken: string, newPassword: string) {
+    try {
+      const tokenHash = hashToken(rawToken);
+      const record = await storage.getValidPasswordResetByHash(tokenHash);
+      if (!record) {
+        return { success: false, message: "Invalid or expired link." };
+      }
+
+      // Update password
+      const passwordHash = await hashPassword(newPassword);
+      await storage.updateUser({ id: record.user_id, passwordHash });
+
+      // Invalidate token
+      await storage.markPasswordResetUsed(tokenHash);
+
+      // Optional: invalidate any other active tokens for this user
+      if (storage.invalidateOtherResetTokensForUser) {
+        await storage.invalidateOtherResetTokensForUser(record.user_id, tokenHash);
+      }
+
+      return { success: true, message: "Password updated. You can now log in." };
+    } catch (e) {
+      console.error("completeReset error:", e);
+      return { success: false, message: "Unable to complete reset. Try again." };
+    }
+  }
+
+  private static buildEmailHtml(name: string, link: string, expiresAt: Date) {
+    const expires = expiresAt.toLocaleString();
+    return `
+      <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px">
+        <h2>Password reset requested</h2>
+        <p>Hi ${name},</p>
+        <p>We received a request to reset your password. Click the button below to continue.</p>
+        <p>
+          <a href="${link}" style="background:#3b82f6;color:#fff;text-decoration:none;padding:12px 16px;border-radius:8px;display:inline-block">
+            Reset your password
+          </a>
+        </p>
+        <p>This link expires at <b>${expires}</b> and can be used once.</p>
+        <p>If you didn’t request this, you can ignore this email.</p>
+      </div>
+    `;
+  }
+
+  private static buildEmailText(link: string, expiresAt: Date) {
+    return `Password Reset
+
+We received a request to reset your password.
+Reset link (single-use, expires ${expiresAt.toLocaleString()}):
+${link}
+
+If you didn’t request this, ignore this email.`;
+  }
+}
