@@ -3,7 +3,13 @@ import sgMail from "@sendgrid/mail";
 sgMail.setApiKey(process.env.SENDGRID_API_KEY!);
 
 export class EmailService {
-  async send(to: string, subject: string, html: string, text?: string): Promise<void> {
+  async send({ to, subject, html, text, disableTracking = false }: { 
+    to: string; 
+    subject: string; 
+    html: string; 
+    text?: string; 
+    disableTracking?: boolean;
+  }): Promise<void> {
     try {
       await sgMail.send({
         to,
