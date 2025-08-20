@@ -16,12 +16,23 @@ export class PasswordResetService {
   static async initiatePasswordReset(identifier: string, channel: Channel = "auto") {
     try {
       // Try to resolve a user without leaking which identifier is valid.
-      const user =
-        (await storage.getUserByEmail(identifier)) ||
-        (await storage.getUserByUsername(identifier)) ||
-        (await storage.getUserByPhone(normalizePhone(identifier)));
+      console.log(`[RESET] Looking up user by identifier: ${identifier}`);
+      
+      const userByEmail = await storage.getUserByEmail(identifier);
+      const userByUsername = await storage.getUserByUsername(identifier);
+      const userByPhone = await storage.getUserByPhone(normalizePhone(identifier));
+      
+      console.log(`[RESET] User lookup results:`, {
+        byEmail: !!userByEmail,
+        byUsername: !!userByUsername,
+        byPhone: !!userByPhone,
+        normalizedPhone: normalizePhone(identifier)
+      });
+      
+      const user = userByEmail || userByUsername || userByPhone;
 
       if (!user) {
+        console.log(`[RESET] User not found for identifier: ${identifier}`);
         // Neutral response — do not hint whether identifier exists
         return NEUTRAL_MSG;
       }
