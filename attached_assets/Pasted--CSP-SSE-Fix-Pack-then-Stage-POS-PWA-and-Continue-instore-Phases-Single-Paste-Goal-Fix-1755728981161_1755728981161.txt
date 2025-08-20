@@ -1,0 +1,202 @@
+# CSP + SSE Fix Pack → then Stage POS PWA and Continue /instore Phases (Single Paste)
+
+**Goal:** Fix the **CSP inline-script blocks**, **SSE stream errors**, and **SES lockdown noise** you’re seeing. After this is merged and deployed, proceed to the POS PWA staged rollout and continue with the new **/instore** phases.
+
+---
+
+## 0) What this pack includes
+
+* **CSP nonce middleware** (Express) — allows legit inline scripts (if any) without opening CSP.
+* **SSE stream hardening** — correct path, proxy anti-buffer header, alias under `/api` if needed.
+* **Client hook** — EventSource path fix + auto-reconnect.
+* **SES lockdown guidance** — disable in dev or load/configure properly.
+* **Next steps** — send the POS PWA staged pack and continue the /instore rollout phases.
+
+> Mount the middleware **before** your static and route handlers. Adjust ⚙️ paths as needed.
+
+---
+
+## 1) Patch — CSP Nonce Middleware (server)
+
+**File:** `server/src/app.ts` (near the top, before any `app.use(express.static(...))` and route mounts)
+
+```ts
+// CSP Nonce Middleware
+import crypto from 'crypto';
+
+app.use((req, res, next) => {
+  const nonce = crypto.randomBytes(16).toString('base64');
+  (res as any).locals = { ...(res as any).locals, cspNonce: nonce };
+
+  const host = req.headers.host; // e.g., <replit-host>
+
+  // Build a strict CSP that allows our inline scripts via 'nonce-...', plus Stripe (if used), SSE/HMR.
+  const csp = [
+    `default-src 'self'`,
+    // Allow legit inline scripts (rare) with a nonce; allow Stripe if you use it
+    `script-src 'self' 'nonce-${nonce}' https://js.stripe.com https://m.stripe.network`,
+    // For fetch/XHR/WebSocket/SSE to same host and Stripe runtime
+    `connect-src 'self' https://${host} wss://${host} https://m.stripe.network`,
+    // Tailwind/inline styles in dev; tighten later if not needed
+    `style-src 'self' 'unsafe-inline'`,
+    `img-src 'self' data: blob:`,
+    `font-src 'self' data:`,
+    `frame-src https://js.stripe.com https://hooks.stripe.com`,
+    `worker-src 'self' blob:`,
+    `object-src 'none'`,
+    `base-uri 'self'`
+  ].join('; ');
+
+  res.setHeader('Content-Security-Policy', csp);
+  next();
+});
+```
+
+> **Best practice:** move any inline `<script>` into separate files. If you must keep a small inline script, add `nonce="<%= cspNonce %>"` to it (see next patch).
+
+---
+
+## 2) (If applicable) Add `nonce` to unavoidable inline scripts (client HTML)
+
+If your HTML template includes a tiny inline script you can’t externalize, tag it with the server-provided nonce.
+
+**Example:** `client/index.html` (or your SSR template)
+
+```html
+<!-- Only if truly necessary; prefer moving this to a .js file -->
+<script nonce="<%= cspNonce %>">
+  // small bootstrap logic
+</script>
+```
+
+> If you don’t have inline scripts, you can skip this step. Extension injections like `inpage.js` (MetaMask) will remain blocked — that’s expected and good.
+
+---
+
+## 3) Patch — SSE Router Headers + Alias (server)
+
+**File:** `server/src/modules/activity/activity.router.ts`
+
+```ts
+r.get('/stream', async (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache, no-transform');
+  res.setHeader('Connection', 'keep-alive');
+  res.setHeader('X-Accel-Buffering', 'no'); // prevent proxy buffering
+  res.flushHeaders?.();
+
+  let lastAt: string | null = new Date(Date.now() - 5_000).toISOString();
+  let closed = false;
+  req.on('close', () => { closed = true; });
+
+  const hb = setInterval(() => { if (!closed) res.write(`:\n\n`); }, 10_000);
+
+  async function poll(){
+    if (closed) return;
+    // ... your existing query + write loop (unchanged)
+    setTimeout(poll, 2000);
+  }
+  poll();
+  req.on('close', () => clearInterval(hb));
+});
+```
+
+**Mount an alias so `/api/activity/stream` also works:**
+
+**File:** `server/src/app.ts`
+
+```ts
+import activityRouter from './modules/activity/activity.router';
+app.use('/activity', activityRouter);
+app.use('/api/activity', activityRouter); // alias for clients using /api/activity/stream
+```
+
+> Ensure your CSP `connect-src` (above) includes `https://${host}` and `wss://${host}` for SSE and any dev HMR.
+
+---
+
+## 4) Patch — Client EventSource path + reconnect (Admin Activity UI)
+
+**File:** `client/src/admin/ActivityAdmin.tsx` (or where you open EventSource)
+
+```ts
+// Make sure the path matches the server: prefer /activity/stream
+const params = new URLSearchParams(Object.entries(q).filter(([,v]) => v));
+let es: EventSource | null = null;
+let backoff = 1000;
+
+function startStream(){
+  if (es) return; setStreaming(true);
+  es = new EventSource(`/activity/stream?${params.toString()}`);
+  es.onmessage = (ev) => { const row = JSON.parse(ev.data); setRows(prev => [row, ...prev].slice(0,500)); };
+  es.onerror = () => {
+    es?.close(); es = null; setStreaming(false);
+    setTimeout(() => startStream(), Math.min(backoff, 15000));
+    backoff = Math.min(backoff * 2, 15000);
+  };
+}
+
+function stopStream(){ es?.close(); es = null; setStreaming(false); }
+```
+
+> If you must keep `/api/activity/stream`, keep the alias in **app.ts** as shown above.
+
+---
+
+## 5) SES / lockdown messages (optional)
+
+If you see logs like `SES_UNCAUGHT_EXCEPTION` or “Removing unpermitted intrinsics…” and you didn’t explicitly adopt SES:
+
+* **Remove** the SES import (`lockdown-install.js`) from your bundle, **or**
+* Only enable SES in **production** after testing, e.g.:
+
+```ts
+// index.tsx or server bootstrap
+if (process.env.NODE_ENV === 'production') {
+  // require('ses'); lockdown({ /* your config */ });
+}
+```
+
+* If you keep SES, you must test all libraries under lockdown and configure permitted intrinsics. This is unrelated to CSP/SSE and can be tackled later.
+
+---
+
+## 6) Deploy & verify
+
+* Reload the Admin page and confirm the **CSP** errors are gone (except extensions) and the **SSE stream connects**.
+* Check `/admin/activity` live table updates \~every 1–2s; `Network` tab shows the `text/event-stream` connection open.
+
+---
+
+## 7) Next — Stage the POS PWA and proceed with /instore phases
+
+Once the above is working, **send the POS PWA staged pack** (the canvas titled **“POS PWA (In‑Store) – Staged Rollout Pack (Single Paste)”**) to the agent and implement it **under `/instore-next/`** with flags:
+
+```
+VITE_POS_PWA_ENABLED=true
+POS_READONLY=true
+```
+
+### Cutover plan (after acceptance passes)
+
+1. Flip scope/paths from `/instore-next/` → `/instore/` and set `POS_READONLY=false`.
+2. Unregister any legacy SW on first load, remove old `/instore` code/assets.
+3. End state: **one unified `/instore` PWA**.
+
+### Continue with new /instore phases
+
+* **Phase 2:** Enable transactions + offline queue sync.
+* **Phase 3:** Hotkeys, manager overrides, credit-at-counter, (optional) AI endpoints.
+* **Phase 4:** ESC/POS bridge, drawer pulses, X/Z reports, performance polish.
+
+---
+
+## 8) Acceptance checks for this pack
+
+* No CSP inline-script violations in the console from your app (extensions may still log; that’s fine).
+* SSE connects at `/activity/stream` or `/api/activity/stream` (alias) and stays open.
+* Activity events appear in Admin in near real-time.
+
+---
+
+**Done.** Merge these fixes, deploy, verify SSE is live and CSP is clean. Then proceed to the **POS PWA staged rollout** and continue the remaining /instore phases as planned.

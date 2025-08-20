@@ -60,26 +60,41 @@ export default function AdminActivityLog() {
 
     // Get auth token for SSE (EventSource doesn't support headers)
     const token = localStorage.getItem('auth-token');
-    const url = token ? `/api/activity/stream?token=${encodeURIComponent(token)}` : '/api/activity/stream';
+    const params = new URLSearchParams();
+    if (token) params.set('token', token);
     
-    const eventSource = new EventSource(url);
-    
-    eventSource.onmessage = (event) => {
-      try {
-        const newEvent = JSON.parse(event.data);
-        setLiveEvents(prev => [newEvent, ...prev.slice(0, 49)]); // Keep last 50 events
-      } catch (error) {
-        console.error('Error parsing SSE event:', error);
-      }
-    };
+    let eventSource: EventSource | null = null;
+    let backoff = 1000;
 
-    eventSource.onerror = () => {
-      console.error('SSE connection error');
-      setStreaming(false);
-    };
+    function startStream() {
+      if (eventSource) return;
+      console.log('[SSE] Starting activity stream...');
+      eventSource = new EventSource(`/activity/stream?${params.toString()}`);
+      
+      eventSource.onmessage = (ev) => {
+        const row = JSON.parse(ev.data);
+        setEvents(prev => [row, ...prev].slice(0, 500));
+        backoff = 1000; // reset backoff on success
+      };
+      
+      eventSource.onerror = () => {
+        console.log('[SSE] Connection error, reconnecting...');
+        eventSource?.close();
+        eventSource = null;
+        setTimeout(() => startStream(), Math.min(backoff, 15000));
+        backoff = Math.min(backoff * 2, 15000);
+      };
+    }
+
+    function stopStream() {
+      eventSource?.close();
+      eventSource = null;
+    }
+
+    startStream();
 
     return () => {
-      eventSource.close();
+      stopStream();
     };
   }, [streaming]);
 

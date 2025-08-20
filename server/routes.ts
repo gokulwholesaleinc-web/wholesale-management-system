@@ -36,6 +36,7 @@ import { posRoutes } from "./routes/posRoutes";
 import { receiptGenerator } from "./services/receiptGenerator";
 import newOrderRoutes from "./routes/newOrderRoutes";
 import aiInvoiceRouter from "./ai/aiInvoice.router";
+import crypto from 'crypto';
 
 // Helper function to calculate delivery fee based on order total
 async function calculateDeliveryFee(orderTotal: number): Promise<number> {
@@ -59,6 +60,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Trust proxy for proper IP detection (especially important for Replit deployment)
   app.set('trust proxy', true);
+
+  // CSP Nonce Middleware - prevents inline script CSP violations
+  app.use((req, res, next) => {
+    const nonce = crypto.randomBytes(16).toString('base64');
+    (res as any).locals = { ...(res as any).locals, cspNonce: nonce };
+
+    const host = req.headers.host; // e.g., <replit-host>
+
+    // Build a development-friendly CSP that allows Vite HMR and essential functionality
+    const isDev = process.env.NODE_ENV !== 'production';
+    const csp = [
+      `default-src 'self'`,
+      // In dev: allow eval and inline scripts for Vite HMR; in prod: use nonce
+      isDev 
+        ? `script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com https://m.stripe.network`
+        : `script-src 'self' 'nonce-${nonce}' https://js.stripe.com https://m.stripe.network`,
+      // For fetch/XHR/WebSocket/SSE to same host and Stripe runtime
+      `connect-src 'self' https://${host} wss://${host} ws://${host} https://m.stripe.network`,
+      // Tailwind/inline styles in dev; tighten later if not needed
+      `style-src 'self' 'unsafe-inline'`,
+      `img-src 'self' data: blob:`,
+      `font-src 'self' data:`,
+      `frame-src https://js.stripe.com https://hooks.stripe.com`,
+      `worker-src 'self' blob:`,
+      `object-src 'none'`,
+      `base-uri 'self'`
+    ].join('; ');
+
+    res.setHeader('Content-Security-Policy', csp);
+    next();
+  });
   
   // Essential middleware setup with error handling
   app.use(express.json({
@@ -7819,8 +7851,9 @@ Recommend 3-4 products from our inventory that match current trends. Respond wit
   // New secure password reset routes
   app.use(authResetRouter);
 
-  // Activity log router
-  app.use('/api/activity', activityRouter);
+  // Activity log router with alias
+  app.use('/activity', activityRouter);
+  app.use('/api/activity', activityRouter); // alias for clients using /api/activity/stream
   
   // Accounts Receivable routes
   app.use('/api', arRoutes);
