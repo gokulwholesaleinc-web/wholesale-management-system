@@ -45,9 +45,22 @@ export function PasswordResetDialog({ open, onOpenChange }: PasswordResetDialogP
     setError("");
 
     try {
-      const response = await apiRequest('POST', '/api/auth/password-reset', { 
-        emailOrUsername: emailOrUsername.trim() 
+      // Use direct fetch for public endpoint to avoid adding auth headers
+      const response = await fetch('/api/auth/password-reset', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ emailOrUsername: emailOrUsername.trim() }),
+        credentials: 'include'
       });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`${response.status}: ${errorText}`);
+      }
+
+      const responseData = await response.json();
 
       setMessage("Password reset email sent! Please check your inbox for the temporary password.");
       setStep('reset');
@@ -91,14 +104,29 @@ export function PasswordResetDialog({ open, onOpenChange }: PasswordResetDialogP
     setError("");
 
     try {
-      const response = await apiRequest('POST', '/api/auth/complete-password-reset', {
-        username: emailOrUsername.trim(),
-        tempPassword: tempPassword.trim(),
-        newPassword: newPassword.trim(),
-        confirmPassword: confirmPassword.trim()
+      // Use direct fetch for public endpoint to avoid adding auth headers
+      const response = await fetch('/api/auth/complete-password-reset', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          username: emailOrUsername.trim(),
+          tempPassword: tempPassword.trim(),
+          newPassword: newPassword.trim(),
+          confirmPassword: confirmPassword.trim()
+        }),
+        credentials: 'include'
       });
 
-      if (response.success) {
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`${response.status}: ${errorText}`);
+      }
+
+      const responseData = await response.json();
+
+      if (responseData.success) {
         toast({
           title: "Password Updated",
           description: "You can now log in with your new password",
@@ -113,7 +141,7 @@ export function PasswordResetDialog({ open, onOpenChange }: PasswordResetDialogP
           handleReset();
         }, 2000);
       } else {
-        setError(response.message || "Failed to update password");
+        setError(responseData.message || "Failed to update password");
       }
 
     } catch (error: any) {
