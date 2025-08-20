@@ -33,6 +33,7 @@ import { requestContext } from "./middleware/requestContext";
 import activityRouter from "./routes/activity-routes";
 import { posRoutes } from "./routes/posRoutes";
 import posTransactionRouter from "./routes/pos-routes";
+import posProductionRouter from "./routes/pos-production";
 // POS auth routes removed to avoid duplication - using main auth system
 import { receiptGenerator } from "./services/receiptGenerator";
 import newOrderRoutes from "./routes/newOrderRoutes";
@@ -10384,6 +10385,9 @@ Make it engaging and appropriate for a B2B wholesale business context. Respond i
 
   // Register POS transaction routes (Phase 2 - Transaction Engine + Offline Sync)
   app.use('/api/pos', posTransactionRouter);
+  
+  // Register POS production routes (Phase 4 - Production Deployment)
+  app.use('/api/pos', posProductionRouter);
 
   // Test endpoint to verify routing
   app.post('/api/pos/test-route', (req: any, res) => {
