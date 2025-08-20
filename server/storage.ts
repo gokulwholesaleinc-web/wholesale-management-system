@@ -5065,20 +5065,7 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async markNotificationAsRead(notificationId: number): Promise<void> {
-    try {
-      const { notifications } = await import('../shared/schema');
-      const { eq } = await import('drizzle-orm');
-
-      await db
-        .update(notifications)
-        .set({ isRead: true })
-        .where(eq(notifications.id, notificationId));
-    } catch (error) {
-      console.error('Error marking notification as read:', error);
-      throw error;
-    }
-  }
+  // DUPLICATE METHOD REMOVED - Using unified markNotificationAsRead with userId parameter from line 4187
 
   // DUPLICATE METHOD REMOVED - Using unified deleteNotification with userId parameter
 

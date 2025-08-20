@@ -473,47 +473,6 @@ export function CartPage() {
 }
 
 export default CartPage;
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {pickupDate ? (
-                            format(pickupDate, "PPP")
-                          ) : (
-                            <span>Select date</span>
-                          )}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
-                        <Calendar
-                          mode="single"
-                          selected={pickupDate}
-                          onSelect={setPickupDate}
-                          initialFocus
-                          disabled={(date) => date < new Date()}
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="pickup-time">Preferred Time</Label>
-                    <select
-                      id="pickup-time"
-                      value={pickupTime || ""}
-                      onChange={(e) => setPickupTime(e.target.value)}
-                      className="w-full mt-1 rounded-md border border-input px-3 py-2"
-                    >
-                      <option value="">Select time</option>
-                      <option value="morning">Morning (9AM - 12PM)</option>
-                      <option value="afternoon">Afternoon (12PM - 5PM)</option>
-                      <option value="evening">Evening (5PM - 8PM)</option>
-                    </select>
-                  </div>
-                </div>
-              )}
-
-              {orderType === "delivery" && (
-                <div className="mt-3">
-                  <Label htmlFor="delivery-note">Delivery Notes</Label>
                   <Textarea
                     id="delivery-note"
                     placeholder="Add any special delivery instructions"

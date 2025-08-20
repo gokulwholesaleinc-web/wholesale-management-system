@@ -1172,6 +1172,7 @@ export default function Admin() {
           </DialogHeader>
 
           {orderHistoryUser && (
+            <UnifiedOrderList
               userId={orderHistoryUser.id} 
               username={orderHistoryUser.username} 
             />
@@ -1203,6 +1204,7 @@ export default function Admin() {
           </DialogHeader>
 
           {creditAccountUser && (
+            <CustomerCreditManager
               customerId={creditAccountUser.id} 
               customerName={creditAccountUser.username} 
             />
