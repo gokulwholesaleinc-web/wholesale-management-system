@@ -2,36 +2,25 @@ import sgMail from "@sendgrid/mail";
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY!);
 
-export const emailService = {
-  async send({ to, subject, html, text, disableTracking = false }: { 
-    to: string; 
-    subject: string; 
-    html: string; 
-    text: string; 
-    disableTracking?: boolean;
-  }): Promise<void> {
+export class EmailService {
+  async send(to: string, subject: string, html: string, text?: string): Promise<void> {
     try {
-      const mailSettings: any = {};
-      
-      if (disableTracking) {
-        // Comprehensive tracking prevention per SendGrid docs
-        mailSettings.clickTracking = { enable: false, enableText: false };
-        mailSettings.openTracking = { enable: false };
-        mailSettings.subscriptionTracking = { enable: false };
-        mailSettings.ganalytics = { enable: false };
-      }
-
-      const result = await sgMail.send({
+      await sgMail.send({
         to,
-        from: { email: "info@shopgokul.com", name: "Gokul Wholesale Inc." },
+        from: { email: 'info@shopgokul.com', name: 'Gokul Wholesale Inc.' },
         subject,
         html,
         text,
-        mailSettings: disableTracking ? mailSettings : {},
+        trackingSettings: {
+          clickTracking: { enable: false, enableText: false }
+        },
       });
     } catch (error) {
-      console.error("Email service error:", error);
+      console.error("Email send failed:", error);
       throw error;
     }
-  },
-};
+  }
+}
+
+const emailService = new EmailService();
+export { emailService };

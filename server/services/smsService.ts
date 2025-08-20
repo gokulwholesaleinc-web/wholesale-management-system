@@ -8,18 +8,16 @@ if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_PHONE_NUMBER) {
 
 const client = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
 
-export const smsService = {
-  async send({ to, body }: { to: string; body: string }): Promise<{ success: boolean; messageId: string }> {
+export class SMSService {
+  async send(to: string, message: string): Promise<void> {
     try {
-      const message = await client.messages.create({
-        from: TWILIO_PHONE_NUMBER,
-        to,
-        body,
-      });
-      return { success: true, messageId: message.sid };
+      await client.messages.create({ to, from: process.env.TWILIO_FROM, body: message });
     } catch (error) {
-      console.error("SMS service error:", error);
+      console.error("SMS send failed:", error);
       throw error;
     }
-  },
-};
+  }
+}
+
+const smsService = new SMSService();
+export { smsService };

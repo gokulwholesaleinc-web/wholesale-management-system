@@ -45,18 +45,17 @@ export class PasswordResetService {
 
       // Fire-and-forget delivery (but await so errors are caught)
       if (finalChannel === "email" && canEmail && user.email) {
-        await emailService.send({
-          to: user.email,
-          subject: "Password Reset",
-          html: this.buildEmailHtml(user.firstName || user.username || "User", resetLink, expiresAt),
-          text: this.buildEmailText(resetLink, expiresAt),
-          disableTracking: true,
-        });
+        await emailService.send(
+          user.email,
+          "Password Reset",
+          this.buildEmailHtml(user.firstName || user.username || "User", resetLink, expiresAt),
+          this.buildEmailText(resetLink, expiresAt)
+        );
       } else if (finalChannel === "sms" && canSms && user.phone) {
-        await smsService.send({
-          to: user.phone,
-          body: this.buildSmsText(resetLink, expiresAt),
-        });
+        await smsService.send(
+          user.phone,
+          this.buildSmsText(resetLink, expiresAt)
+        );
       } else {
         return NEUTRAL_MSG;
       }
