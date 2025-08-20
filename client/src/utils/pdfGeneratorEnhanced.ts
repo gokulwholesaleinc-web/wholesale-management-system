@@ -1,6 +1,6 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-// Logo removed during cleanup - using text instead
+import gokulLogo from "@assets/IMG_0846.png";
 
 /** ------------ Types (with optional server fields) ------------ */
 interface OrderItem {
@@ -94,7 +94,7 @@ export const generateOrderPDF = async (
 
   // ---------- Header with transparent logo ----------
   try {
-    // Logo removed during cleanup - using text header instead
+    doc.addImage(gokulLogo, "PNG", 20, 10, 25, 25);
   } catch {
     // ignore logo errors
   }

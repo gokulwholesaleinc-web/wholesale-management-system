@@ -13,7 +13,7 @@ import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
-// Logo removed during cleanup - using text instead
+import gokulLogo from "@assets/IMG_0846.png";
 import { PageHeader } from "@/components/ui/page-header";
 import { BreadcrumbNavigation } from "@/components/navigation/BreadcrumbNavigation";
 import { AdminQuickActions } from "@/components/ui/admin-quick-actions";
@@ -517,7 +517,11 @@ export default function AdminDashboard() {
               Refresh Stats
             </Button>
             <AdminQuickActions variant="dashboard" />
-            <span className="text-xl font-bold text-blue-600">Gokul Wholesale</span>
+            <img 
+              src={gokulLogo} 
+              alt="Gokul Wholesale Logo" 
+              className="h-8 sm:h-12 object-contain" 
+            />
           </div>
         </PageHeader>
         

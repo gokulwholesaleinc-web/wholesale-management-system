@@ -26,20 +26,10 @@ export function validateEnvironment(): void {
   }
   
   if (missing.length > 0) {
-    console.warn('⚠️ Missing required environment variables:');
-    missing.forEach(key => console.warn(`   - ${key}`));
-    console.warn('Setting fallback values for development...');
-    
-    // Set fallback values for development
-    if (!process.env.PUBLIC_BASE_URL) process.env.PUBLIC_BASE_URL = 'http://localhost:3000';
-    if (!process.env.DEFAULT_FROM_EMAIL) process.env.DEFAULT_FROM_EMAIL = 'noreply@example.com';
-    if (!process.env.DEFAULT_FROM_NAME) process.env.DEFAULT_FROM_NAME = 'Gokul Wholesale';
-    if (!process.env.TWILIO_FROM_NUMBER) process.env.TWILIO_FROM_NUMBER = '+1234567890';
-    if (!process.env.SENDGRID_API_KEY) process.env.SENDGRID_API_KEY = 'test_key';
-    if (!process.env.TWILIO_ACCOUNT_SID) process.env.TWILIO_ACCOUNT_SID = 'test_sid';
-    if (!process.env.TWILIO_AUTH_TOKEN) process.env.TWILIO_AUTH_TOKEN = 'test_token';
-    
-    console.log('✅ Fallback environment variables set for development');
+    console.error('❌ Missing required environment variables:');
+    missing.forEach(key => console.error(`   - ${key}`));
+    console.error('\nApplication cannot start without these variables.');
+    process.exit(1);
   }
   
   // Validate PUBLIC_BASE_URL format

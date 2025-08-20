@@ -1,0 +1,66 @@
+// ---------- Helper: normalize ANY delivery/customer address into one line ----------
+private getFullCustomerAddress(order: any, customer: any): string {
+  const lower = (v: any) => (typeof v === "string" ? v.toLowerCase() : v);
+  const isDelivery = lower(order?.orderType) === "delivery" || lower(order?.orderType) === "deliver";
+
+  // Try to read delivery address (object or JSON string or plain formatted string)
+  const parseDelivery = () => {
+    let d = order?.deliveryAddressData ?? order?.deliveryAddress ?? null;
+    if (!d) return null;
+    if (typeof d === "string") {
+      const trimmed = d.trim();
+      if (!trimmed) return null;
+      try {
+        // If it's JSON, parse it; otherwise treat as already-formatted
+        return JSON.parse(trimmed);
+      } catch {
+        return trimmed; // already a formatted address
+      }
+    }
+    return d; // object
+  };
+
+  // Pull a value by trying multiple possible keys and case-insensitive matches
+  const pick = (obj: any, keys: string[]) => {
+    if (!obj || typeof obj !== "object") return "";
+    for (const k of keys) {
+      if (obj[k] != null && String(obj[k]).trim() !== "") return String(obj[k]).trim();
+      const alt = Object.keys(obj).find((x) => x.toLowerCase() === k.toLowerCase());
+      if (alt && obj[alt] != null && String(obj[alt]).trim() !== "") return String(obj[alt]).trim();
+    }
+    return "";
+  };
+
+  // 1) DELIVERY address first (if delivery)
+  if (isDelivery) {
+    const raw = parseDelivery();
+    if (raw) {
+      if (typeof raw === "string") return raw; // already formatted
+      // object: support many shapes
+      const line1 = pick(raw, ["addressLine1", "line1", "street", "street1", "address1"]);
+      const line2 = pick(raw, ["addressLine2", "line2", "apt", "suite", "unit", "address2"]);
+      const city  = pick(raw, ["city", "locality", "town"]);
+      const state = pick(raw, ["state", "region", "province", "stateCode", "state_code"]);
+      const zip   = pick(raw, ["postalCode", "postal_code", "zip", "zipcode"]);
+      const formatted = pick(raw, ["formatted", "formattedAddress", "fullAddress"]);
+
+      const left  = [line1, line2].filter(Boolean).join(" ").trim();
+      const right = [[city, state].filter(Boolean).join(", "), zip].filter(Boolean).join(" ").trim();
+      const combined = [left, right].filter(Boolean).join(", ").trim();
+      const finalAddr = (formatted || combined || "").trim();
+      if (finalAddr) return finalAddr;
+    }
+  }
+
+  // 2) Fallback: customer default address
+  const c = customer || {};
+  const cLine1 = c.addressLine1 || c.line1 || c.street || c.address1 || c.address || "";
+  const cLine2 = c.addressLine2 || c.line2 || c.apt || c.suite || c.address2 || "";
+  const cCity  = c.city || c.locality || "";
+  const cState = c.state || c.region || c.province || c.stateCode || "";
+  const cZip   = c.postalCode || c.postal_code || c.zip || c.zipcode || "";
+
+  const left  = [cLine1, cLine2].filter((x: string) => x && x.trim()).join(" ").trim();
+  const right = [[cCity, cState].filter(Boolean).join(", "), cZip].filter(Boolean).join(" ").trim();
+  return [left, right].filter(Boolean).join(", ").trim();
+}

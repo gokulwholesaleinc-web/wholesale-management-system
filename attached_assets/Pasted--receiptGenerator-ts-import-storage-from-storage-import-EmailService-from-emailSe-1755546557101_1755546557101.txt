@@ -1,0 +1,628 @@
+// receiptGenerator.ts
+import { storage } from "../storage";
+import { EmailService } from "./emailService";
+
+// ---------- Company Constants ----------
+const COMPANY = {
+  name: "Gokul Wholesale Inc.",
+  address: "1141 W Bryn Mawr Ave, Itasca, IL 60143",
+  phone: "(630) 540-9910",
+  email: "sales@gokulwholesaleinc.com",
+  website: "www.shopgokul.com",
+  tp: "TP# 97239"
+};
+
+// ---------- Money helpers ----------
+const toC = (n: number) => Math.round((n || 0) * 100); // dollars -> cents
+const fromC = (c: number) => c / 100;
+const USD = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
+const fmt$ = (cents: number) => USD.format(fromC(cents));
+
+// ---------- Types ----------
+interface ReceiptItemInput {
+  name: string;
+  sku?: string;
+  quantity: number;
+  price: number;
+  total: number;
+  hasIlTobaccoTax?: boolean;
+  flatTaxAmount?: number;
+  flatTaxName?: string;
+  basePrice?: number;
+  unitPriceWithTax?: number;
+  productName?: string;
+  productId?: number;
+  isTobaccoProduct?: boolean;
+  taxPercentage?: number;
+  flatTaxIds?: number[];
+}
+
+interface ReceiptData {
+  orderId: number;
+  orderNumber?: string;
+  customerName: string;
+  customerBusinessName?: string;
+  customerEmail: string;
+  customerAddress?: string;
+  customerPhone?: string;
+  orderDate: string;
+  deliveryDate?: string;
+  deliveryTimeSlot?: string;
+  items: ReceiptItemInput[];
+  subtotal: number;
+  deliveryFee: number;
+  total: number;
+  paymentMethod?: string;
+  checkNumber?: string;
+  paymentNotes?: string;
+  paymentDate?: string;
+  orderType: "delivery" | "pickup";
+  pickupDate?: string;
+  pickupTime?: string;
+  customerLevel?: number;
+  orderStatus?: string;
+  customerNotes?: string;
+
+  // Loyalty
+  loyaltyPointsEarned?: number;
+  loyaltyPointsRedeemed?: number;
+  loyaltyPointsValue?: number;
+  totalLoyaltyPoints?: number;
+
+  // Taxes
+  hasIlTobaccoProducts?: boolean;
+  totalFlatTax?: number;
+  flatTaxBreakdown?: Array<{ name: string; amount: number; description?: string }>;
+
+  // Credit
+  creditAccountInfo?: {
+    previousBalance: number;  // outstanding BEFORE this order
+    currentBalance: number;   // previous + this order total
+    creditLimit: number;
+    paymentMethod?: string;
+  };
+}
+
+export class ReceiptGenerator {
+  private static instance: ReceiptGenerator;
+  static getInstance(): ReceiptGenerator {
+    if (!ReceiptGenerator.instance) {
+      ReceiptGenerator.instance = new ReceiptGenerator();
+    }
+    return ReceiptGenerator.instance;
+  }
+
+  // ---------- Helper: Get full customer address ----------
+  private getFullCustomerAddress(order: any, customer: any): string {
+    try {
+      if (order.orderType === "delivery" && order.deliveryAddressData) {
+        let addr = order.deliveryAddressData;
+        if (typeof addr === "string") addr = JSON.parse(addr);
+        let full = "";
+        if (addr.addressLine1) full += addr.addressLine1;
+        if (addr.addressLine2) full += (full ? " " : "") + addr.addressLine2;
+        if (addr.city) full += (full ? ", " : "") + addr.city;
+        if (addr.state) full += (full ? ", " : "") + addr.state;
+        if (addr.postalCode) full += (full ? " " : "") + addr.postalCode;
+        return full || customer.address || "";
+      }
+    } catch { /* ignore parse errors */ }
+    return customer.address || "";
+  }
+
+  // ---------- Credit balance (robust & canonical) ----------
+  /**
+   * Computes the *outstanding* previous balance by summing only amounts still due on prior
+   * on-account/credit orders (excludes current order, ignores cancelled/voided).
+   * It looks for common paid fields: amountPaid / paidAmount / paymentsTotal.
+   */
+  private async calculatePreviousBalance(customerId: string, currentOrderId: number) {
+    try {
+      const customer = await storage.getUser(customerId);
+      const creditLimit = typeof customer?.creditLimit === "number" ? customer.creditLimit : 5000;
+
+      const orders = await storage.getOrdersByUserId(customerId);
+
+      let previousBalance = 0;
+
+      for (const o of orders) {
+        if (!o) continue;
+        if (o.id === currentOrderId) continue;
+
+        const pm = (o.paymentMethod || "").toLowerCase();
+        const status = (o.status || "").toLowerCase();
+
+        // Only account/credit orders count toward prior balance
+        if (pm !== "on_account" && pm !== "credit") continue;
+
+        // Ignore cancelled/voided orders
+        if (["cancelled", "canceled", "void", "voided"].includes(status)) continue;
+
+        const total = Number(o.total || 0);
+        const paid =
+          Number(o.amountPaid ?? o.paidAmount ?? o.paymentsTotal ?? 0);
+
+        const due = Math.max(0, total - paid);
+
+        // If order is explicitly marked paid with no due, skip it
+        if (due === 0) continue;
+
+        previousBalance += due;
+      }
+
+      // Current order total to produce "currentBalance" for display
+      const currentOrder = await storage.getOrderById(currentOrderId);
+      const currentOrderTotal = Number(currentOrder?.total || 0);
+      const currentBalance = previousBalance + currentOrderTotal;
+
+      return { previousBalance, currentBalance, creditLimit };
+    } catch (err) {
+      return { previousBalance: 0, currentBalance: 0, creditLimit: 5000 };
+    }
+  }
+
+  // ---------- Public: generate receipt for order id ----------
+  async generateReceiptOnly(orderId: number): Promise<{ success: boolean; message?: string; pdfBuffer?: Buffer }> {
+    try {
+      // Load order + items
+      const order = await storage.getOrderWithItems(orderId);
+      if (!order) return { success: false, message: "Order not found" };
+
+      const customer = await storage.getUser(order.userId);
+      if (!customer) return { success: false, message: "Customer not found" };
+
+      // Enrich items with product meta
+      const itemsWithProductInfo = await Promise.all(
+        (order.items || []).map(async (item: any) => {
+          let productData: any = null;
+          if (item.productId) {
+            try { productData = await storage.getProductById(item.productId); } catch {}
+          }
+          const productName = productData?.name || item.productName || item.name || `Product #${item.productId}`;
+          return {
+            ...item,
+            productName,
+            name: productName,
+            sku: productData?.sku || "",
+            isTobaccoProduct: !!productData?.isTobaccoProduct,
+            taxPercentage: productData?.taxPercentage || 0,
+            flatTaxIds: productData?.flatTaxIds || item.flatTaxIds || [],
+            hasIlTobaccoTax: !!(productData?.isTobaccoProduct && productData?.taxPercentage === 45),
+          };
+        })
+      );
+
+      // ---- Cents-safe totals ----
+      const itemsSubtotalC = (order.items || []).reduce(
+        (s: number, it: any) => s + toC(it.price || 0) * (it.quantity || 1), 0
+      );
+
+      // Build flat tax breakdown from DB
+      const flatTaxMap = new Map<string, { name: string; amountC: number; items: string[] }>();
+      for (const it of itemsWithProductInfo) {
+        const qty = it.quantity || 1;
+        const ids = Array.isArray(it.flatTaxIds) ? it.flatTaxIds : [];
+        for (const flatTaxId of ids) {
+          const ft = await storage.getFlatTax(flatTaxId); // { id, name, taxAmount } dollars
+          if (!ft) continue;
+          const perUnitC = toC(ft.taxAmount);
+          const lineTaxC = perUnitC * qty;
+          const key = `${ft.name}|${perUnitC}`;
+          const entry = flatTaxMap.get(key) ?? { name: ft.name, amountC: 0, items: [] };
+          entry.amountC += lineTaxC;
+          entry.items.push(`${it.productName} (${qty} × ${USD.format(fromC(perUnitC))})`);
+          flatTaxMap.set(key, entry);
+        }
+      }
+
+      const flatTaxBreakdown = Array.from(flatTaxMap.values()).map((x) => ({
+        name: x.name, amount: fromC(x.amountC), description: x.items.join(", "),
+      }));
+      const totalFlatTaxC = Array.from(flatTaxMap.values()).reduce((s, x) => s + x.amountC, 0);
+
+      const deliveryFeeC = toC(order.deliveryFee || 0);
+      const loyaltyDiscountC = toC(order.loyaltyPointsValue || 0);
+
+      // Loyalty earn: 2 pts/$1 on non-tobacco items (exclude taxes & delivery)
+      const loyaltyEligibleC = itemsWithProductInfo.reduce((s: number, it: any) => {
+        if (it.isTobaccoProduct) return s;
+        return s + toC(it.price || 0) * (it.quantity || 1);
+      }, 0);
+      const loyaltyPointsEarned = Math.floor(fromC(loyaltyEligibleC) * 2);
+
+      // Final total (prefer stored snapshot if finalized)
+      const recomputedFinalC = itemsSubtotalC + totalFlatTaxC + deliveryFeeC - loyaltyDiscountC;
+      const isFinalized =
+        typeof order.status === "string" &&
+        ["completed", "delivered", "paid"].includes((order.status || "").toLowerCase());
+      const finalTotalC = isFinalized ? (toC(order.total || 0) || recomputedFinalC) : recomputedFinalC;
+
+      // Receipt data snapshot
+      const receiptData: ReceiptData = {
+        orderId: order.id,
+        orderNumber: String(order.id),
+        customerName:
+          customer.company
+            ? `${customer.firstName || ""} ${customer.lastName || ""}`.trim() || customer.username || "Customer"
+            : `${customer.firstName || ""} ${customer.lastName || ""}`.trim() || customer.username || "Valued Customer",
+        customerBusinessName: customer.company || undefined,
+        customerEmail: customer.email || "",
+        customerAddress: this.getFullCustomerAddress(order, customer),
+        customerPhone: customer.phone || "",
+        orderDate: new Date(order.createdAt || new Date()).toLocaleDateString("en-US"),
+        orderType: order.orderType || "pickup",
+        items: itemsWithProductInfo.map((it: any) => ({
+          name: it.productName || "Unknown Item",
+          sku: it.sku || "",
+          quantity: it.quantity || 1,
+          price: it.price || 0,
+          total: (it.price || 0) * (it.quantity || 1),
+          hasIlTobaccoTax: !!it.hasIlTobaccoTax,
+          flatTaxAmount: it.flatTaxAmount || 0,
+          flatTaxName: it.flatTaxName || "",
+        })),
+        subtotal: fromC(itemsSubtotalC),
+        deliveryFee: fromC(deliveryFeeC),
+        total: fromC(finalTotalC),
+        paymentMethod: order.paymentMethod || "cash",
+        orderStatus: order.status || "completed",
+        customerNotes: order.notes || "",
+        loyaltyPointsRedeemed: order.loyaltyPointsRedeemed || 0,
+        loyaltyPointsValue: fromC(loyaltyDiscountC),
+        totalFlatTax: fromC(totalFlatTaxC),
+        flatTaxBreakdown,
+        hasIlTobaccoProducts: itemsWithProductInfo.some((it: any) => !!it.hasIlTobaccoTax),
+        loyaltyPointsEarned,
+      };
+
+      // Credit info — ALWAYS show (even if 0.00)
+      const creditInfo = await this.calculatePreviousBalance(customer.id, order.id);
+      receiptData.creditAccountInfo = {
+        previousBalance: creditInfo.previousBalance,
+        currentBalance: creditInfo.currentBalance,
+        creditLimit: creditInfo.creditLimit,
+        paymentMethod: order.paymentMethod,
+      };
+
+      // Generate PDF
+      const pdfBuffer = await this.generateReceiptPDF(
+        receiptData,
+        {
+          invariantOk: true,
+          subtotalBeforeDeliveryC: itemsSubtotalC + totalFlatTaxC,
+          finalTotalC,
+          deliveryFeeC,
+          loyaltyDiscountC
+        }
+      );
+      if (!pdfBuffer) return { success: false, message: "Failed to generate PDF buffer" };
+      return { success: true, pdfBuffer };
+    } catch (error: any) {
+      return { success: false, message: `Error generating receipt: ${error?.message || "Unknown error"}` };
+    }
+  }
+
+  // ---------- PDF generator (switchable designs) ----------
+  private async generateReceiptPDF(
+    receiptData: ReceiptData,
+    diag?: { invariantOk: boolean; subtotalBeforeDeliveryC: number; finalTotalC: number; deliveryFeeC: number; loyaltyDiscountC: number }
+  ): Promise<Buffer> {
+    const { jsPDF } = await import("jspdf");
+    const fs = await import("fs");
+    const path = await import("path");
+    const doc = new jsPDF();
+
+    const pageWidth = doc.internal.pageSize.width;
+    const pageHeight = doc.internal.pageSize.height;
+
+    return await this.generatePremiumInvoice(doc, receiptData, fs, path, pageWidth, pageHeight);
+  }
+
+  // ---------- Pagination helper ----------
+  private ensureRoom(doc: any, y: number, needed: number, pageHeight: number, newPageTop = 20) {
+    if (y + needed > pageHeight - 30) {
+      doc.addPage();
+      return newPageTop;
+    }
+    return y;
+  }
+
+  // ---------- Premium PDF ----------
+  private async generatePremiumInvoice(
+    doc: any,
+    receiptData: ReceiptData,
+    fs: any,
+    path: any,
+    pageWidth: number,
+    pageHeight: number
+  ): Promise<Buffer> {
+    // Brand colors
+    const professionalNavy = [52, 73, 94] as const;
+    const subtleGray = [248, 249, 250] as const;
+    const darkGray = [44, 62, 80] as const;
+    const lightGray = [236, 240, 241] as const;
+    const successGreen = [39, 174, 96] as const;
+    const alertOrange = [230, 126, 34] as const;
+    const textDark = [33, 37, 41] as const;
+
+    // Header background + rule
+    doc.setFillColor(...subtleGray);
+    doc.rect(0, 0, pageWidth, 45, "F");
+    doc.setDrawColor(...professionalNavy);
+    doc.setLineWidth(0.5);
+    doc.line(0, 45, pageWidth, 45);
+
+    // Logo
+    try {
+      const logoPath = path.join(process.cwd(), "public", "gokul-logo.png");
+      if (fs.existsSync(logoPath)) {
+        const logoData = fs.readFileSync(logoPath);
+        const logoBase64 = `data:image/png;base64,${logoData.toString("base64")}`;
+        doc.setFillColor(255, 255, 255);
+        doc.circle(25, 20, 12, "F");
+        doc.addImage(logoBase64, "PNG", 15, 10, 20, 20);
+      }
+    } catch { /* ignore */ }
+
+    // Company
+    doc.setTextColor(...professionalNavy);
+    doc.setFontSize(22);
+    doc.setFont('helvetica', 'bold');
+    doc.text(COMPANY.name, 50, 22);
+
+    doc.setTextColor(...textDark);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(COMPANY.address, 50, 30);
+    doc.text(`${COMPANY.phone} | ${COMPANY.email}`, 50, 36);
+    doc.text(COMPANY.tp, 50, 42);
+
+    // Order info
+    doc.setTextColor(...professionalNavy);
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Order #${receiptData.orderNumber}`, pageWidth - 20, 22, { align: "right" });
+    doc.setTextColor(...textDark);
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Date: ${receiptData.orderDate}`, pageWidth - 20, 32, { align: "right" });
+
+    let currentY = 55;
+
+    // Customer panel
+    doc.setFillColor(...lightGray);
+    doc.rect(10, currentY, pageWidth - 20, 25, "F");
+
+    doc.setTextColor(...textDark);
+    doc.setFontSize(14);
+    doc.text("Customer Information", 15, currentY + 8);
+
+    doc.setFontSize(11);
+    doc.text(`${receiptData.customerName}`, 15, currentY + 16);
+
+    if (receiptData.customerAddress && receiptData.customerAddress.trim() !== '') {
+      doc.text(`${receiptData.customerAddress}`, 15, currentY + 22);
+    } else if (receiptData.customerBusinessName && receiptData.customerBusinessName !== receiptData.customerName) {
+      doc.text(`${receiptData.customerBusinessName}`, 15, currentY + 22);
+    }
+
+    if (receiptData.customerEmail) {
+      doc.text(`Email: ${receiptData.customerEmail}`, pageWidth/2, currentY + 16);
+    }
+    if (receiptData.customerPhone) {
+      doc.text(`Phone: ${receiptData.customerPhone}`, pageWidth/2, currentY + 22);
+    }
+
+    currentY += 35;
+
+    // Items table header
+    doc.setFillColor(...professionalNavy);
+    doc.rect(10, currentY, pageWidth - 20, 12, "F");
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text("Item Description", 15, currentY + 8);
+    doc.text("SKU", 105, currentY + 8);
+    doc.text("Qty", pageWidth - 70, currentY + 8);
+    doc.text("Unit Price", pageWidth - 50, currentY + 8);
+    doc.text("Total", pageWidth - 20, currentY + 8);
+
+    currentY += 15;
+
+    // Items
+    doc.setTextColor(...textDark);
+    doc.setFontSize(10);
+    for (const item of receiptData.items) {
+      currentY = this.ensureRoom(doc, currentY, 10, pageHeight);
+      const maxNameWidth = 85;
+      const itemName = doc.splitTextToSize(item.name, maxNameWidth)[0] || item.name;
+      doc.text(itemName, 15, currentY);
+      const truncatedSku = (item.sku || "N/A").substring(0, 15);
+      doc.text(truncatedSku, 105, currentY);
+      doc.text(String(item.quantity), pageWidth - 70, currentY);
+      doc.text(USD.format(item.price), pageWidth - 50, currentY);
+      doc.text(USD.format(item.total), pageWidth - 20, currentY, { align: "right" });
+      currentY += 10;
+    }
+
+    currentY += 5;
+
+    // Totals section rule
+    doc.setDrawColor(...lightGray);
+    doc.line(pageWidth - 120, currentY, pageWidth - 15, currentY);
+    currentY += 10;
+
+    // Subtotal & taxes (right column)
+    doc.setFontSize(11);
+    doc.text("Items Subtotal:", pageWidth - 90, currentY);
+    doc.text(USD.format(receiptData.subtotal), pageWidth - 20, currentY, { align: "right" });
+    currentY += 8;
+
+    if (receiptData.flatTaxBreakdown && receiptData.flatTaxBreakdown.length > 0) {
+      for (const tax of receiptData.flatTaxBreakdown) {
+        const shortTaxName = tax.name
+          .replace("Cook County Large Cigar", "Cook Co. Lg Cigar")
+          .replace("Large", "Lg")
+          .substring(0, 30);
+        doc.text(`${shortTaxName}:`, pageWidth - 90, currentY);
+        doc.text(USD.format(tax.amount), pageWidth - 20, currentY, { align: "right" });
+        currentY += 8;
+      }
+    }
+
+    if (receiptData.deliveryFee > 0) {
+      doc.text("Delivery Fee:", pageWidth - 90, currentY);
+      doc.text(USD.format(receiptData.deliveryFee), pageWidth - 20, currentY, { align: "right" });
+      currentY += 8;
+    }
+
+    if (receiptData.loyaltyPointsValue && receiptData.loyaltyPointsValue > 0) {
+      doc.text("Loyalty Discount:", pageWidth - 90, currentY);
+      doc.text(`-${USD.format(receiptData.loyaltyPointsValue)}`, pageWidth - 20, currentY, { align: "right" });
+      currentY += 8;
+    }
+
+    // Final total rule
+    currentY += 2;
+    doc.setDrawColor(...textDark);
+    doc.line(pageWidth - 120, currentY, pageWidth - 15, currentY);
+    currentY += 6;
+
+    // TOTAL (right)
+    doc.setFontSize(12);
+    doc.setTextColor(...textDark);
+    doc.setFont('helvetica', 'bold');
+    doc.text("TOTAL:", pageWidth - 90, currentY);
+    doc.text(USD.format(receiptData.total), pageWidth - 20, currentY, { align: "right" });
+
+    // ===== New: Previous Balance & Amount Due block (LEFT of TOTAL) =====
+    const prev = Number(receiptData.creditAccountInfo?.previousBalance || 0);
+    const amountDue = prev + Number(receiptData.total || 0);
+
+    // left column box aligned with TOTAL row
+    const leftBlockX = 15;
+    const leftBlockW = pageWidth - 140; // space left of the right totals column
+    const leftBlockY = currentY - 8;    // visually aligned with TOTAL
+    const leftBlockH = 16;
+
+    // (optional) subtle box to match style
+    doc.setDrawColor(...lightGray);
+    doc.rect(leftBlockX, leftBlockY, leftBlockW, leftBlockH);
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.setTextColor(...textDark);
+    doc.text("Previous Balance:", leftBlockX + 4, leftBlockY + 6);
+    doc.text(USD.format(prev), leftBlockX + leftBlockW - 4, leftBlockY + 6, { align: "right" });
+
+    doc.text("Amount Due (Prev + This):", leftBlockX + 4, leftBlockY + 12);
+    doc.text(USD.format(amountDue), leftBlockX + leftBlockW - 4, leftBlockY + 12, { align: "right" });
+    // ===== End Previous Balance block =====
+
+    currentY += 15;
+
+    // Payment method (optional)
+    if (receiptData.paymentMethod && receiptData.orderStatus === "completed") {
+      doc.setTextColor(...textDark);
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Payment Method: ${receiptData.paymentMethod.replace(/_/g, ' ').toUpperCase()}`, 15, currentY);
+      currentY += 15;
+    }
+
+    // ---- Credit account summary box at bottom (KEEP or REMOVE) ----
+    if (receiptData.creditAccountInfo) {
+      doc.setFillColor(...lightGray);
+      doc.rect(15, currentY, pageWidth - 30, 25, "F");
+      doc.setTextColor(...textDark);
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.text("Credit Account Summary", 20, currentY + 8);
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Previous Balance: ${USD.format(prev)}`, 20, currentY + 16);
+      doc.text(`Current Balance: ${USD.format(amountDue)}`, 20, currentY + 22);
+      doc.text(`Credit Limit: ${USD.format(receiptData.creditAccountInfo.creditLimit)}`, pageWidth - 100, currentY + 16);
+      currentY += 35;
+      // If you don't want this bottom box anymore, comment this whole block.
+    }
+
+    // ---- Loyalty Points Earned banner (re-added/kept) ----
+    if (typeof receiptData.loyaltyPointsEarned === "number") {
+      currentY += 5;
+      doc.setFillColor(240, 248, 240);
+      doc.rect(15, currentY - 3, pageWidth - 30, 12, "F");
+      doc.setTextColor(...successGreen);
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`Loyalty Points Earned: ${receiptData.loyaltyPointsEarned} points`, 20, currentY + 5);
+      currentY += 20;
+      doc.setTextColor(...textDark);
+      doc.setFont('helvetica', 'normal');
+    }
+
+    // Tobacco compliance box (bottom-left small)
+    const taxBoxY = pageHeight - 40;
+    const taxBoxWidth = 80;
+    const taxBoxHeight = 10;
+    doc.setDrawColor(...alertOrange);
+    doc.setLineWidth(1);
+    doc.rect(15, taxBoxY, taxBoxWidth, taxBoxHeight);
+    doc.setTextColor(...alertOrange);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.text("45% IL TOBACCO TAX PAID", 55, taxBoxY + 6, { align: "center" });
+
+    // Footer
+    const footerY = pageHeight - 25;
+    doc.setTextColor(...textDark);
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text("Thank you for your business!", pageWidth/2, footerY, { align: "center" });
+    doc.text(COMPANY.website, pageWidth/2, footerY + 8, { align: "center" });
+
+    // Output
+    const pdfData = doc.output("arraybuffer");
+    const buffer = Buffer.from(pdfData);
+    return buffer;
+  }
+
+  // ---------- Generate and Email Receipt ----------
+  async generateAndSendReceipt(orderId: number, isManual: boolean = false): Promise<{ success: boolean; message?: string }> {
+    try {
+      const pdfResult = await this.generateReceiptOnly(orderId);
+      if (!pdfResult.success || !pdfResult.pdfBuffer) {
+        return { success: false, message: `Failed to generate PDF: ${pdfResult.message}` };
+      }
+      const order = await storage.getOrderWithItems(orderId);
+      if (!order) return { success: false, message: "Order not found" };
+      const customer = await storage.getUser(order.userId);
+      if (!customer) return { success: false, message: "Customer not found" };
+      if (!customer.email) return { success: false, message: "Customer email not found" };
+
+      const timestamp = Date.now();
+      const filename = `invoice-${order.id}-${timestamp}.pdf`;
+
+      const emailService = EmailService.getInstance();
+      const emailData = {
+        to: customer.email,
+        customerName: customer.firstName || customer.username,
+        orderNumber: order.id.toString(),
+        orderTotal: order.total,
+        language: (customer as any).preferredLanguage || "en",
+      };
+
+      const ok = await emailService.sendEmailWithAttachment(emailData, "receipt", pdfResult.pdfBuffer, filename);
+      if (ok === true) {
+        return { success: true, message: `Receipt sent successfully to ${customer.email}` };
+      }
+      return { success: false, message: `Failed to send email: Email service returned false` };
+    } catch (error: any) {
+      return { success: false, message: `Error sending receipt: ${error?.message || "Unknown error"}` };
+    }
+  }
+}
+
+// Create and export the singleton instance
+export const receiptGenerator = ReceiptGenerator.getInstance();

@@ -1,0 +1,77 @@
+// ---------- Totals (compact right), then full-width Account Summary ----------
+currentY += 2;
+doc.setDrawColor(...textDark);
+doc.line(pageWidth - 120, currentY, pageWidth - 15, currentY);
+currentY += 5;
+
+// Right-column: Total (This Order) — slightly smaller
+doc.setFontSize(11);
+doc.setTextColor(...textDark);
+doc.setFont('helvetica', 'bold');
+doc.text("Total (This Order):", pageWidth - 90, currentY);
+doc.text(USD.format(receiptData.total), pageWidth - 20, currentY, { align: "right" });
+
+currentY += 10;
+
+// Full-width “Account Summary” panel under totals
+const panelX = 10;
+const panelW = pageWidth - 20;
+const rowH  = 8;
+const rows  = 3;
+const panelH = 10 + rows * rowH; // header + rows
+
+// Ensure space; add page if needed
+currentY = this.ensureRoom(doc, currentY, panelH + 8, pageHeight);
+
+doc.setFillColor(245, 246, 248);
+doc.setDrawColor(220, 224, 230);
+doc.rect(panelX, currentY, panelW, panelH, "F");
+doc.rect(panelX, currentY, panelW, panelH);
+
+// header
+doc.setFont('helvetica', 'bold');
+doc.setFontSize(11);
+doc.setTextColor(52, 73, 94);
+doc.text("Account Summary", panelX + 5, currentY + 7);
+
+const valX = panelX + panelW - 5;
+let ry = currentY + 7 + 4; // first data row baseline
+
+// helper
+const KV = (label: string, value: string, bold = false) => {
+  doc.setFont('helvetica', bold ? 'bold' : 'normal');
+  doc.setTextColor(33, 37, 41);
+  doc.setFontSize(10);
+  ry += rowH;
+  doc.text(label, panelX + 5, ry);
+  doc.text(value, valX, ry, { align: "right" });
+};
+
+// values
+const prev = Number(receiptData.creditAccountInfo?.previousBalance || 0);
+const thisOrder = Number(receiptData.total || 0);
+const amountDue = prev + thisOrder;
+
+KV("Previous Balance", USD.format(prev));
+KV("This Order", USD.format(thisOrder));
+KV("Amount Due (Prev + This)", USD.format(amountDue), true);
+
+currentY += panelH + 8;
+
+// (Optional) remove bottom “Credit Account Summary” box to reduce clutter
+// If you want to keep it, delete the next line and keep your old block.
+// currentY = currentY; // no-op, just indicates we’re not adding another credit box here.
+
+// ---------- Loyalty Points Earned (after Account Summary) ----------
+if (typeof receiptData.loyaltyPointsEarned === "number") {
+  currentY = this.ensureRoom(doc, currentY, 16, pageHeight);
+  doc.setFillColor(240, 248, 240);
+  doc.rect(15, currentY, pageWidth - 30, 12, "F");
+  doc.setTextColor(39, 174, 96);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.text(`Loyalty Points Earned: ${receiptData.loyaltyPointsEarned} points`, 20, currentY + 8);
+  currentY += 18;
+  doc.setTextColor(...textDark);
+  doc.setFont('helvetica', 'normal');
+}

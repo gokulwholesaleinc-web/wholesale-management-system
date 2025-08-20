@@ -3,7 +3,7 @@
 
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-// Logo removed during cleanup - using text instead
+import gokulLogo from "@assets/IMG_0846.png";
 
 interface OrderItem {
   id: number;
@@ -82,7 +82,7 @@ export const generateOrderPDF = (order: Order, customerName?: string) => {
   // Compact company header with logo
   try {
     // Smaller logo image
-    // Logo removed during cleanup - using text instead
+    doc.addImage(gokulLogo, 'PNG', 20, 10, 25, 25);
     
     // Company header next to logo - more compact
     doc.setFontSize(16);

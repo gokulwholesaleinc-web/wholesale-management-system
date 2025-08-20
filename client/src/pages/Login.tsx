@@ -12,12 +12,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useToast } from "@/hooks/use-toast";
 import { login, logAuthStatus } from "@/lib/auth";
-// Unified auth removed during cleanup
+import { unifiedAuth } from "@/lib/unifiedAuth";
 import { queryClient } from "@/lib/queryClient";
 import { useLocation, Link } from "wouter";
 import { useBiometricAuth } from "@/hooks/useBiometricAuth";
 import { PasswordResetDialog } from "@/components/auth/PasswordResetDialog";
-// Logo removed during cleanup - using text instead
+import gokulLogo from "@assets/IMG_0846.png";
 
 // Login form schema
 const formSchema = z.object({
@@ -187,7 +187,11 @@ export default function Login() {
         {/* Header with logo */}
         <header className="py-5 bg-white shadow-sm">
           <div className="container mx-auto px-4 flex justify-center">
-            <span className="text-2xl font-bold text-blue-600">Gokul Wholesale</span>
+            <img 
+              src={gokulLogo} 
+              alt="Gokul Wholesale Logo" 
+              className="h-14 object-contain" 
+            />
           </div>
         </header>
 
@@ -351,9 +355,11 @@ export default function Login() {
         {/* Left side - centered content with larger logo */}
         <div className="w-1/2 flex flex-col justify-center items-center bg-gradient-to-br from-blue-600 to-blue-800 text-white px-16">
           <div className="text-center max-w-lg">
-            <div className="bg-white p-4 rounded-xl shadow-lg mb-8 mx-auto">
-              <span className="text-3xl font-bold text-blue-600">Gokul Wholesale</span>
-            </div>
+            <img 
+              src={gokulLogo} 
+              alt="Gokul Wholesale Logo" 
+              className="h-32 w-auto object-contain mx-auto mb-8 bg-white p-4 rounded-xl shadow-lg" 
+            />
             <h1 className="text-5xl font-bold mb-6">
               Welcome to<br />Gokul Wholesale
             </h1>
