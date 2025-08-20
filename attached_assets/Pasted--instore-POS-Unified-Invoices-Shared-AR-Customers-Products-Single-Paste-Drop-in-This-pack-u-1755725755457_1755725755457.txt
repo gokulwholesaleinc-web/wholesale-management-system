@@ -1,0 +1,672 @@
+# /instore POS – Unified Invoices & Shared AR/Customers/Products (Single‑Paste Drop‑in)
+
+This pack upgrades **/instore** (cash & carry) to be fast, offline‑friendly, and fully **unified** with your main app:
+
+* **One global invoice sequence** shared by both sides (main app and /instore)
+* Uses the **same DB** for **customers**, **products/inventory**, and **credit/A/R** (the `/ar` pack)
+* Offline cache + hotkeys + suspend/resume + tendering + printable receipts
+
+> Paste this to your Replit AI agent. It contains migrations, server endpoints, and client React code. Adjust import paths/table names where noted (⚙️ **Adjust**).
+
+---
+
+## 0) Dependencies (server + client)
+
+Run (or add to `package.json` and install):
+
+```
+pnpm add idb
+```
+
+(Optional printing bridge if you want ESC/POS now; HTML print works without it):
+
+```
+pnpm add escpos-buffer @node-escpos/usb  # optional
+```
+
+---
+
+## 1) SQL Migration – global invoice sequence + POS holds
+
+Create **`migrations/20250820_pos_unified_invoice.sql`**
+
+```sql
+-- 1) Create a single global invoice number sequence used by both main app and /instore
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_class WHERE relkind = 'S' AND relname = 'invoice_no_seq') THEN
+    CREATE SEQUENCE invoice_no_seq START 1 INCREMENT 1;
+
+    -- If you already have invoices with numeric invoice_no, seed the sequence to MAX+1
+    BEGIN
+      PERFORM setval('invoice_no_seq',
+        COALESCE((SELECT MAX((invoice_no)::bigint) FROM ar_invoices WHERE invoice_no ~ '^\\d+$'), 0) + 1,
+        false);
+    EXCEPTION WHEN undefined_table THEN
+      -- ar_invoices may not exist yet in some envs; ignore
+      NULL;
+    END;
+  END IF;
+END$$;
+
+-- 2) Ensure ar_invoices.invoice_no is auto-filled from the sequence if NULL
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.triggers
+    WHERE event_object_table = 'ar_invoices' AND trigger_name = 'trg_set_invoice_no'
+  ) THEN
+    CREATE OR REPLACE FUNCTION set_invoice_no_from_seq() RETURNS TRIGGER AS $$
+    BEGIN
+      IF NEW.invoice_no IS NULL OR NEW.invoice_no = '' THEN
+        NEW.invoice_no := nextval('invoice_no_seq')::text;
+      END IF;
+      RETURN NEW;
+    END;$$ LANGUAGE plpgsql;
+
+    CREATE TRIGGER trg_set_invoice_no
+    BEFORE INSERT ON ar_invoices
+    FOR EACH ROW EXECUTE FUNCTION set_invoice_no_from_seq();
+  END IF;
+END$$;
+
+-- 3) POS holds (suspend/resume sales)
+CREATE TABLE IF NOT EXISTS pos_holds (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  lane VARCHAR(32),
+  cashier_id UUID,
+  customer_id UUID,
+  payload JSONB NOT NULL,  -- serialized cart
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_pos_holds_lane ON pos_holds(lane);
+```
+
+> This guarantees that **both** main app and /instore use the same `invoice_no_seq` so invoice numbers keep running (…, 1, 2, 3, …) no matter which side creates the next invoice.
+
+---
+
+## 2) Server – POS services & routes (Express + Drizzle)
+
+### 2.1 `server/src/modules/pos/pos.service.ts`
+
+```ts
+// ⚙️ Adjust imports to your project paths
+import { db } from '../../db/client';
+import { sql, and, eq } from 'drizzle-orm';
+import { arInvoices, arInvoiceLines, arPayments } from '../../db/schema.ar';
+
+// ⚙️ Adjust to your products/customers tables
+// Expecting: products(id, sku, upc, name, price_cents, tax_class, case_size)
+//            customers(id, name, term, credit_limit_cents, on_credit_hold)
+
+export type TenderMethod = 'cash' | 'card' | 'ach' | 'terms';
+
+export async function upcLookup(upc: string) {
+  // ⚙️ Adjust column names
+  const { rows } = await db.execute(sql`
+    SELECT id, sku, upc, name, price_cents AS "priceCents", tax_class AS "taxClass", case_size AS "caseSize"
+    FROM products
+    WHERE upc = ${upc} OR sku = ${upc}
+    LIMIT 1
+  `);
+  return rows[0] || null;
+}
+
+export async function searchProducts(q: string, limit = 20) {
+  const { rows } = await db.execute(sql`
+    SELECT id, sku, upc, name, price_cents AS "priceCents"
+    FROM products
+    WHERE name ILIKE '%' || ${q} || '%' OR sku ILIKE '%' || ${q} || '%'
+    ORDER BY name
+    LIMIT ${limit}
+  `);
+  return rows;
+}
+
+export type PosLine = {
+  sku?: string; description: string; uom?: string;
+  quantity: number; unitPriceCents: number; taxCents?: number; productId?: string;
+};
+
+export async function createPosInvoice(input: {
+  customerId?: string; // optional for walk-in
+  lines: PosLine[];
+  tender: TenderMethod;
+  tenderRef?: string;  // last 4, txn id, etc.
+  cashGivenCents?: number; // for change calculation
+  lane?: string;
+}) {
+  // Compute totals
+  const subtotal = input.lines.reduce((s, l) => s + Math.round(l.quantity * l.unitPriceCents), 0);
+  const tax = input.lines.reduce((s, l) => s + (l.taxCents || 0), 0);
+  const total = subtotal + tax;
+
+  // Insert invoice; trigger assigns invoice_no from global sequence
+  const [inv] = await db.insert(arInvoices).values({
+    customerId: input.customerId || null,
+    subtotalCents: subtotal,
+    taxCents: tax,
+    totalCents: total,
+    balanceCents: total,
+    status: input.tender === 'terms' ? 'open' : 'open', // becomes paid after payment application
+  }).returning();
+
+  // Lines
+  await db.insert(arInvoiceLines).values(input.lines.map(l => ({
+    invoiceId: inv.id,
+    sku: l.sku,
+    description: l.description,
+    uom: l.uom,
+    quantity: String(l.quantity),
+    unitPriceCents: l.unitPriceCents,
+    lineSubtotalCents: Math.round(l.quantity * l.unitPriceCents),
+    taxCents: l.taxCents || 0,
+    totalCents: Math.round(l.quantity * l.unitPriceCents) + (l.taxCents || 0),
+  })));
+
+  // If not terms, record payment immediately
+  if (input.tender !== 'terms') {
+    const amt = total;
+    const [pmt] = await db.insert(arPayments).values({
+      customerId: input.customerId || inv.customerId || null,
+      method: input.tender,
+      reference: input.tenderRef,
+      amountCents: amt,
+      unappliedCents: amt,
+    }).returning();
+    // Auto-apply payment to invoice
+    await db.execute(sql`
+      INSERT INTO ar_payment_apps (payment_id, invoice_id, amount_cents)
+      VALUES (${pmt.id}, ${inv.id}, ${amt});
+      UPDATE ar_payments SET unapplied_cents = GREATEST(unapplied_cents - ${amt}, 0) WHERE id = ${pmt.id};
+    `);
+  }
+
+  // Refresh invoice to get balance/status and invoice_no
+  const { rows } = await db.execute(sql`SELECT id, invoice_no, total_cents, balance_cents, status FROM ar_invoices WHERE id = ${inv.id}`);
+  return rows[0];
+}
+```
+
+### 2.2 `server/src/modules/pos/pos.router.ts`
+
+```ts
+import { Router } from 'express';
+import { z } from 'zod';
+import { db } from '../../db/client';
+import { sql } from 'drizzle-orm';
+import { upcLookup, searchProducts, createPosInvoice } from './pos.service';
+
+export const posRouter = Router();
+
+// Health (printer etc.)
+posRouter.get('/health', async (_req, res) => {
+  // You can expand to check printer bridge connectivity
+  return res.json({ ok: true, printer: 'unknown', lastPrintAt: null });
+});
+
+// Local-first UPC lookup helper (server path)
+posRouter.get('/lookup', async (req, res) => {
+  const upc = String(req.query.q || '').trim();
+  if (!upc) return res.status(400).json({ error: 'missing query' });
+  const product = await upcLookup(upc);
+  return res.json({ product });
+});
+
+// Search for products
+nposRouter.get('/search', async (req, res) => {
+  const q = String(req.query.q || '').trim();
+  const rows = q ? await searchProducts(q) : [];
+  return res.json({ rows });
+});
+
+const SaleSchema = z.object({
+  customerId: z.string().uuid().optional(),
+  tender: z.enum(['cash','card','ach','terms']),
+  tenderRef: z.string().optional(),
+  cashGivenCents: z.number().int().nonnegative().optional(),
+  lane: z.string().max(32).optional(),
+  lines: z.array(z.object({
+    sku: z.string().optional(),
+    description: z.string(),
+    uom: z.string().optional(),
+    quantity: z.number().positive(),
+    unitPriceCents: z.number().int().nonnegative(),
+    taxCents: z.number().int().nonnegative().optional(),
+    productId: z.string().uuid().optional(),
+  })).min(1),
+});
+
+// Create a POS sale (creates ar_invoice; applies payment unless terms)
+posRouter.post('/sale', async (req, res) => {
+  const p = SaleSchema.safeParse(req.body);
+  if (!p.success) return res.status(400).json({ error: 'invalid payload' });
+
+  // If terms, rely on global enforceCredit middleware already on orders
+  const inv = await createPosInvoice(p.data);
+  return res.json({ invoice: inv });
+});
+
+// Suspend/Resume
+nposRouter.post('/hold', async (req, res) => {
+  const payload = req.body; // pass through cart object
+  const { rows } = await db.execute(sql`INSERT INTO pos_holds (lane, cashier_id, customer_id, payload) VALUES (${payload.lane || null}, ${payload.cashierId || null}, ${payload.customerId || null}, ${payload}) RETURNING id, created_at`);
+  return res.json({ id: rows[0].id, createdAt: rows[0].created_at });
+});
+
+nposRouter.get('/holds', async (_req, res) => {
+  const { rows } = await db.execute(sql`SELECT id, lane, customer_id, created_at FROM pos_holds ORDER BY created_at DESC LIMIT 50`);
+  return res.json({ rows });
+});
+
+nposRouter.post('/resume', async (req, res) => {
+  const id = req.body?.id as string;
+  if (!id) return res.status(400).json({ error: 'missing id' });
+  const { rows } = await db.execute(sql`SELECT id, payload FROM pos_holds WHERE id = ${id}`);
+  if (!rows.length) return res.status(404).json({ error: 'not found' });
+  await db.execute(sql`DELETE FROM pos_holds WHERE id = ${id}`);
+  return res.json({ payload: rows[0].payload });
+});
+
+export default posRouter;
+```
+
+### 2.3 Mount routes (feature-flag ready)
+
+In **`server/src/app.ts`** (⚙️ adjust path):
+
+```ts
+import posRouter from './modules/pos/pos.router';
+
+const POS_ENABLED = process.env.POS_ENABLED !== 'false';
+if (POS_ENABLED) {
+  app.use('/pos', posRouter);
+}
+```
+
+> This does **not** replace your existing order endpoints; it only adds /pos endpoints for /instore.
+
+---
+
+## 3) Client – /instore POS React (offline cache, hotkeys, tender)
+
+### 3.1 IndexedDB cache helpers
+
+Create **`client/src/instore/idb.ts`**
+
+```ts
+import { openDB } from 'idb';
+
+export const DB_NAME = 'instore-pos';
+export const DB_VERSION = 1;
+
+export async function getDB() {
+  return openDB(DB_NAME, DB_VERSION, {
+    upgrade(db) {
+      if (!db.objectStoreNames.contains('products')) db.createObjectStore('products', { keyPath: 'id' });
+      if (!db.objectStoreNames.contains('customers')) db.createObjectStore('customers', { keyPath: 'id' });
+      if (!db.objectStoreNames.contains('queue')) db.createObjectStore('queue', { keyPath: 'id', autoIncrement: true });
+    }
+  });
+}
+
+export async function cacheProducts(rows: any[]) {
+  const db = await getDB();
+  const tx = db.transaction('products', 'readwrite');
+  for (const r of rows) await tx.store.put(r);
+  await tx.done;
+}
+
+export async function findProductLocal(upcOrSku: string) {
+  const db = await getDB();
+  // naive scan for demo; consider an index in production
+  let hit: any = null;
+  const tx = db.transaction('products');
+  for await (const cursor of tx.store) {
+    const v = cursor.value as any;
+    if (v.upc === upcOrSku || v.sku === upcOrSku) { hit = v; break; }
+  }
+  return hit;
+}
+
+export async function queueAction(action: any) {
+  const db = await getDB();
+  await db.add('queue', { ts: Date.now(), action });
+}
+
+export async function drainQueue(processor: (item: any) => Promise<void>) {
+  const db = await getDB();
+  const tx = db.transaction('queue', 'readwrite');
+  for await (const cursor of tx.store) {
+    const item = cursor.value;
+    await processor(item.action);
+    await cursor.delete();
+  }
+  await tx.done;
+}
+```
+
+### 3.2 Service worker registration (basic)
+
+Create **`client/src/instore/swRegister.ts`**
+
+```ts
+export function registerSW() {
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/instore-sw.js').catch(console.error);
+    });
+  }
+}
+```
+
+Create **`public/instore-sw.js`** (simple cache shell)
+
+```js
+self.addEventListener('install', (evt) => {
+  evt.waitUntil(caches.open('instore-shell-v1').then(cache => cache.addAll([
+    '/', '/instore', '/favicon.ico'
+  ])));
+});
+self.addEventListener('fetch', (evt) => {
+  evt.respondWith(
+    caches.match(evt.request).then(resp => resp || fetch(evt.request))
+  );
+});
+```
+
+### 3.3 POS app UI
+
+Create **`client/src/instore/PosApp.tsx`**
+
+```tsx
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { cacheProducts, findProductLocal, queueAction, drainQueue } from './idb';
+import { registerSW } from './swRegister';
+
+// ⚙️ Simple fetch helper
+async function jfetch(url: string, opts?: RequestInit) {
+  const r = await fetch(url, { headers: { 'Content-Type': 'application/json' }, ...opts });
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+
+// Types
+type CartLine = { key: string; sku?: string; description: string; qty: number; uom?: string; unitPriceCents: number; taxCents?: number };
+
+export default function PosApp() {
+  const [cart, setCart] = useState<CartLine[]>([]);
+  const [status, setStatus] = useState<string>('Ready');
+  const [search, setSearch] = useState('');
+  const [holds, setHolds] = useState<any[]>([]);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => { registerSW(); focusScan(); }, []);
+  function focusScan(){ setTimeout(()=>inputRef.current?.focus(), 0); }
+
+  // Hotkeys
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'F10') { e.preventDefault(); tender(); }
+      if (e.key === 'F8') { e.preventDefault(); suspend(); }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [cart]);
+
+  async function addByScan(text: string) {
+    const code = text.trim();
+    if (!code) return;
+    setSearch('');
+
+    // Local-first
+    let p = await findProductLocal(code);
+    if (!p) {
+      try { p = (await jfetch(`/pos/lookup?q=${encodeURIComponent(code)}`)).product; } catch {}
+      if (p) cacheProducts([p]);
+    }
+    if (!p) { setStatus(`Not found: ${code}`); return; }
+
+    setCart(prev => {
+      const idx = prev.findIndex(l => l.sku === p.sku || l.description === p.name);
+      if (idx >= 0) {
+        const next = [...prev];
+        next[idx] = { ...next[idx], qty: next[idx].qty + 1 };
+        return next;
+      }
+      return [...prev, { key: crypto.randomUUID(), sku: p.sku, description: p.name, qty: 1, unitPriceCents: p.priceCents }];
+    });
+    setStatus('Added');
+  }
+
+  function lineTotalCents(l: CartLine){ return l.qty * l.unitPriceCents + (l.taxCents||0); }
+  const subtotalCents = useMemo(()=> cart.reduce((s,l)=> s + l.qty*l.unitPriceCents,0), [cart]);
+  const taxCents = useMemo(()=> cart.reduce((s,l)=> s + (l.taxCents||0),0), [cart]);
+  const totalCents = subtotalCents + taxCents;
+
+  async function tender(method: 'cash'|'card'|'ach'|'terms' = 'cash') {
+    if (!cart.length) return;
+    const payload = {
+      tender: method,
+      lines: cart.map(l => ({ description: l.description, quantity: l.qty, unitPriceCents: l.unitPriceCents, taxCents: l.taxCents || 0, sku: l.sku }))
+    };
+
+    // Try online; if offline, queue
+    try {
+      const res = await jfetch('/pos/sale', { method: 'POST', body: JSON.stringify(payload) });
+      setStatus(`Sold. Invoice #${res.invoice.invoice_no}`);
+      window.print();
+      setCart([]);
+    } catch (e) {
+      setStatus('Offline: queued sale');
+      await queueAction({ type: 'sale', payload });
+      setCart([]);
+    }
+  }
+
+  async function processQueue() {
+    try {
+      await drainQueue(async (action) => {
+        if (action.type === 'sale') await jfetch('/pos/sale', { method: 'POST', body: JSON.stringify(action.payload) });
+      });
+      setStatus('Queued sales synced');
+    } catch (e) {
+      setStatus('Some queued items failed');
+    }
+  }
+
+  async function suspend(){
+    const payload = { lane: 'L1', payload: { cart } };
+    try {
+      await jfetch('/pos/hold', { method: 'POST', body: JSON.stringify(payload) });
+      setCart([]); setStatus('Suspended');
+    } catch (e) { setStatus('Suspend failed'); }
+  }
+
+  async function loadHolds(){
+    const r = await jfetch('/pos/holds'); setHolds(r.rows);
+  }
+
+  async function resume(id: string){
+    const r = await jfetch('/pos/resume', { method:'POST', body: JSON.stringify({ id }) });
+    const payload = r.payload?.payload || r.payload; // unwrap
+    if (payload?.cart) setCart(payload.cart);
+  }
+
+  return (
+    <div className="p-4 grid grid-cols-3 gap-4">
+      <div className="col-span-2">
+        <div className="mb-3 flex gap-2 items-center">
+          <input ref={inputRef} value={search} onChange={e=>setSearch(e.target.value)} onKeyDown={e=>{ if(e.key==='Enter'){ addByScan(search); } }} placeholder="Scan UPC / enter SKU" className="input input-bordered w-full"/>
+          <button className="btn" onClick={()=>addByScan(search)}>Add</button>
+        </div>
+        <div className="border rounded">
+          <table className="w-full text-sm">
+            <thead><tr className="bg-gray-100"><th className="text-left p-2">Item</th><th>Qty</th><th>Unit</th><th>Total</th></tr></thead>
+            <tbody>
+              {cart.map(l=> (
+                <tr key={l.key}>
+                  <td className="p-2">{l.description}</td>
+                  <td className="text-center">
+                    <div className="inline-flex gap-1">
+                      <button className="btn btn-xs" onClick={()=>setCart(c=>c.map(x=>x.key===l.key?{...x, qty: Math.max(1,x.qty-1)}:x))}>-</button>
+                      <span className="px-2">{l.qty}</span>
+                      <button className="btn btn-xs" onClick={()=>setCart(c=>c.map(x=>x.key===l.key?{...x, qty: x.qty+1}:x))}>+</button>
+                    </div>
+                  </td>
+                  <td className="text-right">${(l.unitPriceCents/100).toFixed(2)}</td>
+                  <td className="text-right pr-2">${(lineTotalCents(l)/100).toFixed(2)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div>
+        <div className="border rounded p-3 space-y-2">
+          <div className="flex justify-between"><span>Subtotal</span><b>${(subtotalCents/100).toFixed(2)}</b></div>
+          <div className="flex justify-between"><span>Tax</span><b>${(taxCents/100).toFixed(2)}</b></div>
+          <div className="flex justify-between text-lg"><span>Total</span><b>${(totalCents/100).toFixed(2)}</b></div>
+          <div className="grid grid-cols-2 gap-2 mt-3">
+            <button className="btn" onClick={()=>tender('cash')}>Cash (F10)</button>
+            <button className="btn" onClick={()=>tender('card')}>Card</button>
+            <button className="btn" onClick={()=>tender('terms')}>On Account</button>
+            <button className="btn" onClick={suspend}>Suspend (F8)</button>
+          </div>
+          <div className="mt-3 text-xs text-gray-500">Status: {status}</div>
+          <div className="mt-2 flex gap-2">
+            <button className="btn btn-sm" onClick={processQueue}>Sync Queue</button>
+            <button className="btn btn-sm" onClick={loadHolds}>Reload Holds</button>
+          </div>
+          <div className="mt-2 max-h-40 overflow-auto border rounded">
+            <table className="w-full text-xs">
+              <thead><tr className="bg-gray-50"><th className="text-left p-1">Hold</th><th className="p-1">Action</th></tr></thead>
+              <tbody>
+                {holds.map(h=> (
+                  <tr key={h.id}><td className="p-1">{h.id.slice(0,8)} · {new Date(h.created_at).toLocaleString()}</td>
+                  <td className="p-1 text-right"><button className="btn btn-xs" onClick={()=>resume(h.id)}>Resume</button></td></tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+### 3.4 Route entry for /instore
+
+Create **`client/src/pages/InstorePage.tsx`** (⚙️ adjust routing if you use react-router):
+
+```tsx
+import React from 'react';
+import PosApp from '../instore/PosApp';
+export default function InstorePage(){ return <PosApp/>; }
+```
+
+Wire it into your router (⚙️ **Adjust**):
+
+```tsx
+// in your app router
+<Route path="/instore" element={<InstorePage/>} />
+```
+
+---
+
+## 4) Unified Invoice Numbers – how both sides stay in lockstep
+
+* The **Postgres sequence** `invoice_no_seq` is the *single source of truth*.
+* The **trigger** `trg_set_invoice_no` on `ar_invoices` assigns `invoice_no` automatically on insert when it’s empty.
+* That means: if main app makes invoice #1, the next invoice created by /instore will be #2 (and vice‑versa) with **no race conditions**.
+* You don’t need to pre‑reserve numbers; simply insert and read back `invoice_no`.
+
+> If your main app has a separate invoice creation path, ensure it inserts into `ar_invoices` (or calls the `createInvoice`/`createPosInvoice`) so it also uses the same sequence.
+
+---
+
+## 5) Credit & Customers & Inventory – shared
+
+* **Credit management**: /instore uses the same A/R tables. If a sale is **terms**, it creates an **open** invoice; cash/card/ACH auto‑apply a payment.
+* **Customers**: You can pass `customerId` for account customers; otherwise walk‑in sales omit it.
+* **Inventory/products**: The UPC/SKU lookup hits the shared `products` table. (⚙️ adjust column names once.)
+
+---
+
+## 6) Optional Add‑Ons (quick patches)
+
+### 6.1 Manager price override (server hook)
+
+```ts
+// server/src/modules/pos/override.guard.ts
+export function allowManagerOverride(req: any, _res: any, next: any) {
+  const role = req.user?.role;
+  const wants = req.headers['x-price-override'] === 'true' || req.body?.override === true;
+  if (wants && (role === 'Admin' || role === 'Manager')) req.allowOverride = true;
+  next();
+}
+```
+
+Use client to send `x-price-override: true` and allow line overrides; log to audit.
+
+### 6.2 Age check stub (scan PDF417 from driver’s license)
+
+```ts
+// client/src/instore/ageCheck.ts
+export function isOfAgeFromDob(dobISO: string, minYears = 21) {
+  const dob = new Date(dobISO);
+  const now = new Date();
+  const y = now.getFullYear() - dob.getFullYear();
+  if (y > minYears) return true;
+  if (y < minYears) return false;
+  const m = now.getMonth() - dob.getMonth();
+  if (m > 0) return true; if (m < 0) return false;
+  return now.getDate() >= dob.getDate();
+}
+```
+
+Integrate with a PDF417 decoder library later; block tender if underage unless manager override.
+
+### 6.3 Basic receipt HTML (prints via browser)
+
+```tsx
+// client/src/instore/Receipt.tsx (example usage after sale)
+export function Receipt({ lines, totals, invoiceNo }: any){
+  return (
+    <div className="print-area">
+      <div>Gokul Wholesale Inc.</div>
+      <div>Invoice #{invoiceNo}</div>
+      <hr/>
+      {lines.map((l:any)=> <div key={l.key}>{l.description} x{l.qty} @ ${(l.unitPriceCents/100).toFixed(2)}</div>)}
+      <hr/>
+      <div>Subtotal: ${(totals.sub/100).toFixed(2)}</div>
+      <div>Tax: ${(totals.tax/100).toFixed(2)}</div>
+      <div><b>Total: ${(totals.t/100).toFixed(2)}</b></div>
+    </div>
+  );
+}
+```
+
+---
+
+## 7) Test Plan (5 minutes)
+
+1. Run migration. Confirm `invoice_no_seq` exists and `ar_invoices` trigger is present.
+2. Open `/instore` in browser, scan or type a known SKU/UPC; add to cart.
+3. Press **F10** (Cash). Expect response `{ invoice: { invoice_no: '1', ... } }` (or next number). Browser prints receipt; cart clears.
+4. Repeat → invoice numbers increment globally; create an invoice from main app → next /instore sale should get the subsequent number.
+5. Turn off Wi‑Fi: make a sale → it queues; restore Wi‑Fi → press **Sync Queue**; verify it posts and gets an invoice number.
+
+---
+
+## 8) Notes
+
+* Keep all server monetary values in **cents**.
+* If you already emit your own order invoices, ensure they are inserted into `ar_invoices` (or call `createInvoice`) so numbering stays unified.
+* Add your credit enforcement if you allow **terms** at the counter; for cash/card the A/R is auto‑paid.
+
+---
+
+**Done.** This gives you a production‑lean POS foundation with shared invoice numbers, A/R, customers, and products—all in one paste. Next upgrades (when ready): keyboard map overlay, quick cash buttons for exact change, printer health ping, and age‑restricted product rules hooked to your tax classes.

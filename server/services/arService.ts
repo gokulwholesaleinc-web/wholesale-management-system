@@ -1,6 +1,6 @@
 import { and, desc, eq, gt, lte, sql } from 'drizzle-orm';
 import { db } from '../db';
-import { arInvoices, arInvoiceLines, arPayments, arPaymentApps, type CreditTerm, type PaymentMethod, type ArInvoice, type InsertArInvoice } from '../../shared/ar-schema';
+import { arInvoices, arInvoiceLines, arPayments, arPaymentApps, type CreditTerm, type PaymentMethod, type ArInvoice, type InsertArInvoice } from '../../shared/schema';
 
 export type { CreditTerm, PaymentMethod };
 

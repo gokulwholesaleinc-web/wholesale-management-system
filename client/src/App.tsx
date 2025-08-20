@@ -57,6 +57,8 @@ import AdminInvoices from "@/pages/AdminInvoices";
 import AdminTaxManagerPage from "@/pages/AdminTaxManagerPage";
 import AdminOrderSettings from "@/pages/AdminOrderSettings";
 import { ActivityLog } from "@/components/admin/ActivityLog";
+import AccountsReceivable from "@/pages/AccountsReceivable";
+import CreditTermsManagement from "@/pages/CreditTermsManagement";
 // InstoreLoginNew removed - POS system handles its own authentication
 import PosApp from "@/pages/pos/PosApp";
 import NewOrdersPage from "@/pages/NewOrdersPage";
@@ -246,6 +248,12 @@ function App() {
           </Route>
           <Route path="/admin/credit-management">
             <AdminProtectedRoute component={AdminCreditManagement} />
+          </Route>
+          <Route path="/admin/accounts-receivable">
+            <AdminProtectedRoute component={AccountsReceivable} />
+          </Route>
+          <Route path="/admin/credit-terms">
+            <AdminProtectedRoute component={CreditTermsManagement} />
           </Route>
           {/* In-Store POS System Routes - Completely isolated from main app */}
           <Route path="/instore/:path*">

@@ -1,5 +1,6 @@
 import express, { type Express } from "express";
 import { createServer, type Server } from "http";
+import arRoutes from './routes/ar-routes';
 import { storage } from "./storage";
 import { z } from "zod";
 import {
@@ -7905,6 +7906,9 @@ Recommend 3-4 products from our inventory that match current trends. Respond wit
   
   // New secure password reset routes
   app.use(authResetRouter);
+  
+  // Accounts Receivable routes
+  app.use('/api', arRoutes);
 
   // ✅ NOTIFICATION ENDPOINTS FOR REGISTRY INTEGRATION
   // These endpoints bridge the notification registry to the actual SMS/email services

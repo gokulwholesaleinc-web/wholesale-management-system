@@ -15,6 +15,8 @@ import {
   primaryKey,
   numeric,
   decimal,
+  bigint,
+  uuid,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
@@ -83,6 +85,10 @@ export const users = pgTable("users", {
   creditLimit: doublePrecision("credit_limit").default(0),
   currentBalance: doublePrecision("current_balance").default(0),
   paymentTerms: varchar("payment_terms"),
+  // A/R Credit Terms & Limits (cents-based for precision)
+  creditTerm: varchar("credit_term", { length: 16 }).default('Prepaid').notNull(),
+  creditLimitCents: bigint("credit_limit_cents", { mode: 'number' }).default(0).notNull(),
+  onCreditHold: boolean("on_credit_hold").default(false).notNull(),
   taxExempt: boolean("tax_exempt").default(false),
   taxExemptionNumber: varchar("tax_exemption_number"),
   // Additional details
@@ -1878,3 +1884,111 @@ export type EndOfDayReport = typeof endOfDayReports.$inferSelect;
 export type InsertEndOfDayReport = typeof endOfDayReports.$inferInsert;
 export type ManagerOverride = typeof managerOverrides.$inferSelect;
 export type InsertManagerOverride = typeof managerOverrides.$inferInsert;
+
+// =============================================================================
+// ACCOUNTS RECEIVABLE (A/R) TABLES
+// =============================================================================
+
+// A/R Invoice table
+export const arInvoices = pgTable('ar_invoices', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  customerId: varchar('customer_id').notNull().references(() => users.id),
+  orderId: integer('order_id').references(() => orders.id),
+  invoiceNo: varchar('invoice_no', { length: 32 }),
+  status: varchar('status', { length: 16 }).default('open').notNull(),
+  issueDate: date('issue_date').defaultNow().notNull(),
+  dueDate: date('due_date'),
+  subtotalCents: bigint('subtotal_cents', { mode: 'number' }).default(0).notNull(),
+  taxCents: bigint('tax_cents', { mode: 'number' }).default(0).notNull(),
+  totalCents: bigint('total_cents', { mode: 'number' }).default(0).notNull(),
+  balanceCents: bigint('balance_cents', { mode: 'number' }).default(0).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+}, (table) => ({
+  customerIdx: index('idx_ar_inv_customer').on(table.customerId),
+  statusIdx: index('idx_ar_inv_status').on(table.status),
+  orderIdx: index('idx_ar_inv_order').on(table.orderId),
+}));
+
+// A/R Invoice Lines table
+export const arInvoiceLines = pgTable('ar_invoice_lines', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  invoiceId: uuid('invoice_id').notNull().references(() => arInvoices.id, { onDelete: 'cascade' }),
+  sku: varchar('sku', { length: 64 }),
+  description: text('description'),
+  uom: varchar('uom', { length: 16 }),
+  quantity: numeric('quantity', { precision: 18, scale: 3 }).default('1').notNull(),
+  unitPriceCents: bigint('unit_price_cents', { mode: 'number' }).default(0).notNull(),
+  lineSubtotalCents: bigint('line_subtotal_cents', { mode: 'number' }).default(0).notNull(),
+  taxCents: bigint('tax_cents', { mode: 'number' }).default(0).notNull(),
+  totalCents: bigint('total_cents', { mode: 'number' }).default(0).notNull(),
+}, (table) => ({
+  invoiceIdx: index('idx_ar_lines_invoice').on(table.invoiceId),
+}));
+
+// A/R Payments table
+export const arPayments = pgTable('ar_payments', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  customerId: varchar('customer_id').notNull().references(() => users.id),
+  receivedAt: date('received_at').defaultNow().notNull(),
+  method: varchar('method', { length: 24 }).notNull(),
+  reference: varchar('reference', { length: 64 }),
+  amountCents: bigint('amount_cents', { mode: 'number' }).notNull(),
+  unappliedCents: bigint('unapplied_cents', { mode: 'number' }).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+}, (table) => ({
+  customerIdx: index('idx_ar_pmt_customer').on(table.customerId),
+}));
+
+// A/R Payment Applications table (many-to-many)
+export const arPaymentApps = pgTable('ar_payment_apps', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  paymentId: uuid('payment_id').notNull().references(() => arPayments.id, { onDelete: 'cascade' }),
+  invoiceId: uuid('invoice_id').notNull().references(() => arInvoices.id, { onDelete: 'cascade' }),
+  amountCents: bigint('amount_cents', { mode: 'number' }).notNull(),
+}, (table) => ({
+  invoiceIdx: index('idx_ar_app_invoice').on(table.invoiceId),
+  paymentIdx: index('idx_ar_app_payment').on(table.paymentId),
+}));
+
+// A/R Relations
+export const arInvoicesRelations = relations(arInvoices, ({ one, many }) => ({
+  customer: one(users, { fields: [arInvoices.customerId], references: [users.id] }),
+  order: one(orders, { fields: [arInvoices.orderId], references: [orders.id] }),
+  lines: many(arInvoiceLines),
+  paymentApplications: many(arPaymentApps),
+}));
+
+export const arInvoiceLinesRelations = relations(arInvoiceLines, ({ one }) => ({
+  invoice: one(arInvoices, { fields: [arInvoiceLines.invoiceId], references: [arInvoices.id] }),
+}));
+
+export const arPaymentsRelations = relations(arPayments, ({ one, many }) => ({
+  customer: one(users, { fields: [arPayments.customerId], references: [users.id] }),
+  applications: many(arPaymentApps),
+}));
+
+export const arPaymentAppsRelations = relations(arPaymentApps, ({ one }) => ({
+  payment: one(arPayments, { fields: [arPaymentApps.paymentId], references: [arPayments.id] }),
+  invoice: one(arInvoices, { fields: [arPaymentApps.invoiceId], references: [arInvoices.id] }),
+}));
+
+// A/R Types for TypeScript
+export type ArInvoice = typeof arInvoices.$inferSelect;
+export type ArInvoiceLine = typeof arInvoiceLines.$inferSelect;
+export type ArPayment = typeof arPayments.$inferSelect;
+export type ArPaymentApp = typeof arPaymentApps.$inferSelect;
+
+export type InsertArInvoice = typeof arInvoices.$inferInsert;
+export type InsertArInvoiceLine = typeof arInvoiceLines.$inferInsert;
+export type InsertArPayment = typeof arPayments.$inferInsert;
+export type InsertArPaymentApp = typeof arPaymentApps.$inferInsert;
+
+// Credit terms enum
+export type CreditTerm = 'Prepaid' | 'Net7' | 'Net15' | 'Net30' | 'Net45';
+
+// Invoice status enum
+export type InvoiceStatus = 'draft' | 'open' | 'paid' | 'void';
+
+// Payment methods enum
+export type PaymentMethod = 'cash' | 'check' | 'ach' | 'card' | 'adjustment';
