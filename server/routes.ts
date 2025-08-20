@@ -32,6 +32,7 @@ import emailSmsRoutes from "./routes/emailSmsRoutes";
 import { requestContext } from "./middleware/requestContext";
 import activityRouter from "./routes/activity-routes";
 import { posRoutes } from "./routes/posRoutes";
+import posTransactionRouter from "./routes/pos-routes";
 // POS auth routes removed to avoid duplication - using main auth system
 import { receiptGenerator } from "./services/receiptGenerator";
 import newOrderRoutes from "./routes/newOrderRoutes";
@@ -10378,8 +10379,11 @@ Make it engaging and appropriate for a B2B wholesale business context. Respond i
   });
 
   // ============================================================================
-  // POS HARDWARE CONTROL ENDPOINTS (TM-T88V MMF CASH DRAWER)
+  // POS HARDWARE CONTROL ENDPOINTS & TRANSACTION PROCESSING
   // ============================================================================
+
+  // Register POS transaction routes (Phase 2 - Transaction Engine + Offline Sync)
+  app.use('/api/pos', posTransactionRouter);
 
   // Test endpoint to verify routing
   app.post('/api/pos/test-route', (req: any, res) => {

@@ -39,27 +39,11 @@ export default function AdminActivityLog() {
   const [streaming, setStreaming] = useState(false);
   const [liveEvents, setLiveEvents] = useState<ActivityEvent[]>([]);
 
-  const { data: activities, isLoading, refetch } = useQuery({
+  const { data: activities, isLoading, refetch, error } = useQuery({
     queryKey: ['/api/activity', filters],
-    queryFn: async () => {
-      const params = new URLSearchParams();
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value && value !== 'all') params.append(key, value.toString());
-      });
-      
-      const token = localStorage.getItem('auth-token');
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json'
-      };
-      if (token) {
-        headers.Authorization = `Bearer ${token}`;
-      }
-      
-      const response = await fetch(`/api/activity?${params}`, { headers });
-      if (!response.ok) throw new Error('Failed to fetch activity log');
-      return response.json();
-    },
-    refetchInterval: streaming ? false : 5000 // Auto-refresh when not streaming
+    enabled: !streaming, // Only fetch when not streaming
+    retry: 3,
+    refetchInterval: streaming ? false : 10000, // Auto-refresh when not streaming
   });
 
   // SSE streaming for real-time events
@@ -127,6 +111,16 @@ export default function AdminActivityLog() {
   };
 
   const allEvents = streaming ? liveEvents : (activities?.rows || []);
+  
+  // Debug logging
+  console.log('[Activity Log] Debug Info:', {
+    streaming,
+    isLoading,
+    error: error?.message,
+    activitiesData: activities,
+    eventsCount: allEvents.length,
+    liveEventsCount: liveEvents.length
+  });
 
   return (
     <div className="container mx-auto p-6">
@@ -261,11 +255,11 @@ export default function AdminActivityLog() {
                     {event.request_id && <span>Request: {event.request_id.slice(0, 8)}...</span>}
                     {event.actor_role && <span>Role: {event.actor_role}</span>}
                     {event.target_type && event.target_id && (
-                      <span>Target: {event.target_type}#{event.target_id.slice(0, 8)}...</span>
+                      <span>Target: {event.target_type}#{event.target_id ? event.target_id.slice(0, 8) + '...' : 'N/A'}</span>
                     )}
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="font-mono">Hash: {event.hash_self.slice(0, 12)}...</span>
+                    <span className="font-mono">Hash: {event.hash_self ? event.hash_self.slice(0, 12) + '...' : 'N/A'}</span>
                   </div>
                 </div>
               </CardContent>
