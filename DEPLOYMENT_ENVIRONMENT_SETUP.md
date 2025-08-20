@@ -9,6 +9,7 @@ Set these in your **Replit Deployment Secrets** panel (not just the workspace):
 # Core application settings
 APP_URL=https://shopgokul.com
 NODE_ENV=production
+CORS_ALLOWED_ORIGINS=https://shopgokul.com
 
 # Database and authentication
 DATABASE_URL=[your production database URL]

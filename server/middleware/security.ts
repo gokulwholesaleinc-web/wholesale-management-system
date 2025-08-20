@@ -13,6 +13,10 @@ function getAllowedOrigins(): string[] {
   const origins = process.env.CORS_ALLOWED_ORIGINS;
   
   if (!origins) {
+    // Production-aware default origins
+    if (process.env.NODE_ENV === 'production') {
+      return ['https://shopgokul.com'];
+    }
     // Default development origins
     return [
       'http://localhost:3000',
