@@ -53,9 +53,13 @@ router.get('/stream', async (req, res) => {
     }).parse(req.query);
 
     // Authenticate using token from query parameter (EventSource doesn't support custom headers)
+    console.log('[SSE] Token received in query:', Q.token ? 'present' : 'missing');
     if (Q.token) {
       // Temporarily set authorization header for auth middleware
       req.headers.authorization = `Bearer ${Q.token}`;
+      console.log('[SSE] Authorization header set');
+    } else {
+      console.log('[SSE] No token provided in query parameters');
     }
 
     // Manual authentication check since we need to handle query token

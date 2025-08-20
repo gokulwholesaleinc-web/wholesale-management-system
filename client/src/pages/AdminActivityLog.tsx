@@ -47,7 +47,15 @@ export default function AdminActivityLog() {
         if (value && value !== 'all') params.append(key, value.toString());
       });
       
-      const response = await fetch(`/api/activity?${params}`);
+      const token = localStorage.getItem('auth-token');
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json'
+      };
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+      
+      const response = await fetch(`/api/activity?${params}`, { headers });
       if (!response.ok) throw new Error('Failed to fetch activity log');
       return response.json();
     },
@@ -60,20 +68,25 @@ export default function AdminActivityLog() {
 
     // Get auth token for SSE (EventSource doesn't support headers)
     const token = localStorage.getItem('auth-token');
+    console.log('[SSE] Retrieved token from localStorage:', token ? token.substring(0, 20) + '...' : 'null');
     const params = new URLSearchParams();
-    if (token) params.set('token', token);
+    if (token) {
+      params.set('token', token);
+      console.log('[SSE] Added token to params, final query string:', params.toString());
+    }
     
     let eventSource: EventSource | null = null;
     let backoff = 1000;
 
     function startStream() {
       if (eventSource) return;
-      console.log('[SSE] Starting activity stream...');
+      console.log('[SSE] Starting activity stream with token:', token ? 'present' : 'missing');
+      console.log('[SSE] URL:', `/activity/stream?${params.toString()}`);
       eventSource = new EventSource(`/activity/stream?${params.toString()}`);
       
       eventSource.onmessage = (ev) => {
         const row = JSON.parse(ev.data);
-        setEvents(prev => [row, ...prev].slice(0, 500));
+        setLiveEvents(prev => [row, ...prev].slice(0, 500));
         backoff = 1000; // reset backoff on success
       };
       
