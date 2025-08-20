@@ -91,8 +91,7 @@ export class PasswordResetService {
       }
 
       // Update password
-      const passwordHash = await hashPassword(newPassword);
-      await storage.updateUser({ id: record.user_id, passwordHash });
+      await storage.updateUser({ id: record.user_id, password: newPassword });
 
       // Invalidate token
       await storage.markPasswordResetUsed(tokenHash);
