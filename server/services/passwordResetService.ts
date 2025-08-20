@@ -3,8 +3,7 @@ import { emailService } from "./emailService";
 import { smsService } from "./smsService";
 import { hashPassword } from "../helpers/bcrypt-helper";
 import { createRawToken, hashToken, DEFAULT_RESET_TTL_MS } from "../utils/resetToken";
-
-const APP_ORIGIN = process.env.APP_ORIGIN || "https://shopgokul.com";
+import { buildAppUrl } from "../config/url";
 const NEUTRAL_MSG = {
   success: true,
   message: "If an account exists for that identifier, a reset link has been sent.",
@@ -37,7 +36,10 @@ export class PasswordResetService {
         await storage.invalidateOtherResetTokensForUser(user.id, tokenHash);
       }
 
-      const resetLink = `${APP_ORIGIN}/reset-password?token=${raw}`;
+      const resetLink = buildAppUrl("/reset-password", { token: raw });
+      
+      // Debug logging to verify correct URL generation
+      console.log("[RESET] resetUrl=", resetLink);
 
       // Decide delivery channel
       const canEmail = !!user.email;
@@ -143,7 +145,7 @@ export class PasswordResetService {
         <div style="margin-top:24px;padding:16px;background:#f3f4f6;border-radius:8px;font-size:14px">
           <p style="margin:0 0 8px 0;font-weight:bold">If the button doesn't work, copy this token:</p>
           <code style="background:#e5e7eb;padding:8px;border-radius:4px;display:block;word-break:break-all;margin:8px 0">${token}</code>
-          <p style="margin:8px 0 0 0;font-size:12px;color:#666">Go to <a href="${APP_ORIGIN}/reset-password">${APP_ORIGIN}/reset-password</a> and paste the token above.</p>
+          <p style="margin:8px 0 0 0;font-size:12px;color:#666">Go to <a href="${buildAppUrl("/reset-password")}">${buildAppUrl("/reset-password")}</a> and paste the token above.</p>
         </div>
         
         <p style="margin-top:20px">If you didn't request this, you can ignore this email.</p>
