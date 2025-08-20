@@ -14,12 +14,11 @@ export const emailService = {
       const mailSettings: any = {};
       
       if (disableTracking) {
-        // Disable click tracking to prevent link corruption
+        // Comprehensive tracking prevention per SendGrid docs
         mailSettings.clickTracking = { enable: false, enableText: false };
         mailSettings.openTracking = { enable: false };
-        // Additional settings to prevent URL wrapping
-        mailSettings.ganalytics = { enable: false };
         mailSettings.subscriptionTracking = { enable: false };
+        mailSettings.ganalytics = { enable: false };
       }
 
       console.log("[EMAIL] Attempting to send email:", {
@@ -29,14 +28,20 @@ export const emailService = {
         disableTracking
       });
 
-      const result = await sgMail.send({
+      const emailConfig: any = {
         to,
         from: { email: "info@shopgokul.com", name: "Gokul Wholesale Inc." },
         subject,
         html,
         text,
-        mailSettings,
-      });
+      };
+
+      // Only add mailSettings if tracking is disabled
+      if (disableTracking && Object.keys(mailSettings).length > 0) {
+        emailConfig.mailSettings = mailSettings;
+      }
+
+      const result = await sgMail.send(emailConfig);
 
       console.log("[EMAIL] SendGrid response:", {
         messageId: result[0]?.headers?.['x-message-id'],
