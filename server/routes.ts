@@ -648,47 +648,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Complete password reset (requires temporary password) - Updated to match UI payload
-  app.post('/api/auth/complete-password-reset', async (req, res) => {
+  // Validate password reset token
+  app.get('/api/auth/password-reset/validate', async (req, res) => {
+    const { token } = req.query as { token?: string };
+    if (!token) {
+      return res.status(400).json({ valid: false, reason: "missing_token" });
+    }
     try {
-      const { username, tempPassword, newPassword, confirmPassword } = req.body;
-      
-      if (!username || !tempPassword || !newPassword || !confirmPassword) {
-        return res.status(400).json({
-          success: false,
-          message: 'All fields are required'
-        });
-      }
-      
-      if (newPassword !== confirmPassword) {
-        return res.status(400).json({
-          success: false,
-          message: 'New passwords do not match'
-        });
-      }
-      
-      if (newPassword.length < 8) {
-        return res.status(400).json({
-          success: false,
-          message: 'Password must be at least 8 characters long'
-        });
-      }
-      
-      // Use the new unified method that matches UI payload exactly
-      const result = await PasswordResetService.completePasswordResetByUsernameAndTemp(
-        username, 
-        tempPassword, 
-        newPassword
-      );
-      
-      res.json(result);
-      
-    } catch (error) {
-      console.error('Password reset completion error:', error);
-      res.status(500).json({
-        success: false,
-        message: 'An error occurred while resetting your password.'
-      });
+      const result = await PasswordResetService.validateToken(token);
+      return res.status(200).json(result);
+    } catch (err) {
+      console.error("Token validation error:", err);
+      return res.status(200).json({ valid: false, reason: "invalid_or_expired" });
+    }
+  });
+
+  // Complete password reset (with token)
+  app.post('/api/auth/password-reset/complete', async (req, res) => {
+    const { token, newPassword } = req.body || {};
+    if (!token || !newPassword) {
+      return res.status(400).json({ success: false, message: "Missing token or password." });
+    }
+    if (newPassword.length < 8) {
+      return res.status(400).json({ success: false, message: "Password too short (min 8 chars)." });
+    }
+    try {
+      const result = await PasswordResetService.completeReset(token, newPassword);
+      return res.status(200).json(result);
+    } catch (err) {
+      console.error("Complete reset error:", err);
+      return res.status(500).json({ success: false, message: "Unable to complete reset. Try again." });
     }
   });
 

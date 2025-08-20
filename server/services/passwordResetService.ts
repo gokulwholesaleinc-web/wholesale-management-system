@@ -1,302 +1,121 @@
 import { storage } from "../storage";
 import { emailService } from "./emailService";
-import { hashPassword, comparePassword } from "../helpers/bcrypt-helper";
-import { generateTempPassword } from "../utils/generateTempPassword";
-import sgMail from '@sendgrid/mail';
+import { hashPassword } from "../helpers/bcrypt-helper";
+import { createRawToken, hashToken, DEFAULT_RESET_TTL_MS } from "../utils/resetToken";
+
+const APP_ORIGIN = process.env.APP_ORIGIN || "http://localhost:3000"; // front-end base
+const NEUTRAL_MSG = {
+  success: true,
+  message: "If an account exists for that email/username, a reset link has been sent.",
+};
 
 export class PasswordResetService {
-  /**
-   * Generate a secure temporary password using CSPRNG
-   */
-  static async generateTemporaryPassword(): Promise<string> {
-    return generateTempPassword(14);
-  }
-
-  /**
-   * Initiate password reset process
-   */
-  static async initiatePasswordReset(emailOrUsername: string): Promise<{ success: boolean; message: string }> {
+  static async initiatePasswordReset(emailOrUsername: string) {
     try {
-      // Find user by email or username
-      let user = await storage.getUserByEmail(emailOrUsername);
-      if (!user) {
-        user = await storage.getUserByUsername(emailOrUsername);
+      let user =
+        (await storage.getUserByEmail(emailOrUsername)) ||
+        (await storage.getUserByUsername(emailOrUsername));
+
+      // Always respond neutrally to avoid enumeration
+      if (!user || !user.email) {
+        return NEUTRAL_MSG;
       }
 
-      // Always respond neutral to prevent user enumeration
-      const NEUTRAL_RESPONSE = {
-        success: true,
-        message: "If an account exists for that email/username, a reset email has been sent."
-      };
+      // Create token
+      const raw = createRawToken(32);
+      const tokenHash = hashToken(raw);
+      const expiresAt = new Date(Date.now() + DEFAULT_RESET_TTL_MS);
 
-      if (!user) {
-        // Still return neutral; log server-side
-        console.log("Password reset attempted for non-existent user:", emailOrUsername);
-        return NEUTRAL_RESPONSE;
+      await storage.createPasswordResetToken(user.id, tokenHash, expiresAt);
+      // Optional: invalidate previous tokens for this user
+      if (storage.invalidateOtherResetTokensForUser) {
+        await storage.invalidateOtherResetTokensForUser(user.id, tokenHash);
       }
 
-      if (!user.email) {
-        console.log("Password reset attempted for user without email:", user.id);
-        return NEUTRAL_RESPONSE;
-      }
+      // Compose link
+      const resetLink = `${APP_ORIGIN}/reset-password?token=${raw}`;
 
-      // Generate temporary password
-      const tempPassword = await this.generateTemporaryPassword();
-      const hashedTempPassword = await hashPassword(tempPassword);
-      
-      // Set expiry to 24 hours from now
-      const expiry = new Date();
-      expiry.setHours(expiry.getHours() + 24);
-
-      // Update user with temporary password
-      await storage.updateUser({
-        id: user.id,
-        tempPassword: hashedTempPassword,
-        tempPasswordExpiry: expiry,
-        forcePasswordChange: true
+      // Send email (use your SendGrid or SES adapter)
+      await emailService.send({
+        to: user.email,
+        subject: "Password Reset",
+        html: this.buildEmailHtml(user.firstName || user.username || "User", resetLink, expiresAt),
+        text: this.buildEmailText(resetLink, expiresAt),
       });
 
-      // Send email with temporary password
-      const emailSent = await this.sendPasswordResetEmail(
-        user.email,
-        user.firstName || user.username || "User",
-        tempPassword
-      );
-
-      if (!emailSent) {
-        console.error("Failed to send password reset email to:", user.email);
-        // Still return neutral to prevent user enumeration
-      }
-
-      return NEUTRAL_RESPONSE;
-
-    } catch (error) {
-      console.error("Password reset error:", error);
-      return {
-        success: false,
-        message: "An error occurred while processing your request. Please try again."
-      };
+      return NEUTRAL_MSG;
+    } catch (err) {
+      console.error("initiatePasswordReset error:", err);
+      return NEUTRAL_MSG;
     }
   }
 
-  /**
-   * Send password reset email using SendGrid
-   */
-  static async sendPasswordResetEmail(
-    email: string,
-    userName: string,
-    tempPassword: string
-  ): Promise<boolean> {
-    const subject = "Password Reset - Gokul Wholesale";
-    
-    const htmlContent = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 8px 8px 0 0;">
-          <h1 style="color: white; margin: 0; text-align: center;">Gokul Wholesale</h1>
-        </div>
-        
-        <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; border: 1px solid #e0e0e0;">
-          <h2 style="color: #333; margin-bottom: 20px;">Password Reset Request</h2>
-          
-          <p style="color: #555; line-height: 1.6;">Hello ${userName},</p>
-          
-          <p style="color: #555; line-height: 1.6;">
-            We received a request to reset your password for your Gokul Wholesale account. 
-            Below is your temporary password:
-          </p>
-          
-          <div style="background: #fff; padding: 20px; border: 2px solid #667eea; border-radius: 8px; margin: 20px 0; text-align: center;">
-            <h3 style="color: #667eea; margin: 0;">Temporary Password</h3>
-            <p style="font-size: 24px; font-weight: bold; color: #333; margin: 10px 0; font-family: 'Courier New', monospace; background: #f0f0f0; padding: 10px; border-radius: 4px;">
-              ${tempPassword}
-            </p>
-          </div>
-          
-          <div style="background: #fff3cd; padding: 15px; border: 1px solid #ffeaa7; border-radius: 6px; margin: 20px 0;">
-            <h4 style="color: #856404; margin: 0 0 10px 0;">Important Security Information:</h4>
-            <ul style="color: #856404; margin: 0; padding-left: 20px;">
-              <li>This temporary password expires in 24 hours</li>
-              <li>You will be required to create a new password when you log in</li>
-              <li>If you did not request this reset, please contact us immediately</li>
-            </ul>
-          </div>
-          
-          <p style="color: #555; line-height: 1.6;">
-            To use this temporary password:
-          </p>
-          
-          <ol style="color: #555; line-height: 1.6;">
-            <li>Visit the Gokul Wholesale login page</li>
-            <li>Enter your username and the temporary password above</li>
-            <li>Create and confirm your new permanent password</li>
-          </ol>
-          
-          <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e0e0e0;">
-            <p style="color: #888; font-size: 14px; margin: 0;">
-              If you have any questions or need assistance, please contact our support team.
-            </p>
-            <p style="color: #888; font-size: 14px; margin: 5px 0 0 0;">
-              Thank you,<br>
-              The Gokul Wholesale Team
-            </p>
-          </div>
-        </div>
+  static async validateToken(rawToken: string) {
+    try {
+      const tokenHash = hashToken(rawToken);
+      const record = await storage.getValidPasswordResetByHash(tokenHash);
+      if (!record) {
+        return { valid: false, reason: "invalid_or_expired" };
+      }
+      return { valid: true, userId: record.user_id };
+    } catch (e) {
+      console.error("validateToken error:", e);
+      return { valid: false, reason: "invalid_or_expired" };
+    }
+  }
+
+  static async completeReset(rawToken: string, newPassword: string) {
+    try {
+      const tokenHash = hashToken(rawToken);
+      const record = await storage.getValidPasswordResetByHash(tokenHash);
+      if (!record) {
+        return { success: false, message: "Invalid or expired link." };
+      }
+
+      // Update password
+      const passwordHash = await hashPassword(newPassword);
+      await storage.updateUser({ id: record.user_id, passwordHash });
+
+      // Invalidate token
+      await storage.markPasswordResetUsed(tokenHash);
+
+      // Optional: invalidate any other active tokens for this user
+      if (storage.invalidateOtherResetTokensForUser) {
+        await storage.invalidateOtherResetTokensForUser(record.user_id, tokenHash);
+      }
+
+      return { success: true, message: "Password updated. You can now log in." };
+    } catch (e) {
+      console.error("completeReset error:", e);
+      return { success: false, message: "Unable to complete reset. Try again." };
+    }
+  }
+
+  private static buildEmailHtml(name: string, link: string, expiresAt: Date) {
+    const expires = expiresAt.toLocaleString();
+    return `
+      <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px">
+        <h2>Password reset requested</h2>
+        <p>Hi ${name},</p>
+        <p>We received a request to reset your password. Click the button below to continue.</p>
+        <p>
+          <a href="${link}" style="background:#3b82f6;color:#fff;text-decoration:none;padding:12px 16px;border-radius:8px;display:inline-block">
+            Reset your password
+          </a>
+        </p>
+        <p>This link expires at <b>${expires}</b> and can be used once.</p>
+        <p>If you didn't request this, you can ignore this email.</p>
       </div>
     `;
-
-    const textContent = `
-Password Reset - Gokul Wholesale
-
-Hello ${userName},
-
-We received a request to reset your password for your Gokul Wholesale account.
-
-Your temporary password is: ${tempPassword}
-
-Important:
-- This temporary password expires in 24 hours
-- You will be required to create a new password when you log in
-- If you did not request this reset, please contact us immediately
-
-To use this temporary password:
-1. Visit the Gokul Wholesale login page
-2. Enter your username and the temporary password above
-3. Create and confirm your new permanent password
-
-If you have any questions, please contact our support team.
-
-Thank you,
-The Gokul Wholesale Team
-    `;
-
-    // Send email directly via SendGrid to avoid AI template override
-    sgMail.setApiKey(process.env.SENDGRID_API_KEY!);
-    
-    try {
-      const msg = {
-        to: email,
-        from: {
-          email: 'info@shopgokul.com',
-          name: 'Gokul Wholesale Inc.'
-        },
-        subject,
-        text: textContent,
-        html: htmlContent
-      };
-
-      await sgMail.send(msg);
-      console.log(`✅ Password reset email sent successfully to ${email}`);
-      return true;
-    } catch (error: any) {
-      console.error('❌ Password reset email sending failed:', error);
-      return false;
-    }
   }
 
-  /**
-   * Verify if a temporary password is valid and not expired
-   */
-  static async verifyTemporaryPassword(userId: string, tempPassword: string): Promise<boolean> {
-    try {
-      const user = await storage.getUser(userId);
-      if (!user || !user.tempPassword || !user.tempPasswordExpiry) {
-        return false;
-      }
+  private static buildEmailText(link: string, expiresAt: Date) {
+    return `Password Reset
 
-      // Check if temporary password has expired
-      if (new Date() > new Date(user.tempPasswordExpiry)) {
-        // Clean up expired temporary password
-        await storage.updateUser({
-          id: userId,
-          tempPassword: undefined,
-          tempPasswordExpiry: undefined,
-          forcePasswordChange: false
-        });
-        return false;
-      }
+We received a request to reset your password.
+Reset link (single-use, expires ${expiresAt.toLocaleString()}):
+${link}
 
-      // Verify temporary password using bcrypt
-      return await comparePassword(tempPassword, user.tempPassword);
-
-    } catch (error) {
-      console.error("Temporary password verification error:", error);
-      return false;
-    }
-  }
-
-  /**
-   * Complete password reset with username and temp password verification
-   */
-  static async completePasswordResetByUsernameAndTemp(
-    usernameOrEmail: string,
-    tempPassword: string,
-    newPassword: string
-  ): Promise<{ success: boolean; message: string }> {
-    try {
-      // Find user
-      let user = await storage.getUserByEmail(usernameOrEmail);
-      if (!user) {
-        user = await storage.getUserByUsername(usernameOrEmail);
-      }
-
-      if (!user) {
-        return { 
-          success: false, 
-          message: "Invalid temporary password or expired." 
-        };
-      }
-
-      // Validate temp password
-      const isValidTempPassword = await this.verifyTemporaryPassword(user.id, tempPassword);
-      if (!isValidTempPassword) {
-        return {
-          success: false,
-          message: "Invalid temporary password or expired."
-        };
-      }
-
-      // Set new password
-      const result = await this.completePasswordReset(user.id, newPassword);
-      return result;
-
-    } catch (error) {
-      console.error("Password reset completion by username error:", error);
-      return {
-        success: false,
-        message: "Failed to update password. Please try again."
-      };
-    }
-  }
-
-  /**
-   * Complete password reset by setting new permanent password
-   */
-  static async completePasswordReset(
-    userId: string, 
-    newPassword: string
-  ): Promise<{ success: boolean; message: string }> {
-    try {
-      const hashedNewPassword = await hashPassword(newPassword);
-      
-      await storage.updateUser({
-        id: userId,
-        passwordHash: hashedNewPassword,
-        tempPassword: undefined,
-        tempPasswordExpiry: undefined,
-        forcePasswordChange: false
-      });
-
-      return {
-        success: true,
-        message: "Password successfully updated. You can now log in with your new password."
-      };
-
-    } catch (error) {
-      console.error("Password reset completion error:", error);
-      return {
-        success: false,
-        message: "Failed to update password. Please try again."
-      };
-    }
+If you didn't request this, ignore this email.`;
   }
 }

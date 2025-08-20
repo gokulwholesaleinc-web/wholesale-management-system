@@ -1,6 +1,6 @@
 // receiptGenerator.ts
 import { storage } from "../storage";
-import { EmailService } from "./emailService";
+import { emailService } from "./emailService";
 
 // ---------- Company Constants ----------
 const COMPANY = {

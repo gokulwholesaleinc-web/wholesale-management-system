@@ -5,7 +5,7 @@ import {
   pushNotificationSettings, deviceTokens, pushNotificationLogs, smsNotificationLogs, emailNotificationLogs,
   notificationTemplates, aiInvoiceProcessing, aiProductSuggestions, accountRequests, receipts,
   loyaltyTransactions, emailCampaigns, emailCampaignRecipients, flatTaxes, ilTp1TobaccoSales, taxCalculationAudits,
-  posTransactions, posTransactionItems, posHeldTransactions, posSettings, posAuditLogs,
+  posTransactions, posTransactionItems, posHeldTransactions, posSettings, posAuditLogs, passwordResetTokens,
   type User, type UpsertUser, type Product, type InsertProduct,
   type Category, type InsertCategory, type CartItem, type InsertCartItem,
   type Order, type InsertOrder, type OrderItem, type InsertOrderItem,
@@ -53,9 +53,11 @@ export interface IStorage {
   authenticateCustomer(username: string, password: string): Promise<User | undefined>;
   authenticateUser(username: string, password: string): Promise<User | undefined>;
   
-  // Password reset operations
-  getUserByEmail(email: string): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
+  // Password reset token operations
+  createPasswordResetToken(userId: string, tokenHash: string, expiresAt: Date): Promise<void>;
+  getValidPasswordResetByHash(tokenHash: string): Promise<{ user_id: string } | undefined>;
+  markPasswordResetUsed(tokenHash: string): Promise<void>;
+  invalidateOtherResetTokensForUser?(userId: string, currentTokenHash: string): Promise<void>;
 
   // Delivery address operations
   getDeliveryAddresses(userId: string): Promise<DeliveryAddress[]>;
@@ -830,6 +832,49 @@ export class DatabaseStorage implements IStorage {
       .returning();
 
     return updatedUser;
+  }
+
+  // Password reset token operations
+  async createPasswordResetToken(userId: string, tokenHash: string, expiresAt: Date): Promise<void> {
+    await db.insert(passwordResetTokens).values({
+      userId,
+      tokenHash,
+      expiresAt,
+    });
+  }
+
+  async getValidPasswordResetByHash(tokenHash: string): Promise<{ user_id: string } | undefined> {
+    const [record] = await db
+      .select({ user_id: passwordResetTokens.userId })
+      .from(passwordResetTokens)
+      .where(
+        and(
+          eq(passwordResetTokens.tokenHash, tokenHash),
+          gt(passwordResetTokens.expiresAt, new Date()),
+          isNull(passwordResetTokens.usedAt)
+        )
+      );
+    return record;
+  }
+
+  async markPasswordResetUsed(tokenHash: string): Promise<void> {
+    await db
+      .update(passwordResetTokens)
+      .set({ usedAt: new Date() })
+      .where(eq(passwordResetTokens.tokenHash, tokenHash));
+  }
+
+  async invalidateOtherResetTokensForUser(userId: string, currentTokenHash: string): Promise<void> {
+    await db
+      .update(passwordResetTokens)
+      .set({ usedAt: new Date() })
+      .where(
+        and(
+          eq(passwordResetTokens.userId, userId),
+          not(eq(passwordResetTokens.tokenHash, currentTokenHash)),
+          isNull(passwordResetTokens.usedAt)
+        )
+      );
   }
 
   // Category merge function - MISSING METHOD ADDED

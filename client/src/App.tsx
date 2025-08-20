@@ -60,6 +60,7 @@ import { ActivityLog } from "@/components/admin/ActivityLog";
 // InstoreLoginNew removed - POS system handles its own authentication
 import PosApp from "@/pages/pos/PosApp";
 import NewOrdersPage from "@/pages/NewOrdersPage";
+import ResetPasswordPage from "@/pages/ResetPasswordPage";
 
 
 import { Helmet } from "react-helmet";
@@ -322,6 +323,11 @@ function App() {
           {/* Account creation request route */}
           <Route path="/create-account">
             <CreateAccountRequest />
+          </Route>
+          
+          {/* Password Reset route */}
+          <Route path="/reset-password">
+            <ResetPasswordPage />
           </Route>
           
           {/* Privacy Policy route */}
