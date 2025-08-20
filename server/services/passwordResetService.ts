@@ -4,7 +4,7 @@ import { smsService } from "./smsService";
 import { hashPassword } from "../helpers/bcrypt-helper";
 import { createRawToken, hashToken, DEFAULT_RESET_TTL_MS } from "../utils/resetToken";
 
-const APP_ORIGIN = process.env.APP_ORIGIN || "https://8b8cb5fa-51c4-4fda-83e4-7f8d0d21bba3-00-2yxlv0v4gqfrf.replit.dev";
+const APP_ORIGIN = process.env.APP_ORIGIN || "https://shopgokul.com";
 const NEUTRAL_MSG = {
   success: true,
   message: "If an account exists for that identifier, a reset link has been sent.",
