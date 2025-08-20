@@ -66,6 +66,7 @@ import PosApp from "@/pages/pos/PosApp";
 import NewOrdersPage from "@/pages/NewOrdersPage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
 import InstorePOS from "@/pages/InstorePOS";
+import StaffLoginPage from "@/pages/StaffLoginPage";
 
 
 import { Helmet } from "react-helmet";
@@ -336,6 +337,11 @@ function App() {
           {/* Password Reset route */}
           <Route path="/reset-password">
             <ResetPasswordPage />
+          </Route>
+          
+          {/* Staff Login route */}
+          <Route path="/staff-login">
+            <StaffLoginPage />
           </Route>
           
           {/* Privacy Policy route */}

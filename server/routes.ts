@@ -29,6 +29,7 @@ import { aiRecommendationService } from "./services/aiRecommendationService";
 import authResetRouter from "./routes/auth-reset";
 // REMOVED: PasswordResetService import - replaced by auth-reset router
 import emailSmsRoutes from "./routes/emailSmsRoutes";
+import simpleStaffAuthRouter from "./routes/simple-staff-auth";
 import { requestContext } from "./middleware/requestContext";
 import activityRouter from "./routes/activity-routes";
 import { posRoutes } from "./routes/posRoutes";
@@ -10388,6 +10389,9 @@ Make it engaging and appropriate for a B2B wholesale business context. Respond i
   
   // Register POS production routes (Phase 4 - Production Deployment)
   app.use('/api/pos', posProductionRouter);
+  
+  // Staff authentication router
+  app.use('/api/staff/auth', simpleStaffAuthRouter);
 
   // Test endpoint to verify routing
   app.post('/api/pos/test-route', (req: any, res) => {
