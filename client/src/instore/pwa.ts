@@ -1,13 +1,10 @@
 // Register SW with /instore-next scope and manage A2HS prompt
 
-const ENABLE_PWA = (import.meta as any).env.VITE_POS_PWA_ENABLED === 'true' && location.hostname !== 'localhost';
+const ENABLE_PWA = import.meta.env.VITE_POS_PWA_ENABLED === 'true' && location.hostname !== 'localhost';
 
 if ('serviceWorker' in navigator && ENABLE_PWA) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/instore-next/sw.js', { scope: '/instore-next/' })
-      .then(registration => {
-        console.log('[POS PWA] SW registered:', registration);
-      })
       .catch(err => console.warn('[POS PWA] SW register failed', err));
   });
 }
@@ -25,9 +22,7 @@ export async function triggerInstall() {
     const { outcome } = await deferredPrompt.userChoice;
     console.log('[POS PWA] Install choice:', outcome);
     deferredPrompt = null;
-    return outcome === 'accepted';
   }
-  return false;
 }
 
 export async function getStorageEstimate() {
@@ -35,9 +30,4 @@ export async function getStorageEstimate() {
     return await (navigator as any).storage.estimate();
   }
   return null;
-}
-
-export function isPWAInstalled(): boolean {
-  return window.matchMedia('(display-mode: standalone)').matches ||
-         (window.navigator as any).standalone === true;
 }

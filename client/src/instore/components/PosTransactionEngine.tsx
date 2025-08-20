@@ -4,7 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { ShoppingCart, Wifi, WifiOff, CreditCard, Banknote } from 'lucide-react';
+import { ShoppingCart, Wifi, WifiOff, CreditCard, Banknote, Users, Search, Keyboard, Trash2 } from 'lucide-react';
+import ManagerOverride from './ManagerOverride';
+import HotkeyHandler from './HotkeyHandler';
+import CreditAtCounterDialog from './CreditAtCounterDialog';
 
 interface Product {
   id: number;
@@ -39,6 +42,15 @@ export default function PosTransactionEngine() {
   const [processing, setProcessing] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState<'cash' | 'credit' | 'debit'>('cash');
   const [cashReceived, setCashReceived] = useState<number>(0);
+  
+  // Phase 3 state management
+  const [showManagerOverride, setShowManagerOverride] = useState(false);
+  const [showCreditAtCounter, setShowCreditAtCounter] = useState(false);
+  const [overrideAction, setOverrideAction] = useState('');
+  const [overrideDetails, setOverrideDetails] = useState('');
+  const [hotkeyEnabled, setHotkeyEnabled] = useState(true);
+  const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
+  
   const { toast } = useToast();
 
   // Network status monitoring
@@ -268,6 +280,112 @@ export default function PosTransactionEngine() {
     });
   };
 
+  // Phase 3: Hotkey handlers
+  const handleNewSale = () => {
+    setCart([]);
+    setCashReceived(0);
+    setSelectedPayment('cash');
+    setSelectedCustomer(null);
+  };
+
+  const handleVoidTransaction = () => {
+    if (cart.length === 0) {
+      toast({
+        title: "No Transaction",
+        description: "No items in cart to void",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setOverrideAction('Void Transaction');
+    setOverrideDetails(`Void ${cart.length} items totaling $${total.toFixed(2)}`);
+    setShowManagerOverride(true);
+  };
+
+  const handleOpenDrawer = async () => {
+    try {
+      const response = await fetch('/api/pos/open-drawer', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('auth-token')}`
+        }
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Cash Drawer",
+          description: "Drawer opened successfully",
+        });
+      } else {
+        throw new Error('Failed to open drawer');
+      }
+    } catch (error) {
+      toast({
+        title: "Drawer Error",
+        description: "Failed to open cash drawer",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleManagerOverrideRequest = () => {
+    setOverrideAction('General Override');
+    setOverrideDetails('Staff requesting manager authorization');
+    setShowManagerOverride(true);
+  };
+
+  const handleCustomerLookup = () => {
+    // For now, just show credit at counter dialog
+    setShowCreditAtCounter(true);
+  };
+
+  const handleProductLookup = () => {
+    toast({
+      title: "Product Lookup",
+      description: "Feature coming soon - use barcode scanner or search",
+    });
+  };
+
+  const handlePaymentMethod = (method: 'cash' | 'credit' | 'debit') => {
+    setSelectedPayment(method);
+    
+    if (method === 'credit') {
+      setShowCreditAtCounter(true);
+    } else {
+      // Process payment normally
+      processTransaction();
+    }
+  };
+
+  const handleManagerOverrideApprove = (managerId: string, reason: string) => {
+    if (overrideAction === 'Void Transaction') {
+      handleNewSale();
+      toast({
+        title: "Transaction Voided",
+        description: `Approved by manager ${managerId}: ${reason}`,
+      });
+    } else {
+      toast({
+        title: "Override Approved",
+        description: `Manager ${managerId}: ${reason}`,
+      });
+    }
+  };
+
+  const handleCreditApprove = (customer: any, creditAmount: number) => {
+    setSelectedCustomer(customer);
+    setSelectedPayment('credit');
+    
+    toast({
+      title: "Credit Approved",
+      description: `$${creditAmount.toFixed(2)} credit approved for ${customer.name}`,
+    });
+    
+    // Process the transaction with credit
+    processTransaction();
+  };
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 p-6">
       {/* Product Selection - Mock for now */}
@@ -411,8 +529,77 @@ export default function PosTransactionEngine() {
           >
             {processing ? 'Processing...' : `Charge $${total.toFixed(2)}`}
           </Button>
+
+          {/* Phase 3: Enhanced Controls */}
+          <div className="grid grid-cols-2 gap-2 pt-4 border-t">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleCustomerLookup}
+              className="flex items-center gap-1"
+            >
+              <Users className="h-4 w-4" />
+              Customer
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleProductLookup}
+              className="flex items-center gap-1"
+            >
+              <Search className="h-4 w-4" />
+              Product
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleVoidTransaction}
+              className="flex items-center gap-1"
+            >
+              <Trash2 className="h-4 w-4" />
+              Void
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleManagerOverrideRequest}
+              className="flex items-center gap-1"
+            >
+              <Keyboard className="h-4 w-4" />
+              Override
+            </Button>
+          </div>
         </CardContent>
       </Card>
+
+      {/* Phase 3: Hotkey Handler (invisible) */}
+      <HotkeyHandler
+        enabled={hotkeyEnabled}
+        onNewSale={handleNewSale}
+        onVoidTransaction={handleVoidTransaction}
+        onOpenDrawer={handleOpenDrawer}
+        onManagerOverride={handleManagerOverrideRequest}
+        onCustomerLookup={handleCustomerLookup}
+        onProductLookup={handleProductLookup}
+        onPayment={handlePaymentMethod}
+      />
+
+      {/* Phase 3: Manager Override Dialog */}
+      <ManagerOverride
+        isOpen={showManagerOverride}
+        onClose={() => setShowManagerOverride(false)}
+        onApprove={handleManagerOverrideApprove}
+        action={overrideAction}
+        details={overrideDetails}
+      />
+
+      {/* Phase 3: Credit at Counter Dialog */}
+      <CreditAtCounterDialog
+        isOpen={showCreditAtCounter}
+        onClose={() => setShowCreditAtCounter(false)}
+        onApprove={handleCreditApprove}
+        transactionTotal={total}
+      />
     </div>
   );
 }
