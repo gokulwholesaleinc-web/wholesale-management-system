@@ -41,15 +41,37 @@ router.get('/', async (req, res) => {
   }
 });
 
-// SSE stream: /api/activity/stream?subject_type=&subject_id=&action=&actor_id=
+// SSE stream: /api/activity/stream?subject_type=&subject_id=&action=&actor_id=&token=
 router.get('/stream', async (req, res) => {
   try {
     const Q = z.object({ 
       subject_type: z.string().optional(), 
       subject_id: z.string().uuid().optional(), 
       action: z.string().optional(), 
-      actor_id: z.string().uuid().optional() 
+      actor_id: z.string().uuid().optional(),
+      token: z.string().optional()
     }).parse(req.query);
+
+    // Authenticate using token from query parameter (EventSource doesn't support custom headers)
+    if (Q.token) {
+      // Temporarily set authorization header for auth middleware
+      req.headers.authorization = `Bearer ${Q.token}`;
+    }
+
+    // Manual authentication check since we need to handle query token
+    const { requireAuth } = await import('../simpleAuth');
+    
+    try {
+      await new Promise<void>((resolve, reject) => {
+        requireAuth(req, res, (error: any) => {
+          if (error) reject(error);
+          else resolve();
+        });
+      });
+    } catch (error) {
+      console.log('[SSE Auth] Authentication failed:', error);
+      return res.status(401).json({ error: 'Unauthorized - please log in' });
+    }
 
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');

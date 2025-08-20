@@ -93,6 +93,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Serve logo and other public files directly
   app.use(express.static(path.join(process.cwd(), 'public')));
 
+  // Serve staged POS PWA
+  const distRoot = path.resolve(process.cwd(), 'dist/public');
+  app.use('/instore-next', express.static(path.join(distRoot, 'instore-next')));
+  app.get('/instore-next/*', (_req, res) => {
+    res.sendFile(path.join(distRoot, 'instore-next/index.html'));
+  });
+
   // Configure multer for image uploads
   const multerStorage = multer.diskStorage({
     destination: (req, file, cb) => {

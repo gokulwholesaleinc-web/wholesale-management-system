@@ -1,0 +1,15 @@
+Content-Security-Policy: The page’s settings blocked an inline script (script-src-elem) from being executed because it violates the following directive: “script-src 'self'”. Consider using a hash ('sha256-ALaDkBo93Qax4JosMrWAFtKE7+rUENfP37WzspJnRXU=') or a nonce. inpage.js:1:299468
+Content-Security-Policy: The page’s settings blocked an inline script (script-src-elem) from being executed because it violates the following directive: “script-src 'self'”. Consider using a hash ('sha256-ALaDkBo93Qax4JosMrWAFtKE7+rUENfP37WzspJnRXU=') or a nonce. inpage.js:1:299468
+Content-Security-Policy: (Report-Only policy) The page’s settings would block an inline script (script-src-elem) from being executed because it violates the following directive: “script-src 'self'”. Consider using a hash ('sha256-ALaDkBo93Qax4JosMrWAFtKE7+rUENfP37WzspJnRXU=') or a nonce. inpage.js:1:299468
+Content-Security-Policy: The page’s settings blocked an inline script (script-src-elem) from being executed because it violates the following directive: “script-src https://m.stripe.network 'sha256-5DA+a07wxWmEka9IdoWjSPVHb17Cp5284/lJzfbl8KA=' 'sha256-/5Guo2nzv5n/w6ukZpOBZOtTJBJPSkJ6mhHpnBgm3Ls='”. Consider using a hash ('sha256-ALaDkBo93Qax4JosMrWAFtKE7+rUENfP37WzspJnRXU=') or a nonce. inpage.js:1:299468
+SES_UNCAUGHT_EXCEPTION: TypeError: can't access property "dimensions", this._renderer.value is undefined
+    NextJS 4
+lockdown-install.js:1:145467
+SES Removing unpermitted intrinsics lockdown-install.js:1:203117
+  Removing intrinsics.%DatePrototype%.toTemporalInstant lockdown-install.js:1:202962
+SES Removing unpermitted intrinsics lockdown-install.js:1:203117
+  Removing intrinsics.%DatePrototype%.toTemporalInstant lockdown-install.js:1:202962
+[vite] connecting... eruda.js:2:135516
+[vite] connected. eruda.js:2:135516
+Firefox can’t establish a connection to the server at https://ac29e722-09ca-42da-a9f7-30f50b942baa-00-247nif8zj0wpk.worf.replit.dev/api/activity/stream. 2 AdminActivityLog.tsx:56:25
+SSE connection error eruda.js:2:135516

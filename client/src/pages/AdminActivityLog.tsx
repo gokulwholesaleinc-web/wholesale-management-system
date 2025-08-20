@@ -58,7 +58,11 @@ export default function AdminActivityLog() {
   useEffect(() => {
     if (!streaming) return;
 
-    const eventSource = new EventSource('/api/activity/stream');
+    // Get auth token for SSE (EventSource doesn't support headers)
+    const token = localStorage.getItem('auth-token');
+    const url = token ? `/api/activity/stream?token=${encodeURIComponent(token)}` : '/api/activity/stream';
+    
+    const eventSource = new EventSource(url);
     
     eventSource.onmessage = (event) => {
       try {
