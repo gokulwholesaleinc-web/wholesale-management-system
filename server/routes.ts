@@ -7913,6 +7913,13 @@ Recommend 3-4 products from our inventory that match current trends. Respond wit
   // Unified Credit Management routes
   const creditUnifiedRouter = (await import('./routes/credit-unified')).default;
   app.use('/api/credit', creditUnifiedRouter);
+  
+  // POS System routes (feature-flagged)
+  const POS_ENABLED = process.env.POS_ENABLED !== 'false';
+  if (POS_ENABLED) {
+    const posRouter = (await import('./routes/pos-routes')).default;
+    app.use('/api/pos', posRouter);
+  }
 
   // ✅ NOTIFICATION ENDPOINTS FOR REGISTRY INTEGRATION
   // These endpoints bridge the notification registry to the actual SMS/email services

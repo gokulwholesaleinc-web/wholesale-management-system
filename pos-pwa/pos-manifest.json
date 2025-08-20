@@ -1,0 +1,43 @@
+{
+  "name": "Gokul Wholesale POS",
+  "short_name": "Gokul POS",
+  "description": "Fast, reliable point-of-sale system for Gokul Wholesale",
+  "start_url": "/instore",
+  "display": "standalone",
+  "orientation": "landscape-primary",
+  "background_color": "#ffffff",
+  "theme_color": "#1a365d",
+  "categories": ["business", "productivity"],
+  "icons": [
+    {
+      "src": "/pos-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/pos-icon-512.png", 
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Quick Sale",
+      "url": "/instore?action=sale",
+      "icons": [{"src": "/pos-icon-192.png", "sizes": "192x192"}]
+    },
+    {
+      "name": "Customer Lookup",
+      "url": "/instore?action=customer",
+      "icons": [{"src": "/pos-icon-192.png", "sizes": "192x192"}]
+    },
+    {
+      "name": "End of Day",
+      "url": "/instore?action=eod",
+      "icons": [{"src": "/pos-icon-192.png", "sizes": "192x192"}]
+    }
+  ],
+  "prefer_related_applications": false
+}

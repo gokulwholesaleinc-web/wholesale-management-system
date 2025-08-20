@@ -1,0 +1,263 @@
+# In‑Store POS – Implementation Reply (Decisions, Patches, Rollout) – Single Paste
+
+> Copy/paste this message to your Replit AI agent. It includes final decisions, exact code patches, migrations, and rollout/acceptance steps. Adjust ⚙️ import paths to your repo.
+
+---
+
+## ✅ Decisions
+
+1. **Backup before migration**
+
+```bash
+pg_dump $DATABASE_URL -Fc -f pos_pre_migration.dump
+```
+
+2. **Feature flags**
+
+* Keep POS enabled but start in **read‑only** during Phase 1.
+* Flip to writable at end of Phase 2.
+
+3. **Printing**
+
+* Start with **HTML printing** now. Add ESC/POS later behind a flag.
+
+4. **Security**
+
+* Require **Cashier/Manager/Admin** on `/pos` and `/pos/ai` routes.
+
+---
+
+## 📦 Dependencies
+
+Install a simple rate limiter:
+
+```bash
+pnpm add express-rate-limit
+```
+
+---
+
+## 🔐 Patch 1 — Auth + Rate Limit on POS routes
+
+**`server/src/app.ts`** (⚙️ adjust paths)
+
+```ts
+import posRouter from './modules/pos/pos.router';
+import posAiRouter from './modules/pos/pos.ai.router';
+import { requireRole } from './modules/auth/requireRole'; // your RBAC guard
+import rateLimit from 'express-rate-limit';
+
+const POS_ENABLED = process.env.POS_ENABLED !== 'false';
+const posLimiter = rateLimit({ windowMs: 60_000, max: 120 }); // 120 req/min/IP
+
+if (POS_ENABLED) {
+  app.use('/pos', requireRole(['Cashier','Manager','Admin']), posLimiter, posRouter);
+  app.use('/pos/ai', requireRole(['Cashier','Manager','Admin']), posLimiter, posAiRouter);
+}
+```
+
+---
+
+## ⚙️ Patch 2 — Env flags
+
+Add to `.env` (or your env system):
+
+```
+POS_ENABLED=true
+POS_AI_ENABLED=false
+PRINTER_ESC_POS_ENABLED=false
+AR_ENABLED=true
+POS_READONLY=true   # Phase 1 only; set to false in Phase 2
+```
+
+---
+
+## 🧱 Patch 3 — Idempotent + Transactional POS sale
+
+### 3a) Migration for idempotency store
+
+Create **`migrations/20250820_http_idempotency.sql`**
+
+```sql
+CREATE TABLE IF NOT EXISTS http_idempotency (
+  key TEXT PRIMARY KEY,
+  response JSONB NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+### 3b) Make `/pos/sale` atomic and idempotent
+
+**`server/src/modules/pos/pos.router.ts`** (replace the POST `/sale` handler)
+
+```ts
+import { db } from '../../db/client';
+import { sql } from 'drizzle-orm';
+import { createPosInvoice } from './pos.service'; // updated to accept tx (see Patch 4)
+
+const POS_READONLY = process.env.POS_READONLY === 'true';
+
+nposRouter.post('/sale', async (req, res) => {
+  if (POS_READONLY) return res.status(423).json({ error: 'POS is in read-only mode for smoke testing' });
+
+  const p = SaleSchema.safeParse(req.body);
+  if (!p.success) return res.status(400).json({ error: 'invalid payload' });
+
+  const idem = (req.headers['idempotency-key'] as string) || null;
+  if (idem) {
+    const dupe = await db.execute(sql`SELECT response FROM http_idempotency WHERE key = ${idem} LIMIT 1`);
+    if (dupe.rows.length) return res.json(dupe.rows[0].response);
+  }
+
+  const out = await db.transaction(async (tx) => {
+    const invoice = await createPosInvoice(p.data, tx); // pass transaction
+    return { invoice };
+  });
+
+  if (idem) {
+    await db.execute(sql`
+      INSERT INTO http_idempotency (key, response)
+      VALUES (${idem}, ${sql.json(out)})
+      ON CONFLICT (key) DO NOTHING
+    `);
+  }
+
+  return res.json(out);
+});
+```
+
+---
+
+## 🛠️ Patch 4 — Transaction‑capable `createPosInvoice`
+
+Update **`server/src/modules/pos/pos.service.ts`** so the service can run inside a Drizzle transaction. Minimal change: accept an optional `executor` (tx or db) and use it for all queries.
+
+```ts
+// ⚙️ Adjust imports/paths as needed
+import { db as defaultDb } from '../../db/client';
+import { sql } from 'drizzle-orm';
+import { arInvoices, arInvoiceLines, arPayments } from '../../db/schema.ar';
+
+export type TenderMethod = 'cash' | 'card' | 'ach' | 'terms';
+
+// Helper to normalize executor (tx or db)
+function getExec(executor?: any) { return executor || defaultDb; }
+
+export async function createPosInvoice(input: {
+  customerId?: string;
+  lines: Array<{ sku?: string; description: string; uom?: string; quantity: number; unitPriceCents: number; taxCents?: number }>;
+  tender: TenderMethod;
+  tenderRef?: string;
+  cashGivenCents?: number;
+  lane?: string;
+}, executor?: any) {
+  const db = getExec(executor);
+
+  const subtotal = input.lines.reduce((s, l) => s + Math.round(l.quantity * l.unitPriceCents), 0);
+  const tax = input.lines.reduce((s, l) => s + (l.taxCents || 0), 0);
+  const total = subtotal + tax;
+
+  const [inv] = await db.insert(arInvoices).values({
+    customerId: input.customerId || null,
+    subtotalCents: subtotal,
+    taxCents: tax,
+    totalCents: total,
+    balanceCents: total,
+    status: 'open', // payment application / trigger will set paid if applicable
+  }).returning();
+
+  await db.insert(arInvoiceLines).values(input.lines.map(l => ({
+    invoiceId: inv.id,
+    sku: l.sku,
+    description: l.description,
+    uom: l.uom,
+    quantity: String(l.quantity),
+    unitPriceCents: l.unitPriceCents,
+    lineSubtotalCents: Math.round(l.quantity * l.unitPriceCents),
+    taxCents: l.taxCents || 0,
+    totalCents: Math.round(l.quantity * l.unitPriceCents) + (l.taxCents || 0),
+  })));
+
+  if (input.tender !== 'terms') {
+    const amt = total;
+    const [pmt] = await db.insert(arPayments).values({
+      customerId: input.customerId || inv.customerId || null,
+      method: input.tender,
+      reference: input.tenderRef,
+      amountCents: amt,
+      unappliedCents: amt,
+    }).returning();
+
+    // Auto-apply to this invoice
+    await db.execute(sql`
+      INSERT INTO ar_payment_apps (payment_id, invoice_id, amount_cents)
+      VALUES (${pmt.id}, ${inv.id}, ${amt});
+      UPDATE ar_payments SET unapplied_cents = GREATEST(unapplied_cents - ${amt}, 0) WHERE id = ${pmt.id};
+    `);
+  }
+
+  const { rows } = await db.execute(sql`SELECT id, invoice_no, total_cents, balance_cents, status FROM ar_invoices WHERE id = ${inv.id}`);
+  return rows[0];
+}
+```
+
+> Note: this assumes your global `invoice_no_seq` trigger is already in place on `ar_invoices` so the invoice number is assigned automatically.
+
+---
+
+## 🧯 Patch 5 — Read‑only gate for Phase 1
+
+(Already included in Patch 3): keep `POS_READONLY=true` until smoke tests pass, then set to `false`.
+
+---
+
+## 📋 Rollout Plan
+
+**Phase 1 – DB + endpoints + UI (read‑only)**
+
+1. Run all pending migrations (including `invoice_no_seq`, `pos_holds`, and `http_idempotency`).
+2. Deploy with `POS_READONLY=true`.
+3. Verify:
+
+   * `/pos/lookup` UPC/SKU
+   * `/pos/search` results
+   * `/pos/holds` list and `/pos/hold` create
+   * `/pos/sale` returns **423** (read‑only)
+
+**Phase 2 – enable transactions + offline queue**
+
+1. Set `POS_READONLY=false`.
+2. Complete a **Cash** sale: verify `ar_invoices` row, payment auto‑applied, invoice number increments in global sequence.
+3. Test **offline queue**: go offline → make a sale (queues) → come online → **Sync Queue** posts and returns next invoice number.
+
+**Phase 3 – extras**
+
+* Hotkeys & quick cash buttons; credit/terms at counter (ensure A/R exposure blocks appropriately).
+* (Optional) Turn on AI endpoints with `POS_AI_ENABLED=true` after sign‑off.
+
+**Phase 4 – hardening**
+
+* ESC/POS bridge behind `PRINTER_ESC_POS_ENABLED`.
+* Cash drawer pulse, X/Z reports.
+* Manager Override UI for credit blocks and price overrides.
+
+---
+
+## ✅ Acceptance Tests
+
+* **Unified invoice numbers:** Create invoice in main app → POS sale gets next number.
+* **Atomic sale:** Kill server mid‑request → no partial invoice/payment written.
+* **Idempotency:** Repeat same POST with identical `Idempotency-Key` → only one invoice exists; second returns cached response.
+* **Security:** Anonymous `/pos/sale` is 401/403; Cashier can access.
+* **Offline queue:** Queued sale posts after **Sync Queue** and returns correct next invoice number.
+* **Credit terms:** `tender='terms'` with exposure+total > limit returns **402** from credit enforcement.
+
+---
+
+## 🖨️ Printing (for later)
+
+Keep HTML `window.print()` now. When you’re ready, add ESC/POS bridge and flip `PRINTER_ESC_POS_ENABLED=true`.
+
+---
+
+**End of message.** Apply patches above exactly; then follow the rollout and acceptance steps. Once Phase 2 passes, we’ll proceed with printer bridge and the rest of the POS polish.
