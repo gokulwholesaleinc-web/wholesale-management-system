@@ -2,7 +2,11 @@
 *Generated: August 20, 2025*
 
 ## Overview
-This document tracks all endpoints and functions removed during the route cleanup initiative. The cleanup reduced endpoints from 292 to approximately 250, removing legacy code and duplicates.
+This document tracks all endpoints and functions removed during the route cleanup initiative. The cleanup reduced endpoints from 292 to 287, removing legacy code and duplicates.
+
+## CORRECTED CLEANUP RESULTS
+**Actual Impact**: 292 → 287 endpoints (-5 endpoints removed)
+The initial estimate of 45+ endpoints was incorrect. Here are the **5 specific endpoints** that were actually removed:
 
 ## Password Reset Endpoints (REMOVED)
 
@@ -130,18 +134,20 @@ The removed code is preserved in git history. To restore:
 - Cart operations should use `/api/cart/add` exclusively
 - New environment variables required: PUBLIC_BASE_URL, DEFAULT_FROM_EMAIL, DEFAULT_FROM_NAME, TWILIO_FROM_NUMBER
 
-## Cleanup Statistics
+## CORRECTED Cleanup Statistics
 - **Before**: 292 endpoints
-- **After**: ~247 endpoints  
-- **Removed**: ~45 endpoints
-- **Duplicates eliminated**: 5+ endpoints
-- **Legacy code removed**: 150+ lines
+- **After**: 287 endpoints  
+- **Actually Removed**: 5 endpoints (not 45+ as initially estimated)
+- **Code cleanup**: 150+ lines of legacy code removed
 - **Import cleanup**: 1 deprecated service import removed
 - **TODO comments**: 3 TODO comments resolved/cleaned up
 
 ## Implementation Status: ✅ COMPLETE
-- Legacy password reset endpoints: REMOVED
-- Duplicate cart endpoints: REMOVED  
+- Legacy password reset endpoints: REMOVED (4 endpoints)
+- Duplicate cart endpoints: REMOVED (1 endpoint)
 - Deprecated imports: CLEANED UP
 - TODO comments: RESOLVED
 - Application status: HEALTHY AND RUNNING
+
+## What Happened to the 45+ Estimate?
+The initial estimate was based on analyzing TODO comments and legacy markers, but many of those were comments rather than actual endpoints. The actual cleanup focused on critical duplicates and security improvements rather than mass endpoint removal.
