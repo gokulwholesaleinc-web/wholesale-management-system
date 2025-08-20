@@ -16,32 +16,13 @@ export class PasswordResetService {
   static async initiatePasswordReset(identifier: string, channel: Channel = "auto") {
     try {
       // Try to resolve a user without leaking which identifier is valid.
-      console.log(`[RESET] === PASSWORD RESET REQUEST ===`);
-      console.log(`[RESET] Environment: ${process.env.NODE_ENV || 'development'}`);
-      console.log(`[RESET] Looking up user by identifier: ${identifier}`);
-      console.log(`[RESET] Database URL configured: ${process.env.DATABASE_URL ? 'YES' : 'NO'}`);
-      console.log(`[RESET] SendGrid configured: ${process.env.SENDGRID_API_KEY ? 'YES' : 'NO'}`);
-      console.log(`[RESET] Twilio configured: ${process.env.TWILIO_ACCOUNT_SID ? 'YES' : 'NO'}`);
-      
       const userByEmail = await storage.getUserByEmail(identifier);
-      const userByUsername = await storage.getUserByUsername(identifier);
+      const userByUsername = await storage.getUserByUsername(identifier);  
       const userByPhone = await storage.getUserByPhone(normalizePhone(identifier));
-      
-      console.log(`[RESET] User lookup results:`, {
-        byEmail: !!userByEmail,
-        byUsername: !!userByUsername,
-        byPhone: !!userByPhone,
-        normalizedPhone: normalizePhone(identifier),
-        emailFound: userByEmail ? userByEmail.username : null,
-        usernameFound: userByUsername ? userByUsername.username : null,
-        phoneFound: userByPhone ? userByPhone.username : null
-      });
       
       const user = userByEmail || userByUsername || userByPhone;
 
       if (!user) {
-        console.log(`[RESET] User not found for identifier: ${identifier}`);
-        // Neutral response — do not hint whether identifier exists
         return NEUTRAL_MSG;
       }
 
@@ -57,50 +38,26 @@ export class PasswordResetService {
 
       const resetLink = buildFrontendUrl("/reset-password", { token: raw });
       
-      // Debug logging to verify correct URL generation  
-      console.log("[RESET] sending URL ->", resetLink);
-
       // Decide delivery channel
       const canEmail = !!user.email;
-      const canSms = !!user.phone; // expect E.164 (+1555…)
+      const canSms = !!user.phone;
       const finalChannel = resolveChannel(channel, { canEmail, canSms });
-
-      console.log("[RESET] User capabilities:", { 
-        userId: user.id, 
-        username: user.username,
-        hasEmail: canEmail, 
-        hasSms: canSms, 
-        phone: user.phone ? `${user.phone.substring(0, 3)}***${user.phone.substring(user.phone.length - 4)}` : null,
-        requestedChannel: channel,
-        finalChannel 
-      });
 
       // Fire-and-forget delivery (but await so errors are caught)
       if (finalChannel === "email" && canEmail && user.email) {
-        console.log("[RESET] Sending email to:", user.email.replace(/(.{2}).*(@.*)/, '$1***$2'));
         await emailService.send({
           to: user.email,
           subject: "Password Reset",
           html: this.buildEmailHtml(user.firstName || user.username || "User", resetLink, expiresAt),
           text: this.buildEmailText(resetLink, expiresAt),
-          disableTracking: true, // Prevent SendGrid click tracking from corrupting reset links
+          disableTracking: true,
         });
-        console.log("[RESET] Email sent successfully");
       } else if (finalChannel === "sms" && canSms && user.phone) {
-        console.log("[RESET] Sending SMS to:", user.phone.replace(/(.{3}).*(.{4})/, '$1***$2'));
-        try {
-          const smsResult = await smsService.send({
-            to: user.phone,
-            body: this.buildSmsText(resetLink, expiresAt),
-          });
-          console.log("[RESET] SMS sent successfully:", { messageId: smsResult.messageId });
-        } catch (smsError) {
-          console.error("[RESET] SMS sending failed:", smsError);
-          throw smsError;
-        }
+        await smsService.send({
+          to: user.phone,
+          body: this.buildSmsText(resetLink, expiresAt),
+        });
       } else {
-        console.log("[RESET] No delivery channel available:", { finalChannel, canEmail, canSms });
-        // If user lacks chosen channel, still return neutral message
         return NEUTRAL_MSG;
       }
 

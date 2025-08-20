@@ -21,31 +21,13 @@ export const emailService = {
         mailSettings.ganalytics = { enable: false };
       }
 
-      console.log("[EMAIL] Attempting to send email:", {
-        to: to.replace(/(.{2}).*(@.*)/, '$1***$2'),
-        from: "info@shopgokul.com",
-        subject,
-        disableTracking
-      });
-
-      const emailConfig: any = {
+      const result = await sgMail.send({
         to,
         from: { email: "info@shopgokul.com", name: "Gokul Wholesale Inc." },
         subject,
         html,
         text,
-      };
-
-      // Only add mailSettings if tracking is disabled
-      if (disableTracking && Object.keys(mailSettings).length > 0) {
-        emailConfig.mailSettings = mailSettings;
-      }
-
-      const result = await sgMail.send(emailConfig);
-
-      console.log("[EMAIL] SendGrid response:", {
-        messageId: result[0]?.headers?.['x-message-id'],
-        statusCode: result[0]?.statusCode
+        mailSettings: disableTracking ? mailSettings : {},
       });
     } catch (error) {
       console.error("Email service error:", error);
