@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertCircle, Image, DollarSign, Package, Settings, ShoppingBag, Activity, PlusCircle, FileText, Calculator, Users, CreditCard, TrendingUp, Download } from 'lucide-react';
-import gokulLogo from "@assets/IMG_0846.png";
+// Logo removed during cleanup - using text instead
 import { PageHeader } from "@/components/ui/page-header";
 import { BreadcrumbNavigation } from "@/components/navigation/BreadcrumbNavigation";
 
@@ -39,11 +39,7 @@ export default function StaffDashboard() {
     <AppLayout title="Staff Dashboard">
       <div className="container px-2 sm:px-4 py-4 sm:py-6 mx-auto max-w-7xl">
         <PageHeader title="Staff Dashboard">
-          <img 
-            src={gokulLogo} 
-            alt="Gokul Wholesale Logo" 
-            className="h-8 sm:h-12 object-contain" 
-          />
+          <span className="text-xl font-bold text-blue-600">Gokul Wholesale</span>
         </PageHeader>
         
         <div className="mb-6">
