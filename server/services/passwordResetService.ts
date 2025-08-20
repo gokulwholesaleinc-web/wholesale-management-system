@@ -16,7 +16,12 @@ export class PasswordResetService {
   static async initiatePasswordReset(identifier: string, channel: Channel = "auto") {
     try {
       // Try to resolve a user without leaking which identifier is valid.
+      console.log(`[RESET] === PASSWORD RESET REQUEST ===`);
+      console.log(`[RESET] Environment: ${process.env.NODE_ENV || 'development'}`);
       console.log(`[RESET] Looking up user by identifier: ${identifier}`);
+      console.log(`[RESET] Database URL configured: ${process.env.DATABASE_URL ? 'YES' : 'NO'}`);
+      console.log(`[RESET] SendGrid configured: ${process.env.SENDGRID_API_KEY ? 'YES' : 'NO'}`);
+      console.log(`[RESET] Twilio configured: ${process.env.TWILIO_ACCOUNT_SID ? 'YES' : 'NO'}`);
       
       const userByEmail = await storage.getUserByEmail(identifier);
       const userByUsername = await storage.getUserByUsername(identifier);
@@ -26,7 +31,10 @@ export class PasswordResetService {
         byEmail: !!userByEmail,
         byUsername: !!userByUsername,
         byPhone: !!userByPhone,
-        normalizedPhone: normalizePhone(identifier)
+        normalizedPhone: normalizePhone(identifier),
+        emailFound: userByEmail ? userByEmail.username : null,
+        usernameFound: userByUsername ? userByUsername.username : null,
+        phoneFound: userByPhone ? userByPhone.username : null
       });
       
       const user = userByEmail || userByUsername || userByPhone;
