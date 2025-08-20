@@ -1,0 +1,608 @@
+# Unified Activity Log – Append‑Only + SSE + Admin UI (ONE‑PASTE, FINAL)
+
+**Decision:** Use **one unified activity log system** for *all* events (Admin, POS, A/R, Auth). No parallel/legacy logger. This pack replaces the old logger and UI, provides a tamper‑evident table, a single logging helper, REST + SSE endpoints, and a modern Admin page. It also includes a compatibility shim so your existing `ActivityLogger` calls flow into the new system without changing callers.
+
+> Paste this whole pack to your Replit agent. Adjust ⚙️ import paths as needed.
+
+---
+
+## 0) What you get
+
+* **Append‑only DB** (`activity_events`) with hash chain (`hash_prev/hash_self`)
+* **Drizzle schema**
+* **Request context middleware** (adds `req.ctx` with `requestId`, `userId`, `role`, `ip`, `ua`)
+* **Unified logging helper** `logActivity(req, event)` (JSON, redaction, hashing)
+* **Compatibility shim** that replaces your current `ActivityLogger` & `storage.addActivityLog`
+* **Activity router** `/activity` (filters) + `/activity/stream` (SSE live feed)
+* **Admin UI** `/admin/activity` (search, stream, CSV)
+* **Archive script** (optional)
+
+---
+
+## 1) SQL Migration (append‑only + indexes)
+
+Create **`migrations/20250820_activity_v2.sql`**
+
+```sql
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+CREATE TABLE IF NOT EXISTS activity_events (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+  request_id UUID,
+  actor_id UUID,
+  actor_role TEXT,
+
+  action TEXT NOT NULL,            -- canonical dot.case (e.g., 'order.placed')
+  subject_type TEXT NOT NULL,      -- e.g., 'customer'
+  subject_id UUID NOT NULL,
+  target_type TEXT,                -- e.g., 'invoice'
+  target_id UUID,
+  severity SMALLINT NOT NULL DEFAULT 20, -- 10 info, 20 notice, 30 warn, 40 error
+
+  ip VARCHAR(64),
+  user_agent TEXT,
+  meta JSONB,                      -- redacted structured data
+  diff JSONB,                      -- before/after snapshot
+
+  hash_prev CHAR(64),              -- sha256 of previous event
+  hash_self CHAR(64)               -- sha256 of canonicalized current event
+);
+
+-- Indexes
+CREATE INDEX IF NOT EXISTS idx_act_at ON activity_events(at);
+CREATE INDEX IF NOT EXISTS idx_act_subject ON activity_events(subject_type, subject_id);
+CREATE INDEX IF NOT EXISTS idx_act_action ON activity_events(action);
+CREATE INDEX IF NOT EXISTS idx_act_actor ON activity_events(actor_id, at);
+```
+
+> **Ops:** Treat this table as **append‑only**. In production, deny UPDATE/DELETE to app roles.
+
+---
+
+## 2) Drizzle schema
+
+Create **`server/src/db/schema.activity.ts`**
+
+```ts
+import { pgTable, uuid, timestamp, text, jsonb, smallint, char, varchar } from 'drizzle-orm/pg-core';
+
+export const activityEvents = pgTable('activity_events', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  at: timestamp('at', { withTimezone: true }).defaultNow().notNull(),
+  requestId: uuid('request_id'),
+  actorId: uuid('actor_id'),
+  actorRole: text('actor_role'),
+  action: text('action').notNull(),
+  subjectType: text('subject_type').notNull(),
+  subjectId: uuid('subject_id').notNull(),
+  targetType: text('target_type'),
+  targetId: uuid('target_id'),
+  severity: smallint('severity').default(20).notNull(),
+  ip: varchar('ip', { length: 64 }),
+  userAgent: text('user_agent'),
+  meta: jsonb('meta'),
+  diff: jsonb('diff'),
+  hashPrev: char('hash_prev', { length: 64 }),
+  hashSelf: char('hash_self', { length: 64 }),
+});
+```
+
+---
+
+## 3) Request context middleware (correlation id + role snapshot)
+
+Create **`server/src/middleware/requestContext.ts`**
+
+```ts
+import { randomUUID } from 'crypto';
+
+export function requestContext(req: any, res: any, next: any) {
+  const ctx = {
+    requestId: randomUUID(),
+    userId: req.user?.id || null,
+    role: req.user?.role || null,
+    ip: req.ip,
+    ua: req.headers['user-agent'] || null,
+  };
+  (req as any).ctx = ctx;
+  res.setHeader('X-Request-Id', ctx.requestId);
+  next();
+}
+```
+
+Mount near the top of **`server/src/app.ts`**:
+
+```ts
+import { requestContext } from './middleware/requestContext';
+app.use(requestContext);
+```
+
+---
+
+## 4) Unified logging helper (redaction + hashing)
+
+Create **`server/src/modules/activity/log.ts`**
+
+```ts
+import { db } from '../../db/client'; // ⚙️
+import { sql } from 'drizzle-orm';
+import crypto from 'crypto';
+
+// Redact sensitive keys recursively
+function redact(obj: any): any {
+  if (!obj || typeof obj !== 'object') return obj;
+  if (Array.isArray(obj)) return obj.map(redact);
+  const SENSITIVE = /password|secret|token|authorization|auth|apiKey|card|ssn/i;
+  const out: any = {};
+  for (const [k, v] of Object.entries(obj)) {
+    out[k] = SENSITIVE.test(k) ? '[REDACTED]' : redact(v as any);
+  }
+  return out;
+}
+
+// Canonical JSON with sorted keys for stable hashing
+function canonicalize(input: any): string {
+  const sorter = (v: any): any => {
+    if (v === null || typeof v !== 'object') return v;
+    if (Array.isArray(v)) return v.map(sorter);
+    return Object.keys(v).sort().reduce((acc: any, key) => { acc[key] = sorter((v as any)[key]); return acc; }, {});
+  };
+  return JSON.stringify(sorter(input));
+}
+
+export type ActivityEventInput = {
+  action: string;                    // canonical dot.case, e.g. 'order.placed'
+  subjectType: string;               // 'customer', 'user', 'invoice', etc.
+  subjectId: string;                 // uuid
+  targetType?: string; targetId?: string;
+  severity?: number;                 // 10 info, 20 notice, 30 warn, 40 error
+  meta?: any;                        // structured facts (will be redacted)
+  diff?: { before?: any; after?: any };
+};
+
+export async function logActivity(req: any, e: ActivityEventInput) {
+  const ctx = (req as any)?.ctx || {};
+
+  const prev = await db.execute(sql`SELECT hash_self FROM activity_events ORDER BY at DESC, id DESC LIMIT 1`);
+  const hashPrev = prev.rows[0]?.hash_self || null;
+
+  const record = {
+    at: new Date().toISOString(),
+    request_id: ctx.requestId || null,
+    actor_id: ctx.userId || null,
+    actor_role: ctx.role || null,
+    action: e.action,
+    subject_type: e.subjectType,
+    subject_id: e.subjectId,
+    target_type: e.targetType || null,
+    target_id: e.targetId || null,
+    severity: e.severity ?? 20,
+    ip: ctx.ip || null,
+    user_agent: ctx.ua || null,
+    meta: redact(e.meta || {}),
+    diff: redact(e.diff || {}),
+    hash_prev: hashPrev,
+  } as any;
+
+  const payloadForHash = { ...record };
+  delete (payloadForHash as any).hash_self;
+  const hashSelf = crypto.createHash('sha256').update(canonicalize(payloadForHash)).digest('hex');
+
+  await db.execute(sql`
+    INSERT INTO activity_events (at, request_id, actor_id, actor_role, action, subject_type, subject_id,
+      target_type, target_id, severity, ip, user_agent, meta, diff, hash_prev, hash_self)
+    VALUES (NOW(), ${record.request_id}, ${record.actor_id}, ${record.actor_role}, ${record.action}, ${record.subject_type}, ${record.subject_id},
+      ${record.target_type}, ${record.target_id}, ${record.severity}, ${record.ip}, ${record.user_agent},
+      ${sql.json(record.meta)}, ${sql.json(record.diff)}, ${record.hash_prev}, ${hashSelf})
+  `);
+
+  return { hashSelf, hashPrev };
+}
+```
+
+---
+
+## 5) Activity Router (REST + SSE)
+
+Create **`server/src/modules/activity/activity.router.ts`**
+
+```ts
+import { Router } from 'express';
+import { db } from '../../db/client'; // ⚙️
+import { sql } from 'drizzle-orm';
+import { z } from 'zod';
+import { logActivity } from './log';
+
+const r = Router();
+
+// 🔐 Protect in production (Admin/Manager)
+// import { requireRole } from '../auth/requireRole';
+// r.use(requireRole(['Admin','Manager']));
+
+// GET /activity?subject_type=&subject_id=&action=&actor_id=&from=&to=&limit=
+r.get('/', async (req, res) => {
+  const Q = z.object({
+    subject_type: z.string().optional(),
+    subject_id: z.string().uuid().optional(),
+    action: z.string().optional(),
+    actor_id: z.string().uuid().optional(),
+    from: z.string().datetime().optional(),
+    to: z.string().datetime().optional(),
+    limit: z.coerce.number().int().min(1).max(500).default(100),
+  }).parse(req.query);
+
+  const where = sql`${sql.raw('1=1')}`
+    .append(Q.subject_type ? sql` AND subject_type = ${Q.subject_type}` : sql``)
+    .append(Q.subject_id ? sql` AND subject_id = ${Q.subject_id}` : sql``)
+    .append(Q.action ? sql` AND action = ${Q.action}` : sql``)
+    .append(Q.actor_id ? sql` AND actor_id = ${Q.actor_id}` : sql``)
+    .append(Q.from ? sql` AND at >= ${Q.from}` : sql``)
+    .append(Q.to ? sql` AND at <= ${Q.to}` : sql``);
+
+  const rows = await db.execute(sql`SELECT * FROM activity_events WHERE ${where} ORDER BY at DESC, id DESC LIMIT ${Q.limit}`);
+  return res.json({ rows: rows.rows });
+});
+
+// SSE stream: /activity/stream?subject_type=&subject_id=&action=&actor_id=
+r.get('/stream', async (req, res) => {
+  const Q = z.object({ subject_type: z.string().optional(), subject_id: z.string().uuid().optional(), action: z.string().optional(), actor_id: z.string().uuid().optional() }).parse(req.query);
+
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders?.();
+
+  let lastAt: string | null = new Date(Date.now() - 5_000).toISOString();
+  let closed = false;
+  req.on('close', () => { closed = true; });
+
+  const hb = setInterval(() => { if (!closed) res.write(`:\n\n`); }, 10_000);
+
+  async function poll() {
+    if (closed) return;
+    const where = sql`${sql.raw('1=1')}`
+      .append(Q.subject_type ? sql` AND subject_type = ${Q.subject_type}` : sql``)
+      .append(Q.subject_id ? sql` AND subject_id = ${Q.subject_id}` : sql``)
+      .append(Q.action ? sql` AND action = ${Q.action}` : sql``)
+      .append(Q.actor_id ? sql` AND actor_id = ${Q.actor_id}` : sql``)
+      .append(lastAt ? sql` AND at > ${lastAt}` : sql``);
+
+    const rows = await db.execute(sql`SELECT * FROM activity_events WHERE ${where} ORDER BY at ASC, id ASC LIMIT 200`);
+    for (const row of rows.rows) { lastAt = row.at; res.write(`data: ${JSON.stringify(row)}\n\n`); }
+    setTimeout(poll, 2000);
+  }
+  poll();
+  req.on('close', () => { clearInterval(hb); });
+});
+
+// Optional test POST
+r.post('/', async (req, res) => {
+  const body = req.body || {};
+  const out = await logActivity(req, {
+    action: body.action || 'test.event',
+    subjectType: body.subjectType || 'system',
+    subjectId: body.subjectId || '00000000-0000-0000-0000-000000000000',
+    targetType: body.targetType,
+    targetId: body.targetId,
+    severity: body.severity,
+    meta: body.meta,
+    diff: body.diff,
+  });
+  res.json({ ok: true, ...out });
+});
+
+export default r;
+```
+
+Mount in **`server/src/app.ts`**:
+
+```ts
+import activityRouter from './modules/activity/activity.router';
+app.use('/activity', activityRouter);
+```
+
+---
+
+## 6) **Compatibility shim** (replace old logger + storage with unified)
+
+**Goal:** keep your existing calls like `ActivityLogger.logCustomerLogin(...)` but route them into the unified backend with canonical actions & structure.
+
+### 6.1 Replace your old `storage.addActivityLog` with a DB insert
+
+Create/replace **`server/src/modules/activity/storageAdapter.ts`**
+
+```ts
+import { db } from '../../db/client';
+import { sql } from 'drizzle-orm';
+
+// This is the target of ActivityLogger.log → writes directly to activity_events
+export async function addActivityLog(payload: {
+  userId: string;
+  username: string;
+  action: string;           // canonical dot.case
+  details: string;
+  timestamp: string;        // ISO UTC
+  targetId?: string | null;
+  targetType?: string | null;
+  ipAddress?: string | null;
+  meta?: any;
+  severity?: number;
+  requestId?: string | null;
+  actorRole?: string | null;
+}) {
+  await db.execute(sql`
+    INSERT INTO activity_events (at, request_id, actor_id, actor_role, action, subject_type, subject_id, target_type, target_id,
+                                 severity, ip, user_agent, meta, diff, hash_prev, hash_self)
+    VALUES (
+      ${payload.timestamp},
+      ${payload.requestId || null},
+      ${payload.userId || null},
+      ${payload.actorRole || null},
+      ${payload.action},
+      ${payload.targetType || 'user'},   -- subject_type: default to 'user' if not specified
+      ${payload.userId},                 -- subject_id: default to actor
+      ${payload.targetType || null},
+      ${payload.targetId || null},
+      ${payload.severity ?? 20},
+      ${payload.ipAddress || null},
+      ${null},                           -- user_agent (optional)
+      ${sql.json(payload.meta || {})},
+      ${sql.json({})},                   -- diff empty from shim
+      NULL, NULL                         -- hash fields left for unified helper; acceptable for shim
+    )
+  `);
+}
+```
+
+> Note: the **unified helper** `logActivity` (Section 4) produces hash chain. This shim writes directly without hashes to keep your current call sites working immediately. For full tamper‑evidence everywhere, switch callers to `logActivity(req, …)` over time.
+
+### 6.2 Drop‑in `ActivityLogger` (canonical action + IP fix, using the adapter)
+
+Create/replace **`server/src/modules/activity/activity-logger.ts`**
+
+```ts
+import { addActivityLog } from './storageAdapter';
+
+export interface ActivityLogData {
+  userId: string;
+  username?: string;
+  action: string;        // legacy (e.g., 'PRODUCT_UPDATED')
+  details: string;
+  targetId?: string;
+  targetType?: string;
+  ipAddress?: string;
+  meta?: Record<string, unknown>;
+  severity?: 10 | 20 | 30 | 40;
+  requestId?: string;
+  actorRole?: string;
+}
+
+const ACTION_MAP: Record<string, string> = {
+  CUSTOMER_LOGIN: 'auth.login',
+  STAFF_LOGIN: 'auth.login',
+  ORDER_PLACED: 'order.placed',
+  ORDER_STATUS_UPDATED: 'order.status.updated',
+  ORDER_ITEM_EDITED: 'order.item.edited',
+  ORDER_NOTE_ADDED: 'order.note.added',
+  ORDER_COMPLETED: 'order.completed',
+  PRODUCT_UPDATED: 'product.updated',
+  PRODUCT_CREATED: 'product.created',
+  PRODUCT_DELETED: 'product.deleted',
+  USER_CREATED: 'user.created',
+  USER_UPDATED: 'user.updated',
+  USER_DELETED: 'user.deleted',
+  ADDRESS_CREATE: 'address.created',
+  ADDRESS_UPDATE: 'address.updated',
+  ADDRESS_DELETE: 'address.deleted',
+  CATEGORY_CREATE: 'category.created',
+  CATEGORY_UPDATE: 'category.updated',
+  CATEGORY_DELETE: 'category.deleted',
+  PURCHASE_ORDER_CREATE: 'po.created',
+  PURCHASE_ORDER_UPDATE: 'po.updated',
+  PURCHASE_ORDER_DELETE: 'po.deleted',
+  DATA_EXPORTED: 'admin.data.exported',
+};
+
+function canonicalAction(a: string) { return ACTION_MAP[a] || a.toLowerCase().replace(/_/g, '.'); }
+function nowISO() { return new Date().toISOString(); }
+
+export class ActivityLogger {
+  static async log(data: ActivityLogData): Promise<void> {
+    try {
+      await addActivityLog({
+        userId: data.userId,
+        username: data.username || 'Unknown',
+        action: canonicalAction(data.action),
+        details: data.details,
+        timestamp: nowISO(),
+        targetId: data.targetId || null,
+        targetType: data.targetType || 'user',
+        ipAddress: data.ipAddress || null,    // ✅ preserved now
+        meta: data.meta || {},
+        severity: data.severity ?? 20,
+        requestId: data.requestId || null,
+        actorRole: data.actorRole || null,
+      });
+    } catch (err) {
+      console.error('Activity logging failed:', err);
+    }
+  }
+
+  // … keep your convenience methods, updated to include optional meta/severity
+}
+```
+
+> **Answer for your agent:** We are using **one unified system**. The shim makes existing calls write into the *same* `activity_events` table. New code should call `logActivity(req, …)` to get hashing and request context.
+
+---
+
+## 7) Admin UI (search + live stream + CSV)
+
+Create **`client/src/admin/ActivityAdmin.tsx`**
+
+```tsx
+import React, { useEffect, useRef, useState } from 'react';
+
+async function jget(url: string){ const r = await fetch(url); if(!r.ok) throw new Error(await r.text()); return r.json(); }
+
+type Row = {
+  id: string; at: string; action: string; subject_type: string; subject_id: string;
+  target_type?: string; target_id?: string; actor_id?: string; actor_role?: string;
+  severity: number; meta?: any; diff?: any;
+};
+
+export default function ActivityAdmin(){
+  const [rows, setRows] = useState<Row[]>([]);
+  const [q, setQ] = useState({ subject_type: '', subject_id: '', action: '', actor_id: '' });
+  const [streaming, setStreaming] = useState(false);
+  const esRef = useRef<EventSource | null>(null);
+
+  async function load(){
+    const params = new URLSearchParams(Object.entries(q).filter(([,v])=>v));
+    const res = await jget(`/activity?${params.toString()}`);
+    setRows(res.rows || []);
+  }
+
+  function startStream(){
+    if (esRef.current) return; setStreaming(true);
+    const params = new URLSearchParams(Object.entries(q).filter(([,v])=>v));
+    const es = new EventSource(`/activity/stream?${params.toString()}`);
+    es.onmessage = (ev) => { const row = JSON.parse(ev.data); setRows(prev => [row as Row, ...prev].slice(0, 500)); };
+    es.onerror = () => { es.close(); esRef.current = null; setStreaming(false); };
+    esRef.current = es;
+  }
+  function stopStream(){ esRef.current?.close(); esRef.current = null; setStreaming(false); }
+
+  useEffect(()=>{ load(); }, []);
+
+  return (
+    <div className="p-4 space-y-4">
+      <h2 className="text-xl font-semibold">Activity</h2>
+      <div className="grid grid-cols-5 gap-2 items-end">
+        <label className="flex flex-col">Subject Type<input className="input input-bordered" value={q.subject_type} onChange={e=>setQ({...q, subject_type:e.target.value})}/></label>
+        <label className="flex flex-col">Subject ID<input className="input input-bordered" value={q.subject_id} onChange={e=>setQ({...q, subject_id:e.target.value})}/></label>
+        <label className="flex flex-col">Action<input className="input input-bordered" value={q.action} onChange={e=>setQ({...q, action:e.target.value})}/></label>
+        <label className="flex flex-col">Actor ID<input className="input input-bordered" value={q.actor_id} onChange={e=>setQ({...q, actor_id:e.target.value})}/></label>
+        <div className="flex gap-2">
+          <button className="btn" onClick={load}>Search</button>
+          {!streaming ? <button className="btn" onClick={startStream}>Stream</button> : <button className="btn" onClick={stopStream}>Stop</button>}
+          <button className="btn" onClick={()=>{
+            const header = ['at','action','subject_type','subject_id','target_type','target_id','actor_id','actor_role','severity'];
+            const lines = [header.join(',')];
+            for (const r of rows) {
+              const row = [r.at, r.action, r.subject_type, r.subject_id, r.target_type||'', r.target_id||'', r.actor_id||'', r.actor_role||'', String(r.severity)];
+              lines.push(row.map(x=>`"${String(x).replaceAll('"','""')}"`).join(','));
+            }
+            const blob = new Blob([lines.join('\n')], { type: 'text/csv' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob); a.download = `activity_${Date.now()}.csv`; a.click();
+          }}>Export CSV</button>
+        </div>
+      </div>
+
+      <div className="border rounded overflow-auto">
+        <table className="w-full text-sm">
+          <thead className="bg-gray-50"><tr>
+            <th className="p-2 text-left">Time</th>
+            <th className="p-2 text-left">Action</th>
+            <th className="p-2 text-left">Subject</th>
+            <th className="p-2 text-left">Target</th>
+            <th className="p-2 text-left">Actor</th>
+            <th className="p-2 text-left">Severity</th>
+          </tr></thead>
+          <tbody>
+            {rows.map(r => (
+              <tr key={r.id} className="border-t">
+                <td className="p-2">{new Date(r.at).toLocaleString()}</td>
+                <td className="p-2">{r.action}</td>
+                <td className="p-2">{r.subject_type}:{r.subject_id?.slice(0,8)}</td>
+                <td className="p-2">{r.target_type ? `${r.target_type}:${r.target_id?.slice(0,8)}` : ''}</td>
+                <td className="p-2">{r.actor_role || ''} {r.actor_id ? `(${r.actor_id.slice(0,8)})` : ''}</td>
+                <td className="p-2">{r.severity}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+```
+
+Wire into Admin routes/nav (⚙️):
+
+```tsx
+// <Route path="/admin/activity" element={<ActivityAdmin/>} />
+```
+
+---
+
+## 8) Integration examples (use now)
+
+**Unified Credit PATCH** – log limit/term/hold change
+
+```ts
+// server/src/modules/credit/unified.router.ts
+import { logActivity } from '../activity/log';
+// ... inside PATCH after computing before/after
+await logActivity(req, {
+  action: 'credit.limit.update',
+  subjectType: 'customer',
+  subjectId: id,
+  severity: 20,
+  meta: { term: p.data.term, hold: p.data.onCreditHold },
+  diff: { before: { limitCents: before?.credit_limit_cents, term: before?.term, hold: before?.on_credit_hold },
+          after:  { limitCents: after?.credit_limit_cents,  term: after?.term,  hold: after?.on_credit_hold } }
+});
+```
+
+**POS Sale** – log created invoice
+
+```ts
+// server/src/modules/pos/pos.router.ts
+import { logActivity } from '../activity/log';
+// after creating `inv`
+await logActivity(req, {
+  action: 'pos.sale.created',
+  subjectType: 'customer',
+  subjectId: inv.customer_id || '00000000-0000-0000-0000-000000000000',
+  targetType: 'invoice',
+  targetId: inv.id,
+  meta: { invoiceNo: inv.invoice_no, totalCents: inv.total_cents, tender: req.body.tender },
+});
+```
+
+---
+
+## 9) Optional: nightly archive
+
+Create **`server/scripts/archiveActivity.ts`**
+
+```ts
+import { db } from '../src/db/client';
+import { sql } from 'drizzle-orm';
+
+async function main(){
+  const cutoff = new Date(); cutoff.setMonth(cutoff.getMonth() - 18);
+  const { rows } = await db.execute(sql`SELECT * FROM activity_events WHERE at < ${cutoff.toISOString()} ORDER BY at ASC`);
+  // TODO: write rows to object storage as NDJSON, then delete if policy allows
+  console.log('Archiving', rows.length, 'events');
+}
+main().catch(e=>{ console.error(e); process.exit(1); });
+```
+
+---
+
+## 10) Rollout plan
+
+1. Run migration; deploy middleware + router.
+2. Replace old `storage.addActivityLog` and `ActivityLogger` with the **compatibility shim** (Section 6) so **all existing calls** write into `activity_events`.
+3. Start moving critical call sites to call `logActivity(req, …)` directly (to get hash chain + request context).
+4. Add the Admin page to the dashboard and verify filtering + live stream.
+5. Lock down DB perms to append‑only for app role; keep DELETE for admin‑only maintenance.
+
+---
+
+**End of pack.** This delivers a single, unified activity system (no dual functions), with immediate compatibility for your existing logger and a path to full tamper‑evident logging everywhere.

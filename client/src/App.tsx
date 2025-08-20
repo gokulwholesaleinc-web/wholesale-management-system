@@ -64,6 +64,7 @@ import CreditTermsManagement from "@/pages/CreditTermsManagement";
 import PosApp from "@/pages/pos/PosApp";
 import NewOrdersPage from "@/pages/NewOrdersPage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
+import InstorePOS from "@/pages/InstorePOS";
 
 
 import { Helmet } from "react-helmet";
@@ -255,10 +256,10 @@ function App() {
           </Route>
           {/* In-Store POS System Routes - Completely isolated from main app */}
           <Route path="/instore/:path*">
-            <PosApp />
+            <StaffProtectedRoute component={InstorePOS} />
           </Route>
           <Route path="/instore">
-            <PosApp />
+            <StaffProtectedRoute component={InstorePOS} />
           </Route>
           <Route path="/order-details/:orderId">
             <StaffProtectedRoute component={OrderDetailPage} />

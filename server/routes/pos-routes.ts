@@ -62,9 +62,9 @@ router.get('/lookup/:identifier', async (req, res) => {
   try {
     const identifier = req.params.identifier;
     const { rows } = await db.execute(sql`
-      SELECT id, sku, name, description, price_cents, category, barcode, uom
+      SELECT id, sku, name, description, price, category_id as category, upc_code as barcode, 'ea' as uom
       FROM products 
-      WHERE sku = ${identifier} OR barcode = ${identifier}
+      WHERE sku = ${identifier} OR upc_code = ${identifier}
       LIMIT 1
     `);
     
@@ -88,7 +88,7 @@ router.get('/search', async (req, res) => {
     }
     
     const { rows } = await db.execute(sql`
-      SELECT id, sku, name, description, "priceCents" as price_cents, category, barcode, uom
+      SELECT id, sku, name, description, price, category_id as category, upc_code as barcode, 'ea' as uom
       FROM products 
       WHERE name ILIKE ${`%${query}%`} OR sku ILIKE ${`%${query}%`} OR description ILIKE ${`%${query}%`}
       ORDER BY 
