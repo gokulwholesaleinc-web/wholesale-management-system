@@ -4,6 +4,7 @@ import { db } from '../db';
 import { users } from '../..../../../shared/schema';
 import { or, eq } from 'drizzle-orm';
 import { smsService } from './smsService';
+import { accountRequestStaffNotification, detectUserLanguage, getTemplate } from '../../shared/multilingual-templates';
 
 // Soft-fail approach for email service in development
 let mailService: MailService | null = null;
@@ -53,46 +54,18 @@ export async function sendAccountRequestNotification(request: AccountRequest): P
   
 
 
-  const subject = `New Account Request - ${request.businessName}`;
+  // Use multilingual email templates (default to English for staff notifications)
+  const emailData = {
+    businessName: request.businessName,
+    contactName: `${request.contactFirstName} ${request.contactLastName}`,
+    phone: request.phone,
+    email: request.email,
+    requestId: request.id?.toString() || 'N/A',
+    createdAt: request.createdAt ? new Date(request.createdAt).toLocaleString() : 'Unknown'
+  };
   
-  const htmlContent = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <h2 style="color: #1f2937; margin-bottom: 20px;">New Account Request</h2>
-      
-      <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-        <h3 style="color: #374151; margin-top: 0;">Business Information</h3>
-        <p><strong>Business Name:</strong> ${request.businessName}</p>
-        <p><strong>Contact:</strong> ${request.contactFirstName} ${request.contactLastName}</p>
-        <p><strong>Email:</strong> ${request.email}</p>
-        <p><strong>Phone:</strong> ${request.phone}</p>
-        <p><strong>FEIN:</strong> ${request.feinNumber}</p>
-        ${request.businessType ? `<p><strong>Business Type:</strong> ${request.businessType}</p>` : ''}
-
-      </div>
-
-      ${request.businessAddress ? `
-        <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-          <h3 style="color: #374151; margin-top: 0;">Address</h3>
-          <p>${request.businessAddress}</p>
-          ${request.city || request.state || request.postalCode ? `<p>${[request.city, request.state, request.postalCode].filter(Boolean).join(', ')}</p>` : ''}
-        </div>
-      ` : ''}
-
-      ${request.businessDescription ? `
-        <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-          <h3 style="color: #374151; margin-top: 0;">Business Description</h3>
-          <p>${request.businessDescription}</p>
-        </div>
-      ` : ''}
-
-      <div style="background-color: #dbeafe; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-        <h3 style="color: #1e40af; margin-top: 0;">Next Steps</h3>
-        <p>Please review this account request in your admin dashboard and approve or reject it.</p>
-        <p><strong>Request ID:</strong> ${request.id}</p>
-        <p><strong>Submitted:</strong> ${request.createdAt ? new Date(request.createdAt).toLocaleString() : 'Unknown'}</p>
-      </div>
-    </div>
-  `;
+  const subject = getTemplate(accountRequestStaffNotification.email.subject, 'en');
+  const htmlContent = getTemplate(accountRequestStaffNotification.email.html(emailData), 'en');
 
   const textContent = `
 New Account Request
@@ -182,10 +155,20 @@ Submitted: ${request.createdAt ? new Date(request.createdAt).toLocaleString() : 
             phone: smsData.customData.phone
           });
           
-          const smsMessage = `🔔 New wholesale account request from ${request.businessName}. Contact: ${request.contactFirstName} ${request.contactLastName}. Review in admin panel.`;
+          // Get staff member's preferred language
+          const staffLanguage = detectUserLanguage(staffMember);
+          console.log(`🌐 [Account Request] Staff ${staffMember.phone} language: ${staffLanguage}`);
+          
+          // Use multilingual SMS template
+          const smsData = {
+            businessName: request.businessName,
+            contactName: `${request.contactFirstName} ${request.contactLastName}`
+          };
+          const smsMessage = getTemplate(accountRequestStaffNotification.sms.message(smsData), staffLanguage);
+          
           const smsResult = await smsService.send({
             to: staffMember.phone!,
-            body: smsMessage
+            message: smsMessage
           });
           
           if (smsResult?.success) {

@@ -6,6 +6,7 @@ import crypto from 'crypto';
 import { emailService } from '../services/emailService';
 import { smsService } from '../services/smsService';
 import { storage } from '../storage';
+import { passwordResetEmailTemplates, passwordResetSmsTemplates, detectUserLanguage, getTemplate } from '../../shared/multilingual-templates';
 
 const router = Router();
 
@@ -30,37 +31,19 @@ function resetUrl(token: string) {
   return `${base}/reset-password?token=${encodeURIComponent(token)}`;
 }
 
-// Email template
-function resetEmailTemplate(link: string, minutes: number) {
-  const subject = 'Password Reset Request';
-  const text = `We received a request to reset your password.
-
-Use the link below to set a new password. This link expires in ${minutes} minutes.
-
-${link}
-
-If you did not request a password reset, you can safely ignore this message.`;
-
-  const html = `
-  <div style="font-family: Inter, Arial, sans-serif; max-width: 560px; margin: 0 auto;">
-    <h2 style="margin-bottom: 8px;">Password Reset Request</h2>
-    <p style="color:#444;margin:0 0 16px;">We received a request to reset your password. The link below expires in <b>${minutes} minutes</b>.</p>
-    <p style="margin: 16px 0;">
-      <a href="${link}" style="display:inline-block;background:#4f46e5;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none;font-weight:600">
-        Set New Password
-      </a>
-    </p>
-    <p style="color:#555;margin:16px 0;">If the button doesn't work, copy and paste this URL:</p>
-    <code style="display:block;white-space:break-spaces;background:#f6f8fa;padding:12px;border-radius:8px;color:#111">${link}</code>
-    <p style="color:#777;margin-top:16px;font-size:12px;">If you didn't request this, you can safely ignore this email.</p>
-  </div>
-  `;
+// Multilingual email template
+function resetEmailTemplate(link: string, minutes: number, language: string = 'en') {
+  const data = { link, minutes };
+  const subject = getTemplate(passwordResetEmailTemplates.subject, language as any);
+  const html = getTemplate(passwordResetEmailTemplates.html(data), language as any);
+  const text = getTemplate(passwordResetEmailTemplates.text(data), language as any);
   return { subject, text, html };
 }
 
-// SMS template
-function resetSmsTemplate(link: string, minutes: number) {
-  return `Reset your password (expires in ${minutes}m): ${link} Reply STOP to opt out.`;
+// Multilingual SMS template
+function resetSmsTemplate(link: string, minutes: number, language: string = 'en') {
+  const data = { link, minutes };
+  return getTemplate(passwordResetSmsTemplates.message(data), language as any);
 }
 
 // POST /auth/forgot-password
@@ -93,13 +76,17 @@ router.post('/auth/forgot-password', async (req: Request, res: Response) => {
 
     const link = resetUrl(token);
 
-    // Send via requested channels
+    // Password reset always uses English for security consistency
+    console.log(`🔐 [Password Reset] Sending password reset in English for security consistency`);
+
+    // Send via requested channels in English
     if (channel === 'email' || channel === 'both') {
       if (!user.email) {
         console.warn('[forgot-password] user has no email on file', { userId: user.id });
       } else {
-        const { subject, text, html } = resetEmailTemplate(link, TOKEN_TTL_MINUTES);
+        const { subject, text, html } = resetEmailTemplate(link, TOKEN_TTL_MINUTES, 'en');
         await emailService.send({ to: user.email, subject, text, html });
+        console.log(`📧 [Password Reset] Email sent in English to ${user.email}`);
       }
     }
 
@@ -107,8 +94,9 @@ router.post('/auth/forgot-password', async (req: Request, res: Response) => {
       if (!user.phone) {
         console.warn('[forgot-password] user has no phone on file', { userId: user.id });
       } else {
-        const message = resetSmsTemplate(link, TOKEN_TTL_MINUTES);
+        const message = resetSmsTemplate(link, TOKEN_TTL_MINUTES, 'en');
         await smsService.send({ to: user.phone, message });
+        console.log(`📱 [Password Reset] SMS sent in English to ${user.phone?.slice(-4)}`);
       }
     }
 
