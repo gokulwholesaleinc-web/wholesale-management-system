@@ -3,7 +3,7 @@ function mustGet(name: string) {
   if (!v) {
     // In prod, fail fast so you never send localhost links
     if (process.env.NODE_ENV === 'production') {
-      throw new Error(`[CONFIG] Missing ${name}`);
+      throw new Error(`[CONFIG] Missing required environment variable: ${name}. Set this in your deployment's Secrets panel.`);
     }
   }
   return v;
@@ -13,10 +13,15 @@ function mustGet(name: string) {
 export function frontendUrl(): string {
   // Use FRONTEND_PUBLIC_URL if you host FE separately (Vercel, Netlify, etc.)
   // Otherwise APP_URL can be your single canonical domain.
-  const base =
-    mustGet('FRONTEND_PUBLIC_URL') ||
-    mustGet('APP_URL') ||
-    'https://shopgokul.com';
+  let base = mustGet('FRONTEND_PUBLIC_URL') || mustGet('APP_URL');
+  
+  if (!base && process.env.NODE_ENV !== 'production') {
+    base = 'https://shopgokul.com';
+  }
+  
+  if (!base) {
+    throw new Error('[CONFIG] No frontend URL configured. Set APP_URL in production deployment secrets.');
+  }
 
   // Normalize and enforce https in prod
   const u = new URL(base);
