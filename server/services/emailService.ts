@@ -15,8 +15,11 @@ export const emailService = {
       
       if (disableTracking) {
         // Disable click tracking to prevent link corruption
-        mailSettings.clickTracking = { enable: false };
+        mailSettings.clickTracking = { enable: false, enableText: false };
         mailSettings.openTracking = { enable: false };
+        // Additional settings to prevent URL wrapping
+        mailSettings.ganalytics = { enable: false };
+        mailSettings.subscriptionTracking = { enable: false };
       }
 
       console.log("[EMAIL] Attempting to send email:", {

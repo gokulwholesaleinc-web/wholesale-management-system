@@ -155,11 +155,8 @@ export class PasswordResetService {
         <h2>Password reset requested</h2>
         <p>Hi ${name},</p>
         <p>We received a request to reset your password. Click the button below to continue.</p>
-        <p>
-          <a href="${link}" style="background:#3b82f6;color:#fff;text-decoration:none;padding:12px 16px;border-radius:8px;display:inline-block">
-            Reset your password
-          </a>
-        </p>
+        <p style="font-weight:bold;margin-bottom:16px">Copy and paste this link in your browser:</p>
+        <p style="background:#f3f4f6;padding:16px;border-radius:8px;word-break:break-all;font-family:monospace;font-size:14px;border:1px solid #d1d5db">${link}</p>
         <p>This link expires <b>${expiryText}</b> and can be used once.</p>
         
         <div style="margin-top:24px;padding:16px;background:#f3f4f6;border-radius:8px;font-size:14px">
