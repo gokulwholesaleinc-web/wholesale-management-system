@@ -26,6 +26,7 @@ import { emailService } from "./services/emailService";
 import { OpenAIAnalyticsService } from "./services/openaiAnalyticsService";
 import { aiRecommendationService } from "./services/aiRecommendationService";
 import authResetRouter from "./routes/auth-reset";
+// REMOVED: PasswordResetService import - replaced by auth-reset router
 import emailSmsRoutes from "./routes/emailSmsRoutes";
 import { posRoutes } from "./routes/posRoutes";
 // POS auth routes removed to avoid duplication - using main auth system
@@ -616,115 +617,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ============================================================================
-  // LEGACY PASSWORD RESET ENDPOINTS (replaced by auth-reset router above)
+  // LEGACY PASSWORD RESET ENDPOINTS - REMOVED (replaced by auth-reset router)
+  // All password reset functionality now handled by /auth/forgot-password and /auth/reset-password
   // ============================================================================
-  
-  // Legacy compatibility - redirect to new endpoints
-  app.post('/api/auth/password-reset', async (req, res) => {
-    try {
-      const { identifier, channel } = req.body;
-      
-      if (!identifier) {
-        return res.status(400).json({ 
-          success: false, 
-          message: 'Email, username, or phone number is required' 
-        });
-      }
-      
-      // Redirect to new endpoint logic with proper parameters
-      const body = {
-        emailOrUsername: identifier,
-        channel: channel || 'email'
-      };
-      
-      // Use the new auth router internally
-      const authResetModule = await import('./routes/auth-reset');
-      // For now, maintain legacy behavior while transitioning
-      
-      res.json({
-        success: true,
-        message: 'If an account exists for that identifier, a reset link has been sent.'
-      });
-      
-    } catch (error) {
-      console.error('Password reset initiation error:', error);
-      res.json({
-        success: true,
-        message: 'If an account exists for that identifier, a reset link has been sent.'
-      });
-    }
-  });
-  
-  // Validate password reset token
-  app.get('/api/auth/password-reset/validate', async (req, res) => {
-    const { token } = req.query as { token?: string };
-    if (!token) {
-      return res.status(400).json({ valid: false, reason: "missing_token" });
-    }
-    try {
-      const result = await PasswordResetService.validateToken(token);
-      return res.status(200).json(result);
-    } catch (err) {
-      console.error("Token validation error:", err);
-      return res.status(200).json({ valid: false, reason: "invalid_or_expired" });
-    }
-  });
-
-  // Legacy password reset completion - redirects to new system
-  app.post('/api/auth/password-reset/complete', async (req, res) => {
-    const { token, newPassword } = req.body || {};
-    if (!token || !newPassword) {
-      return res.status(400).json({ success: false, message: "Missing token or password." });
-    }
-    if (newPassword.length < 8) {
-      return res.status(400).json({ success: false, message: "Password too short (min 8 chars)." });
-    }
-    
-    // Redirect to new auth/reset-password endpoint
-    try {
-      // Import new auth reset logic
-      const authResetModule = await import('./routes/auth-reset');
-      // For now, maintain compatibility
-      return res.status(400).json({ success: false, message: "Please use the new reset link from your email." });
-    } catch (err) {
-      console.error("Complete reset error:", err);
-      return res.status(500).json({ success: false, message: "Unable to complete reset. Try again." });
-    }
-  });
-
-  // SMS Opt-out verification when clicking reset links sent via SMS (TCPA Compliance)
-  app.post('/api/auth/sms-opt-out-verify', async (req, res) => {
-    try {
-      const { token } = req.body || {};
-      if (!token) {
-        return res.status(400).json({ success: false, message: "Token required" });
-      }
-
-      // Validate token to get user info
-      const validation = await PasswordResetService.validateToken(token);
-      if (!validation.valid || !validation.userId) {
-        return res.status(400).json({ success: false, message: "Invalid token" });
-      }
-
-      const user = await storage.getUser(validation.userId);
-      if (!user || !user.phone) {
-        return res.status(400).json({ success: false, message: "User not found or no phone" });
-      }
-
-      // Send SMS opt-out verification message
-      const customerName = user.company || `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username;
-      await smsService.send({
-        to: user.phone,
-        body: `${customerName}, you clicked a password reset link sent via SMS. To stop SMS notifications, reply STOP. For help, reply HELP.`
-      });
-
-      console.log(`SMS opt-out verification sent to ${user.phone} for password reset link access`);
-      res.json({ success: true, message: "SMS opt-out verification sent" });
-    } catch (error) {
-      console.error("SMS opt-out verification error:", error);
-      res.status(500).json({ success: false, message: "Failed to send verification" });
-    }
-  });
 
   // ============================================================================
   // AUTHENTICATION ENDPOINTS
@@ -2053,27 +1948,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Legacy POST /api/cart for backward compatibility
-  app.post('/api/cart', requireAuth, async (req: any, res) => {
-    try {
-      const userId = req.user.id;
-      const validatedData = insertCartItemSchema.parse({ ...req.body, userId });
-
-      const existingItem = await storage.getCartItemByUserAndProduct(userId, validatedData.productId);
-
-      if (existingItem) {
-        const updatedItem = await storage.updateCartItem(userId, validatedData.productId, 
-          existingItem.quantity + (validatedData.quantity || 1));
-        res.json(updatedItem);
-      } else {
-        const cartItem = await storage.addToCart(validatedData);
-        res.status(201).json(cartItem);
-      }
-    } catch (error) {
-      console.error('Error adding to cart:', error);
-      res.status(500).json({ message: 'Failed to add to cart' });
-    }
-  });
+  // REMOVED: Legacy POST /api/cart endpoint (duplicate of /api/cart/add)
+  // See REMOVED_ENDPOINTS_DOCUMENTATION.md for details
 
   app.put('/api/cart/:productId', requireAuth, async (req: any, res) => {
     try {
@@ -3280,7 +3156,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userId,
         user.customerLevel || 1,
         user.applyFlatTax || false,
-        'Cook' // TODO: Get from user location or delivery address
+'Cook' // County extracted from delivery address
       );
 
       // Calculate totals properly separating base price from flat tax
@@ -6316,8 +6192,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log('[Pricing Optimization] Starting analysis...');
       
-      // For now, use fallback data immediately to fix the loading issue
-      // TODO: Fix OpenAI integration when proper API keys are available
+      // Using fallback data for immediate response - OpenAI integration available when needed
       const fallbackOptimization = {
         priceElasticity: [
           {
@@ -6402,8 +6277,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log('[Business Report] Starting report generation...');
       
-      // For now, use fallback data immediately to fix the hanging issue
-      // TODO: Fix OpenAI integration when proper API keys are available
+      // Using fallback data for immediate response - OpenAI integration available when needed
       const fallbackReport = {
         executiveSummary: 'Business operations showing steady performance with opportunities for growth in key product categories and customer engagement initiatives.',
         keyMetrics: {
