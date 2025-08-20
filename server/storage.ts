@@ -820,8 +820,12 @@ export class DatabaseStorage implements IStorage {
 
   // Update user password separately
   async updateUserPassword(id: string, password: string): Promise<User> {
+    console.log("[STORAGE] Updating password for user:", id);
+    console.log("[STORAGE] New password length:", password.length);
+    
     // Hash the new password
     const hashedPassword = await bcrypt.hash(password, 10);
+    console.log("[STORAGE] Password hashed successfully");
 
     const [updatedUser] = await db
       .update(users)
@@ -832,16 +836,25 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, id))
       .returning();
 
+    if (updatedUser) {
+      console.log("[STORAGE] Password updated in database for user:", updatedUser.username);
+    } else {
+      console.log("[STORAGE] No user found with id:", id);
+      throw new Error("User not found for password update");
+    }
+
     return updatedUser;
   }
 
   // Password reset token operations
   async createPasswordResetToken(userId: string, tokenHash: string, expiresAt: Date): Promise<void> {
+    console.log("[STORAGE] Creating password reset token for user:", userId);
     await db.insert(passwordResetTokens).values({
       userId,
       tokenHash,
       expiresAt,
     });
+    console.log("[STORAGE] Password reset token created successfully");
   }
 
   // Implementation for password reset token lookup
@@ -869,6 +882,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getValidPasswordResetByHash(tokenHash: string): Promise<{ user_id: string } | undefined> {
+    console.log("[STORAGE] Looking for valid password reset token with hash:", tokenHash.substring(0, 10) + "...");
     const [record] = await db
       .select({ user_id: passwordResetTokens.userId })
       .from(passwordResetTokens)
@@ -879,6 +893,13 @@ export class DatabaseStorage implements IStorage {
           isNull(passwordResetTokens.usedAt)
         )
       );
+    
+    if (record) {
+      console.log("[STORAGE] Valid token found for user:", record.user_id);
+    } else {
+      console.log("[STORAGE] No valid token found");
+    }
+    
     return record;
   }
 

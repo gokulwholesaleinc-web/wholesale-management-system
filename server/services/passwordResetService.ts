@@ -84,23 +84,39 @@ export class PasswordResetService {
 
   static async completeReset(rawToken: string, newPassword: string) {
     try {
+      console.log("[RESET] Starting password reset completion...");
       const tokenHash = hashToken(rawToken);
       const record = await storage.getValidPasswordResetByHash(tokenHash);
       if (!record) {
+        console.log("[RESET] Token validation failed - invalid or expired");
         return { success: false, message: "Invalid or expired link." };
       }
 
-      // Update password
-      await storage.updateUser({ id: record.user_id, password: newPassword });
+      console.log("[RESET] Valid token found for user:", record.user_id);
+      
+      // Update password using the dedicated password update method
+      console.log("[RESET] Updating password for user:", record.user_id);
+      console.log("[RESET] New password length:", newPassword.length);
+      
+      try {
+        const updatedUser = await storage.updateUserPassword(record.user_id, newPassword);
+        console.log("[RESET] Password updated successfully for user:", updatedUser.username);
+      } catch (updateError) {
+        console.error("[RESET] Password update failed:", updateError);
+        throw updateError;
+      }
 
       // Invalidate token
       await storage.markPasswordResetUsed(tokenHash);
+      console.log("[RESET] Token marked as used");
 
       // Optional: invalidate any other active tokens for this user
       if (storage.invalidateOtherResetTokensForUser) {
         await storage.invalidateOtherResetTokensForUser(record.user_id, tokenHash);
+        console.log("[RESET] Other tokens invalidated");
       }
 
+      console.log("[RESET] Password reset completed successfully");
       return { success: true, message: "Password updated. You can now log in." };
     } catch (e) {
       console.error("completeReset error:", e);
