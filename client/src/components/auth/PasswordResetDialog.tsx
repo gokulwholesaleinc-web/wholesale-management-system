@@ -40,12 +40,12 @@ export function PasswordResetDialog({ open, onOpenChange }: PasswordResetDialogP
 
     try {
       // Use direct fetch for public endpoint to avoid adding auth headers
-      const response = await fetch('/api/auth/password-reset', {
+      const response = await fetch('/auth/forgot-password', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ identifier: identifier.trim(), channel }),
+        body: JSON.stringify({ emailOrUsername: identifier.trim(), channel }),
         credentials: 'include'
       });
 
