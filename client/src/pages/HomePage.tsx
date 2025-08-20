@@ -229,8 +229,155 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Contact Section */}
+      {/* About Us Section */}
+      <div className="py-16 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">About Gokul Wholesale</h2>
+            <p className="text-lg text-gray-600">Your trusted wholesale partner since 2009</p>
+          </div>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-6">Our Story</h3>
+              <div className="space-y-4 text-gray-600">
+                <p>
+                  Founded in 2009, Gokul Wholesale has been serving businesses across the region for over 16 years. 
+                  What started as a small operation has grown into a trusted wholesale distributor, committed to 
+                  providing quality products and exceptional service to our business customers.
+                </p>
+                <p>
+                  Located in Itasca, Illinois, our warehouse facility houses thousands of products across multiple 
+                  categories. We work directly with manufacturers and trusted suppliers to ensure competitive pricing 
+                  and reliable inventory for our customers.
+                </p>
+                <p>
+                  Our mission is simple: to help businesses succeed by providing them with the products they need, 
+                  when they need them, at prices that make sense for their bottom line.
+                </p>
+              </div>
+            </div>
+            <div className="bg-white p-8 rounded-lg shadow-lg">
+              <h3 className="text-xl font-bold text-gray-900 mb-6">Why Businesses Choose Us</h3>
+              <div className="space-y-4">
+                <div className="flex items-start">
+                  <CheckCircle className="h-5 w-5 text-green-500 mt-1 mr-3 flex-shrink-0" />
+                  <div>
+                    <h4 className="font-semibold text-gray-900">16+ Years Experience</h4>
+                    <p className="text-gray-600 text-sm">Established wholesale expertise since 2009</p>
+                  </div>
+                </div>
+                <div className="flex items-start">
+                  <CheckCircle className="h-5 w-5 text-green-500 mt-1 mr-3 flex-shrink-0" />
+                  <div>
+                    <h4 className="font-semibold text-gray-900">Competitive Wholesale Pricing</h4>
+                    <p className="text-gray-600 text-sm">Tier-based pricing with volume discounts</p>
+                  </div>
+                </div>
+                <div className="flex items-start">
+                  <CheckCircle className="h-5 w-5 text-green-500 mt-1 mr-3 flex-shrink-0" />
+                  <div>
+                    <h4 className="font-semibold text-gray-900">Reliable Supply Chain</h4>
+                    <p className="text-gray-600 text-sm">Consistent inventory and timely deliveries</p>
+                  </div>
+                </div>
+                <div className="flex items-start">
+                  <CheckCircle className="h-5 w-5 text-green-500 mt-1 mr-3 flex-shrink-0" />
+                  <div>
+                    <h4 className="font-semibold text-gray-900">Flexible Payment Terms</h4>
+                    <p className="text-gray-600 text-sm">Credit options for qualified businesses</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* FAQ Section */}
       <div className="py-16 bg-white">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Frequently Asked Questions</h2>
+            <p className="text-lg text-gray-600">Everything you need to know about working with us</p>
+          </div>
+          
+          <div className="space-y-8">
+            <div className="bg-gray-50 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">How do I become a customer?</h3>
+              <p className="text-gray-600">
+                Getting started is easy! Create an account request through our website, and our team will review 
+                your application. Once approved, you'll receive login credentials and can begin placing orders 
+                with access to wholesale pricing.
+              </p>
+            </div>
+            
+            <div className="bg-gray-50 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">What are your minimum order requirements?</h3>
+              <p className="text-gray-600">
+                Minimum order requirements vary by product category. Our team will provide specific details 
+                during the account setup process. We work with businesses of all sizes and strive to 
+                accommodate different order volumes.
+              </p>
+            </div>
+            
+            <div className="bg-gray-50 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">Do you offer delivery services?</h3>
+              <p className="text-gray-600">
+                Yes, we provide delivery services to our customers. Delivery scheduling is available through 
+                our online ordering system, and delivery fees are calculated based on location and order size. 
+                Pickup options are also available from our Itasca warehouse.
+              </p>
+            </div>
+            
+            <div className="bg-gray-50 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">What payment options do you accept?</h3>
+              <p className="text-gray-600">
+                We offer flexible payment options including credit terms for qualified businesses, cash payments, 
+                and various electronic payment methods. Payment terms are established during the account approval process.
+              </p>
+            </div>
+            
+            <div className="bg-gray-50 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">How does your pricing system work?</h3>
+              <p className="text-gray-600">
+                We use a tier-based pricing system that rewards customer loyalty and volume purchases. 
+                Higher customer tiers receive better pricing and access to exclusive deals. Pricing tiers 
+                are assigned based on purchase history and business relationship.
+              </p>
+            </div>
+            
+            <div className="bg-gray-50 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">Can I track my orders?</h3>
+              <p className="text-gray-600">
+                Absolutely! Our online system provides complete order tracking, from placement to delivery. 
+                You can view order status, delivery schedules, and order history through your customer dashboard.
+              </p>
+            </div>
+            
+            <div className="bg-gray-50 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">What if I need to return or exchange products?</h3>
+              <p className="text-gray-600">
+                We stand behind the quality of our products. Return and exchange policies vary by product type. 
+                Contact our customer service team to discuss any issues with your order, and we'll work to 
+                find a suitable solution.
+              </p>
+            </div>
+            
+            <div className="bg-gray-50 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">How can I get product information or pricing?</h3>
+              <p className="text-gray-600">
+                Browse our online catalog to view available products. Pricing is available after login for 
+                approved customers. For specific product questions or bulk pricing inquiries, contact our 
+                sales team directly.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Contact Section */}
+      <div className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">Get in Touch</h2>

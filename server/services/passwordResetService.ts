@@ -46,8 +46,19 @@ export class PasswordResetService {
       const canSms = !!user.phone; // expect E.164 (+1555…)
       const finalChannel = resolveChannel(channel, { canEmail, canSms });
 
+      console.log("[RESET] User capabilities:", { 
+        userId: user.id, 
+        username: user.username,
+        hasEmail: canEmail, 
+        hasSms: canSms, 
+        phone: user.phone ? `${user.phone.substring(0, 3)}***${user.phone.substring(user.phone.length - 4)}` : null,
+        requestedChannel: channel,
+        finalChannel 
+      });
+
       // Fire-and-forget delivery (but await so errors are caught)
       if (finalChannel === "email" && canEmail && user.email) {
+        console.log("[RESET] Sending email to:", user.email.replace(/(.{2}).*(@.*)/, '$1***$2'));
         await emailService.send({
           to: user.email,
           subject: "Password Reset",
@@ -55,12 +66,21 @@ export class PasswordResetService {
           text: this.buildEmailText(resetLink, expiresAt),
           disableTracking: true, // Prevent SendGrid click tracking from corrupting reset links
         });
+        console.log("[RESET] Email sent successfully");
       } else if (finalChannel === "sms" && canSms && user.phone) {
-        await smsService.send({
-          to: user.phone,
-          body: this.buildSmsText(resetLink, expiresAt),
-        });
+        console.log("[RESET] Sending SMS to:", user.phone.replace(/(.{3}).*(.{4})/, '$1***$2'));
+        try {
+          const smsResult = await smsService.send({
+            to: user.phone,
+            body: this.buildSmsText(resetLink, expiresAt),
+          });
+          console.log("[RESET] SMS sent successfully:", { messageId: smsResult.messageId });
+        } catch (smsError) {
+          console.error("[RESET] SMS sending failed:", smsError);
+          throw smsError;
+        }
       } else {
+        console.log("[RESET] No delivery channel available:", { finalChannel, canEmail, canSms });
         // If user lacks chosen channel, still return neutral message
         return NEUTRAL_MSG;
       }
