@@ -38,8 +38,8 @@ export class PasswordResetService {
 
       const resetLink = buildFrontendUrl("/reset-password", { token: raw });
       
-      // Debug logging to verify correct URL generation
-      console.log("[RESET] resetUrl=", resetLink);
+      // Debug logging to verify correct URL generation  
+      console.log("[RESET] sending URL ->", resetLink);
 
       // Decide delivery channel
       const canEmail = !!user.email;
