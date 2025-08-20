@@ -1,0 +1,129 @@
+Why full cutover now (vs hybrid)
+
+Less code, fewer bugs: One code path → no shims, no dual-writes, no legacy adapters.
+
+Security now, not later: Single-use hashed tokens, strict TTL, audit logs—all enforced everywhere on day one.
+
+Operational clarity: One set of env vars, one set of metrics, one incident playbook.
+
+Cheaper long-term: You won’t spend time retiring “temporaries” later.
+
+Cutover scope (what changes)
+
+Remove temp-password flow & legacy endpoints/fields.
+
+Keep the same public endpoints paths if you want (so frontends don’t change), but route them to the new handlers only:
+
+POST /auth/forgot-password → issues token (email and/or SMS)
+
+POST /auth/reset-password → verifies token, sets new password, consumes token
+
+Replace all sendEmail, sendSms with emailService.send() and smsService.send() (the corrected services).
+
+Store reset tokens in one table: password_reset_tokens(id, userId, tokenHash, expiresAt, usedAt, channel, ip, ua).
+
+Deployment checklist (do these in order)
+
+Env validation (fail fast)
+
+Required: PUBLIC_BASE_URL, SENDGRID_API_KEY, DEFAULT_FROM_EMAIL, DEFAULT_FROM_NAME, TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM_NUMBER, RESET_TOKEN_TTL_MINUTES (e.g., 30), FEAT_RESET_SMS (optional).
+
+Add a boot-time validator; crash if missing.
+
+DB migration
+
+Create password_reset_tokens (unique index on tokenHash, index on userId, expiresAt).
+
+Remove/ignore legacy temp-password columns (or keep but unused).
+
+Services
+
+Use the corrected emailService.ts and smsService.ts (typed params, consistent send() API, clear errors).
+
+Ensure they import as JS at runtime (no TS/JS mismatch).
+
+Handlers
+
+forgotPassword: find user → create token → send email/SMS with link ${PUBLIC_BASE_URL}/reset-password?token=... → return 200 always (don’t leak which emails exist).
+
+resetPassword: hash token lookup → check expiresAt, usedAt → set new password (bcrypt/argon2) → mark token usedAt=now() → invalidate sessions.
+
+Security
+
+Token: 43–64 chars random; store SHA-256 hash only.
+
+TTL: 15–60 min; single use.
+
+Rate limit by IP & account (e.g., 5/15min).
+
+Log audit entries (issued, delivered, failed, consumed).
+
+On success, rotate session tokens.
+
+Observability
+
+Metrics: tokens issued, sent (email/sms), failures, resets succeeded, invalid/expired rate.
+
+Structured logs with a traceId.
+
+Email/SMS content
+
+Use only PUBLIC_BASE_URL domain in links (no localhost/replit.dev leaks).
+
+Human-readable expiry (and absolute UTC timestamp in footer).
+
+Branded but minimal—avoid spam triggers.
+
+Kill legacy
+
+Delete legacy helpers, dead routes, alias shims, and old DB writes.
+
+Rip out @ import alias if it caused the TS/JS load error—or fix config if you keep it.
+
+Smoke tests (copy/paste runbook)
+
+Request reset for a known user (email-only): 200 returned; email arrives; link domain is your production domain; link works within TTL.
+
+Request reset (sms-only): SMS arrives; link works.
+
+Request reset (both): first link works; second attempt shows “already used”.
+
+Reset with bad token: 400 with generic “Invalid or expired link.”
+
+Expiry honored: token after TTL → 400.
+
+Rate limit: 6th request in 15m → 429.
+
+Password updated: old credentials fail, new works; token marked used.
+
+Logs show: issue → send → consume (or fail) with traceId.
+
+Rollback plan (if something goes wrong)
+
+Keep a git tag of pre-cutover.
+
+Revert deploy and restore old handlers (you won’t need data rollbacks if tokens are ephemeral).
+
+Since you’re not live to real traffic, risk is low.
+
+Nice-to-have (same sprint if possible)
+
+Front-end reset page that:
+
+Reads ?token=…, validates on load, shows friendly “expired/used” states.
+
+Blocks weak passwords client-side (and server-side again).
+
+Admin tool to invalidate tokens by user for support.
+
+If you want, I can produce a single “drop-in” PR that:
+
+adds the env validator,
+
+provides the corrected emailService.ts/smsService.ts,
+
+replaces the handlers with tokenized link flow,
+
+removes the legacy code,
+
+and includes a small test file with a few super-basic integration tests.

@@ -1,23 +1,53 @@
-import twilio from "twilio";
+// Unified, typed SMS service with legacy shim (sendSms)
 
-const { TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER } = process.env;
+import Twilio from 'twilio';
 
-if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_PHONE_NUMBER) {
-  console.error("SMS service missing Twilio credentials");
-}
+type SmsPayload = {
+  to: string;
+  message: string;
+  from?: string; // optional override
+};
 
-const client = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
+const REQUIRED_ENV = ['TWILIO_ACCOUNT_SID', 'TWILIO_AUTH_TOKEN', 'TWILIO_FROM_NUMBER'] as const;
 
-export class SMSService {
-  async send({ to, body }: { to: string; body: string }): Promise<void> {
-    try {
-      await client.messages.create({ to, from: TWILIO_PHONE_NUMBER, body });
-    } catch (error) {
-      console.error("SMS send failed:", error);
-      throw error;
+function assertEnv() {
+  for (const key of REQUIRED_ENV) {
+    if (!process.env[key]) {
+      throw new Error(`[smsService] Missing env ${key}`);
     }
   }
 }
 
-const smsService = new SMSService();
-export { smsService };
+let client: Twilio.Twilio | null = null;
+function initIfNeeded() {
+  if (client) return;
+  assertEnv();
+  client = Twilio(process.env.TWILIO_ACCOUNT_SID!, process.env.TWILIO_AUTH_TOKEN!);
+}
+
+export const smsService = {
+  /**
+   * Primary typed send method
+   */
+  async send(payload: SmsPayload): Promise<void> {
+    initIfNeeded();
+    try {
+      await client!.messages.create({
+        to: payload.to,
+        from: payload.from ?? process.env.TWILIO_FROM_NUMBER!,
+        body: payload.message,
+      });
+      console.log(`[smsService] SMS sent → ${payload.to.slice(-4)} | ${payload.message.slice(0, 50)}...`);
+    } catch (err: any) {
+      console.error('[smsService] Send failed', { message: err?.message, code: err?.code });
+      throw new Error('Failed to send SMS');
+    }
+  },
+
+  /**
+   * Legacy shim
+   */
+  async sendSms(to: string, message: string) {
+    return this.send({ to, message });
+  },
+};

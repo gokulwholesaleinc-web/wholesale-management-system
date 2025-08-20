@@ -1,32 +1,95 @@
-import sgMail from "@sendgrid/mail";
+// Unified, typed Email service with legacy shim compatibility (sendEmail)
 
-sgMail.setApiKey(process.env.SENDGRID_API_KEY!);
+import sgMail from '@sendgrid/mail';
 
-export class EmailService {
-  async send({ to, subject, html, text, disableTracking = false }: { 
-    to: string; 
-    subject: string; 
-    html: string; 
-    text?: string; 
-    disableTracking?: boolean;
-  }): Promise<void> {
-    try {
-      await sgMail.send({
-        to,
-        from: { email: 'info@shopgokul.com', name: 'Gokul Wholesale Inc.' },
-        subject,
-        html,
-        text,
-        trackingSettings: {
-          clickTracking: { enable: false, enableText: false }
-        },
-      });
-    } catch (error) {
-      console.error("Email send failed:", error);
-      throw error;
+type EmailPayload = {
+  to: string;
+  subject: string;
+  html?: string;
+  text?: string;
+  // Optional SendGrid template support (future-friendly)
+  templateId?: string;
+  dynamicTemplateData?: Record<string, any>;
+  // Optional from override
+  fromEmail?: string;
+  fromName?: string;
+};
+
+const REQUIRED_ENV = ['SENDGRID_API_KEY', 'DEFAULT_FROM_EMAIL', 'DEFAULT_FROM_NAME'] as const;
+
+function assertEnv() {
+  for (const key of REQUIRED_ENV) {
+    if (!process.env[key]) {
+      // Throw fast during boot so you don't debug silent send failures
+      throw new Error(`[emailService] Missing env ${key}`);
     }
   }
 }
 
-const emailService = new EmailService();
-export { emailService };
+let initialized = false;
+function initIfNeeded() {
+  if (initialized) return;
+  assertEnv();
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY!);
+  initialized = true;
+}
+
+export const emailService = {
+  /**
+   * Primary typed send method
+   */
+  async send(payload: EmailPayload): Promise<void> {
+    initIfNeeded();
+
+    const from = {
+      email: payload.fromEmail ?? process.env.DEFAULT_FROM_EMAIL!,
+      name: payload.fromName ?? process.env.DEFAULT_FROM_NAME!,
+    };
+
+    const msg: any = {
+      to: payload.to,
+      from,
+      subject: payload.subject,
+    };
+
+    if (payload.templateId) {
+      msg.templateId = payload.templateId;
+      if (payload.dynamicTemplateData) {
+        msg.dynamicTemplateData = payload.dynamicTemplateData;
+      }
+    } else {
+      // Fallback to standard HTML/text composition
+      msg.html = payload.html ?? (payload.text ? `<pre>${escapeHtml(payload.text)}</pre>` : '');
+      msg.text = payload.text ?? stripHtml(msg.html || '');
+    }
+
+    try {
+      await sgMail.send(msg);
+      console.log(`[emailService] Email sent → ${payload.to} | subject="${payload.subject}"`);
+    } catch (err: any) {
+      console.error('[emailService] Send failed', safeErr(err));
+      throw new Error('Failed to send email');
+    }
+  },
+
+  /**
+   * Legacy shim: keep old signatures working to prevent breaking callers.
+   * Usage supported:
+   *   sendEmail(to, subject, html)
+   *   sendEmail(to, subject, html, text)
+   */
+  async sendEmail(to: string, subject: string, html?: string, text?: string) {
+    return this.send({ to, subject, html, text });
+  },
+};
+
+// --- helpers ---
+function stripHtml(html: string) {
+  return html.replace(/<[^>]*>/g, ' ');
+}
+function escapeHtml(s: string) {
+  return s.replace(/[&<>"']/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]!));
+}
+function safeErr(e: any) {
+  return { message: e?.message, code: e?.code, response: e?.response?.body };
+}
