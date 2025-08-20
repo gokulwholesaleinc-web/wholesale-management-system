@@ -19,13 +19,25 @@ export const emailService = {
         mailSettings.openTracking = { enable: false };
       }
 
-      await sgMail.send({
+      console.log("[EMAIL] Attempting to send email:", {
+        to: to.replace(/(.{2}).*(@.*)/, '$1***$2'),
+        from: "info@shopgokul.com",
+        subject,
+        disableTracking
+      });
+
+      const result = await sgMail.send({
         to,
         from: { email: "info@shopgokul.com", name: "Gokul Wholesale Inc." },
         subject,
         html,
         text,
         mailSettings,
+      });
+
+      console.log("[EMAIL] SendGrid response:", {
+        messageId: result[0]?.headers?.['x-message-id'],
+        statusCode: result[0]?.statusCode
       });
     } catch (error) {
       console.error("Email service error:", error);
