@@ -162,7 +162,10 @@ If you didn't request this, ignore this email.`;
     const now = new Date();
     const minutesUntilExpiry = Math.ceil((expiresAt.getTime() - now.getTime()) / (60 * 1000));
     
-    return `Gokul Wholesale: Password reset link (expires in ${minutesUntilExpiry} min): ${link}`;
+    // Add SMS identifier to link for opt-out verification
+    const smsLink = link.includes('?') ? `${link}&sms=true` : `${link}?sms=true`;
+    
+    return `Gokul Wholesale: Password reset link (expires in ${minutesUntilExpiry} min): ${smsLink}. Reply STOP to opt out.`;
   }
 }
 

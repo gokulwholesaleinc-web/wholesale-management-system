@@ -18,18 +18,29 @@ export default function ResetPasswordPage() {
   const [submitting, setSubmitting] = React.useState(false);
   const [success, setSuccess] = React.useState(false);
 
-  // grab token from querystring
+  // grab token from querystring and check if SMS verification is needed
   React.useEffect(() => {
     const qs = new URLSearchParams(window.location.search);
     const t = qs.get("token") || "";
+    const fromSms = qs.get("sms") === "true";
     setToken(t);
+    
     (async () => {
       try {
         const res = await fetch(`/api/auth/password-reset/validate?token=${encodeURIComponent(t)}`, { credentials: "include" });
         const data = await res.json();
         setValid(data.valid === true);
         setValidating(false);
-        if (!data.valid) setError("This reset link is invalid or has expired.");
+        if (!data.valid) {
+          setError("This reset link is invalid or has expired.");
+        } else if (fromSms) {
+          // Send SMS opt-out verification message when reset link came from SMS
+          try {
+            await apiRequest("POST", "/api/auth/sms-opt-out-verify", { token: t });
+          } catch (smsError) {
+            console.error("SMS opt-out verification failed:", smsError);
+          }
+        }
       } catch (e) {
         setValid(false);
         setValidating(false);

@@ -677,6 +677,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // SMS Opt-out verification when clicking reset links sent via SMS (TCPA Compliance)
+  app.post('/api/auth/sms-opt-out-verify', async (req, res) => {
+    try {
+      const { token } = req.body || {};
+      if (!token) {
+        return res.status(400).json({ success: false, message: "Token required" });
+      }
+
+      // Validate token to get user info
+      const validation = await PasswordResetService.validateToken(token);
+      if (!validation.valid || !validation.userId) {
+        return res.status(400).json({ success: false, message: "Invalid token" });
+      }
+
+      const user = await storage.getUser(validation.userId);
+      if (!user || !user.phone) {
+        return res.status(400).json({ success: false, message: "User not found or no phone" });
+      }
+
+      // Send SMS opt-out verification message
+      const customerName = user.company || `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username;
+      await smsService.send({
+        to: user.phone,
+        body: `${customerName}, you clicked a password reset link sent via SMS. To stop SMS notifications, reply STOP. For help, reply HELP.`
+      });
+
+      console.log(`SMS opt-out verification sent to ${user.phone} for password reset link access`);
+      res.json({ success: true, message: "SMS opt-out verification sent" });
+    } catch (error) {
+      console.error("SMS opt-out verification error:", error);
+      res.status(500).json({ success: false, message: "Failed to send verification" });
+    }
+  });
+
   // ============================================================================
   // AUTHENTICATION ENDPOINTS
   // ============================================================================
