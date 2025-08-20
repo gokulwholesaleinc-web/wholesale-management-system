@@ -7,6 +7,8 @@ Gokul Wholesale is a comprehensive B2B e-commerce platform designed to streamlin
 Preferred communication style: Simple, everyday language.
 
 ## Recent Major Updates (August 20, 2025)
+**Password Reset Domain Configuration Fixed**: Resolved critical production deployment issue where password reset links generated incorrect Replit development URLs instead of shopgokul.com domain. Implemented professional URL builder system with environment-based configuration, proper query parameter handling, and SendGrid click tracking compatibility.
+
 **Password Reset Link Tracking Issue Resolved**: Fixed SendGrid click tracking corruption of password reset tokens. Implemented robust email delivery with tracking disabled, fallback token input UI, and corrected expiration time display from confusing "6 hours" to accurate "15 minutes". Enhanced system now bulletproof against email service provider link manipulation.
 
 **Security Architecture Complete**: Achieved 99.1% security resolution with all TypeScript compilation errors fixed and enterprise-grade type safety implemented. Only 4 minor development-environment vulnerabilities remain in legacy dependencies.
