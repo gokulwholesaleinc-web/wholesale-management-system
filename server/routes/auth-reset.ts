@@ -116,16 +116,31 @@ router.post('/auth/reset-password', async (req: Request, res: Response) => {
       return res.status(400).json({ success: false, message: 'Invalid input.' });
     }
 
+    console.log('[reset-password] Processing password reset request');
+    console.log(`[reset-password] Token provided: ${token.substring(0, 10)}...`);
+    console.log(`[reset-password] New password length: ${newPassword.length}`);
+
     const tokenHash = hashToken(token);
+    console.log(`[reset-password] Token hash: ${tokenHash.substring(0, 10)}...`);
+    
     const record = await storage.getValidPasswordResetByHash(tokenHash);
     if (!record) {
+      console.log('[reset-password] No valid token found');
       return res.status(400).json({ success: false, message: 'Invalid or expired token.' });
     }
 
-    // Update password and mark token used
-    await storage.updateUserPassword(String(record.user_id), newPassword);
-    await storage.markPasswordResetUsed(tokenHash);
+    console.log(`[reset-password] Valid token found for user: ${record.user_id}`);
 
+    // Update password and mark token used
+    console.log('[reset-password] Starting password update...');
+    await storage.updateUserPassword(String(record.user_id), newPassword);
+    console.log('[reset-password] Password updated successfully');
+    
+    console.log('[reset-password] Marking token as used...');
+    await storage.markPasswordResetUsed(tokenHash);
+    console.log('[reset-password] Token marked as used');
+
+    console.log('[reset-password] Password reset completed successfully');
     return res.status(200).json({ success: true, message: 'Password updated successfully.' });
   } catch (err: any) {
     console.error('[reset-password] error', { message: err?.message });

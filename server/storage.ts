@@ -820,27 +820,45 @@ export class DatabaseStorage implements IStorage {
 
   // Update user password separately
   async updateUserPassword(id: string, password: string): Promise<User> {
-    console.log("[STORAGE] Updating password for user:", id);
+    console.log("[STORAGE] Starting password update transaction for user:", id);
     console.log("[STORAGE] New password length:", password.length);
     
-    // Hash the new password
-    const hashedPassword = await bcrypt.hash(password, 10);
-    console.log("[STORAGE] Password hashed successfully");
+    // Hash the new password using await to ensure it completes
+    const hashedPassword = await bcrypt.hash(password, 12); // Using bcrypt rounds 12 for better security
+    console.log("[STORAGE] Password hashed successfully with bcrypt");
 
+    // Check if user exists first
+    const existingUser = await db.select().from(users).where(eq(users.id, id));
+    if (existingUser.length === 0) {
+      console.log("[STORAGE] No user found with id:", id);
+      throw new Error("User not found for password update");
+    }
+
+    console.log(`[STORAGE] Updating password for existing user: ${existingUser[0].username}`);
+    console.log(`[STORAGE] Current password hash: ${existingUser[0].passwordHash?.substring(0, 10)}...`);
+
+    // Update the password hash in the database
     const [updatedUser] = await db
       .update(users)
       .set({
         passwordHash: hashedPassword,
         updatedAt: new Date(),
+        // Clear any temporary password fields
+        tempPassword: null,
+        tempPasswordExpiry: null,
+        forcePasswordChange: false,
       })
       .where(eq(users.id, id))
       .returning();
 
     if (updatedUser) {
-      console.log("[STORAGE] Password updated in database for user:", updatedUser.username);
+      console.log("[STORAGE] ✅ Password successfully updated in database");
+      console.log(`[STORAGE] User: ${updatedUser.username}`);
+      console.log(`[STORAGE] New password hash: ${updatedUser.passwordHash?.substring(0, 10)}...`);
+      console.log(`[STORAGE] Updated at: ${updatedUser.updatedAt}`);
     } else {
-      console.log("[STORAGE] No user found with id:", id);
-      throw new Error("User not found for password update");
+      console.log("[STORAGE] ❌ Password update returned no user - this should not happen");
+      throw new Error("Password update failed - no user returned");
     }
 
     return updatedUser;
