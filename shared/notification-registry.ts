@@ -1,6 +1,6 @@
 import { storage } from '../server/storage';
-import { SMSService } from '../server/services/smsService';
-import { EmailService } from '../server/services/emailService';
+import { smsService } from '../server/services/smsService';
+import { emailService } from '../server/services/emailService';
 import { User, Order, OrderItem } from './schema';
 
 export interface NotificationData {
@@ -34,12 +34,12 @@ export interface NotificationOptions {
 
 export class NotificationRegistry {
   private static instance: NotificationRegistry;
-  private smsService: SMSService;
-  private emailService: EmailService;
+  private smsService: typeof smsService;
+  private emailService: typeof emailService;
 
   private constructor() {
-    this.smsService = SMSService.getInstance();
-    this.emailService = EmailService.getInstance();
+    this.smsService = smsService;
+    this.emailService = emailService;
   }
 
   static getInstance(): NotificationRegistry {

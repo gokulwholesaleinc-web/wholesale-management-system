@@ -3,7 +3,7 @@ import { AccountRequest, User } from '../..../../../shared/schema';
 import { db } from '../db';
 import { users } from '../..../../../shared/schema';
 import { or, eq } from 'drizzle-orm';
-import { SMSService } from './smsService';
+import { smsService } from './smsService';
 
 // Soft-fail approach for email service in development
 let mailService: MailService | null = null;
@@ -154,7 +154,7 @@ Submitted: ${request.createdAt ? new Date(request.createdAt).toLocaleString() : 
   try {
     console.log('📱 [ACCOUNT REQUEST] Attempting to send SMS notifications to staff...');
     
-    const smsService = SMSService.getInstance();
+    // Use the imported smsService directly
     const staffWithPhones = staffUsers.filter(user => user.phone && user.phone.trim() !== '');
     
     console.log(`📱 [ACCOUNT REQUEST] Found ${staffWithPhones.length} staff members with phone numbers`);
@@ -182,10 +182,11 @@ Submitted: ${request.createdAt ? new Date(request.createdAt).toLocaleString() : 
             phone: smsData.customData.phone
           });
           
-          const smsResult = await smsService.sendSMS(
-            smsData,
-            'staff_new_account_alert'
-          );
+          const smsMessage = `🔔 New wholesale account request from ${request.businessName}. Contact: ${request.contactFirstName} ${request.contactLastName}. Review in admin panel.`;
+          const smsResult = await smsService.send({
+            to: staffMember.phone!,
+            body: smsMessage
+          });
           
           if (smsResult?.success) {
             console.log(`✅ [ACCOUNT REQUEST] SMS sent successfully to staff: ${staffMember.phone}`);

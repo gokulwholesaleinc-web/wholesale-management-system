@@ -854,7 +854,7 @@ export class ReceiptGenerator {
       const filename = `invoice-${order.id}-${timestamp}.pdf`;
       
       // Use EmailService to send email with PDF attachment
-      const emailService = EmailService.getInstance();
+      const { emailService } = await import('./emailService');
       const emailData = {
         to: customer.email,
         customerName: customer.firstName || customer.username,
