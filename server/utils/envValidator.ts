@@ -57,8 +57,13 @@ export function validateEnvironment(): void {
       console.log('   Added fallback: DEFAULT_FROM_NAME=Gokul Wholesale');
     }
     if (!process.env.TWILIO_FROM_NUMBER) {
-      process.env.TWILIO_FROM_NUMBER = '+11234567890';
-      console.log('   Added fallback: TWILIO_FROM_NUMBER=+11234567890');
+      // Use the actual Twilio phone number from environment
+      if (process.env.TWILIO_PHONE_NUMBER) {
+        process.env.TWILIO_FROM_NUMBER = process.env.TWILIO_PHONE_NUMBER;
+        console.log(`   Using TWILIO_PHONE_NUMBER as FROM_NUMBER: ${process.env.TWILIO_PHONE_NUMBER}`);
+      } else {
+        console.log('   ⚠️ No valid Twilio phone number found - SMS will be disabled');
+      }
     }
     
     console.log('\n⚠️  Please set these variables in Replit Secrets for production use');

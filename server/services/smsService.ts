@@ -31,15 +31,24 @@ export const smsService = {
    */
   async send(payload: SmsPayload): Promise<void> {
     initIfNeeded();
+    
+    // Use the correct phone number from environment
+    const fromNumber = payload.from ?? process.env.TWILIO_FROM_NUMBER ?? process.env.TWILIO_PHONE_NUMBER;
+    
+    if (!fromNumber) {
+      console.error('[smsService] No valid Twilio phone number configured');
+      throw new Error('SMS service not properly configured');
+    }
+    
     try {
       await client!.messages.create({
         to: payload.to,
-        from: payload.from ?? process.env.TWILIO_FROM_NUMBER!,
+        from: fromNumber,
         body: payload.message,
       });
       console.log(`[smsService] SMS sent → ${payload.to.slice(-4)} | ${payload.message.slice(0, 50)}...`);
     } catch (err: any) {
-      console.error('[smsService] Send failed', { message: err?.message, code: err?.code });
+      console.error('[smsService] Send failed', { message: err?.message, code: err?.code, from: fromNumber });
       throw new Error('Failed to send SMS');
     }
   },
