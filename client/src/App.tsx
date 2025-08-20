@@ -344,6 +344,15 @@ function App() {
             <StaffLoginPage />
           </Route>
           
+          {/* In-store POS System routes */}
+          <Route path="/instore">
+            <InstoreProtectedRoute component={InstorePOS} />
+          </Route>
+          
+          <Route path="/instore/app">
+            <InstoreProtectedRoute component={PosApp} />
+          </Route>
+          
           {/* Privacy Policy route */}
           <Route path="/privacy-policy">
             <PrivacyPolicy />

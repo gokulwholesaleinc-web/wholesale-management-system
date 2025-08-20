@@ -11,7 +11,7 @@ export default function InstorePOS() {
     
     if (staffToken) {
       // If authenticated, redirect to the POS PWA
-      window.location.href = '/instore-next/';
+      window.location.href = '/instore/app';
     } else {
       // If not authenticated, redirect to staff login
       setLocation('/staff-login');

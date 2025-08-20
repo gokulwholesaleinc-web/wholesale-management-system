@@ -299,4 +299,48 @@ router.post('/logout', async (req, res) => {
   }
 });
 
+// Verify staff token endpoint
+router.get('/verify-token', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ success: false, message: 'No token provided' });
+    }
+
+    const token = authHeader.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ success: false, message: 'No token provided' });
+    }
+
+    // Check if token exists in our sessions
+    const session = staffSessions.get(token);
+    if (!session || new Date() > session.expiresAt) {
+      return res.status(401).json({ success: false, message: 'Invalid or expired token' });
+    }
+
+    // Find staff details
+    const staff = mockStaff.find(s => s.id === session.staffId);
+    if (!staff) {
+      return res.status(401).json({ success: false, message: 'Staff not found' });
+    }
+
+    res.json({ 
+      success: true, 
+      message: 'Token valid', 
+      user: {
+        id: staff.id,
+        username: staff.username,
+        email: staff.email,
+        role: staff.role,
+        isStaff: true,
+        isAdmin: staff.role === 'admin',
+        isEmployee: staff.role === 'employee'
+      }
+    });
+  } catch (error) {
+    console.error('Token verification error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 export default router;

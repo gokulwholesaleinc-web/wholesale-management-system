@@ -62,14 +62,10 @@ export default function StaffLoginPage() {
 
     setIsLoading(true);
     try {
-      const response: OTPResponse = await apiRequest('/api/staff/auth/send-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          staffId,
-          contactMethod,
-          contactValue
-        })
+      const response: OTPResponse = await apiRequest('POST', '/api/staff/auth/send-otp', {
+        staffId,
+        contactMethod,
+        contactValue
       });
 
       if (response.success) {
@@ -124,13 +120,9 @@ export default function StaffLoginPage() {
 
     setIsLoading(true);
     try {
-      const response: VerifyResponse = await apiRequest('/api/staff/auth/verify-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          sessionId,
-          code: otpCode
-        })
+      const response: VerifyResponse = await apiRequest('POST', '/api/staff/auth/verify-otp', {
+        sessionId,
+        code: otpCode
       });
 
       if (response.success && response.token) {
