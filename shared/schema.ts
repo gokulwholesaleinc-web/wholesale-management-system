@@ -242,6 +242,9 @@ export const orders = pgTable("orders", {
   // Loyalty points redemption
   loyaltyPointsRedeemed: doublePrecision("loyalty_points_redeemed").default(0), // Points redeemed for this order
   loyaltyPointsValue: doublePrecision("loyalty_points_value").default(0), // Monetary value of redeemed points
+  // Global invoice numbering and idempotency for POS offline sync
+  invoice_no: integer("invoice_no").unique(), // Global sequential invoice number
+  idempotency_key: varchar("idempotency_key").unique(), // For POS offline sync
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

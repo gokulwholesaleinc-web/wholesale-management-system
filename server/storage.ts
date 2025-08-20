@@ -390,6 +390,10 @@ export interface IStorage {
   updateTrustedDeviceLastUsed(userId: string, deviceFingerprint: string): Promise<void>;
   getTrustedDevices(userId: string): Promise<TrustedDevice[]>;
   cleanupExpiredTrustedDevices(): Promise<void>;
+  
+  // POS offline sync operations
+  findOrderByIdempotencyKey(idempotencyKey: string): Promise<Order | undefined>;
+  getNextInvoiceNumber(): Promise<number>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -7998,6 +8002,33 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error('Error cleaning up expired trusted devices:', error);
       throw error;
+    }
+  }
+  // POS offline sync operations
+  async findOrderByIdempotencyKey(idempotencyKey: string): Promise<Order | undefined> {
+    try {
+      const [order] = await db.select()
+        .from(orders)
+        .where(eq(orders.idempotency_key, idempotencyKey));
+      return order;
+    } catch (error) {
+      console.error('Error finding order by idempotency key:', error);
+      return undefined;
+    }
+  }
+
+  async getNextInvoiceNumber(): Promise<number> {
+    try {
+      // Get the highest invoice number and increment by 1
+      const result = await db.execute(
+        sql`SELECT COALESCE(MAX(invoice_no), 0) + 1 AS next_invoice_no FROM orders WHERE invoice_no IS NOT NULL`
+      );
+      
+      return result.rows[0]?.next_invoice_no || 1;
+    } catch (error) {
+      console.error('Error getting next invoice number:', error);
+      // Return a safe fallback
+      return Date.now() % 1000000; // Use timestamp modulo as fallback
     }
   }
 }

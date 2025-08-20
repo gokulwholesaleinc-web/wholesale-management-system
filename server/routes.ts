@@ -10393,6 +10393,82 @@ Make it engaging and appropriate for a B2B wholesale business context. Respond i
   // Staff authentication router
   app.use('/api/staff/auth', simpleStaffAuthRouter);
 
+  // POS Sale endpoint with offline ticket sync support
+  app.post('/api/pos/sale', async (req: any, res) => {
+    try {
+      const saleData = req.body;
+      const idempotencyKey = req.headers['idempotency-key'];
+      const clientTicketId = saleData.ticketId;
+
+      console.log('🧾 [POS Sale] Processing sale:', { ticketId: clientTicketId, idempotencyKey });
+
+      // Check for existing transaction with same idempotency key
+      if (idempotencyKey) {
+        const existing = await storage.findOrderByIdempotencyKey(idempotencyKey);
+        if (existing) {
+          console.log('🔄 [POS Sale] Returning existing invoice for idempotency key:', idempotencyKey);
+          return res.json({ 
+            invoice: existing, 
+            ticketId: clientTicketId,
+            duplicate: true 
+          });
+        }
+      }
+
+      // Generate next invoice number
+      const invoiceNo = await storage.getNextInvoiceNumber();
+      
+      // Create the invoice with official number
+      const invoice = await storage.createOrder({
+        userId: saleData.customerId || 'pos-customer',
+        total: saleData.total || 0,
+        status: 'completed',
+        orderType: 'pickup',
+        invoice_no: invoiceNo,
+        idempotency_key: idempotencyKey,
+        paymentMethod: saleData.paymentMethod || 'cash',
+        paymentDate: new Date()
+      });
+
+      // Log sync activity if this was a queued ticket
+      if (clientTicketId) {
+        await storage.addActivityLog({
+          userId: invoice.customer_id || 'pos-system',
+          username: 'POS System',
+          action: 'pos.sale.synced',
+          details: `Ticket ${clientTicketId} synced to Invoice #${invoiceNo}`,
+          timestamp: new Date(),
+          targetId: invoice.id,
+          targetType: 'invoice',
+          metadata: {
+            ticketId: clientTicketId,
+            invoiceNo: invoiceNo,
+            totalCents: invoice.total
+          }
+        });
+      }
+
+      console.log('✅ [POS Sale] Invoice created:', { 
+        id: invoice.id, 
+        invoiceNo: invoice.invoice_no,
+        ticketId: clientTicketId 
+      });
+
+      res.json({ 
+        invoice: invoice, 
+        ticketId: clientTicketId 
+      });
+
+    } catch (error) {
+      console.error('❌ [POS Sale] Error:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Failed to process sale',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
   // Test endpoint to verify routing
   app.post('/api/pos/test-route', (req: any, res) => {
     console.log('🧪 [TEST ROUTE] Test endpoint hit successfully');

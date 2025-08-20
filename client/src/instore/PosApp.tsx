@@ -9,6 +9,7 @@ import OfflineQueueManager from './components/OfflineQueueManager';
 import SyncStatusIndicator from './components/SyncStatusIndicator';
 import HardwareStatusMonitor from './components/HardwareStatusMonitor';
 import StaffTrainingPanel from './components/StaffTrainingPanel';
+import { OfflineTicketDemo } from './components/OfflineTicketDemo';
 import { Toaster } from '@/components/ui/toaster';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import '@/index.css';
@@ -216,6 +217,11 @@ function PosApp() {
                       <div className="font-medium">Gokul Wholesale</div>
                     </div>
                   </div>
+                </div>
+                
+                {/* Offline Ticket Demo */}
+                <div className="mt-8">
+                  <OfflineTicketDemo />
                 </div>
               </div>
             </TabsContent>

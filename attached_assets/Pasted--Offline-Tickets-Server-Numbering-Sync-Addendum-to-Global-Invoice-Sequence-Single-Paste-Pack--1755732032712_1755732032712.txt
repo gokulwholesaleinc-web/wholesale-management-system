@@ -1,0 +1,222 @@
+# Offline Tickets → Server Numbering Sync (Addendum to Global Invoice Sequence) — Single‑Paste Pack
+
+**Context:** This extends the previously sent **Global Invoice Sequence + Idempotency** pack. It implements the exact offline behavior we discussed:
+
+* While **offline**, the POS **does not assign official invoice numbers**.
+* It creates **provisional tickets** (e.g. `pos-<timestamp>-<rand>`) and queues them locally.
+* When back online, queued tickets **sync** to the server. The **server** assigns the next official invoice number **inside a transaction**.
+* **Idempotency-Key = ticketId** ensures retries don’t duplicate invoices.
+
+> Paste this whole addendum to the agent. It’s a focused delta—minimal new files and small patches only.
+
+---
+
+## 0) Decisions (reaffirmed)
+
+* Only the **server** issues official `invoice_no` using the global, gapless counter.
+* POS offline creates **tickets** and **queues** them; prints **“Ticket TBD”**.
+* On sync, server assigns the **next** numbers (order reflects sync time, not creation time).
+
+---
+
+## 1) Client — Minimal POS Offline Queue (new file)
+
+Create **`client/src/instore/posQueue.ts`**
+
+```ts
+// Minimal offline queue for POS tickets (no external deps)
+// Uses IndexedDB if available via simple fallback to localStorage.
+
+export type QueuedTicket = {
+  ticketId: string;                 // pos-<ts>-<rand>
+  payload: any;                     // sale data (lines, customer, tender, etc.)
+  createdAt: number;                // ms
+  status: 'pending' | 'synced' | 'error';
+  lastError?: string;
+  invoiceNo?: number;               // filled after sync
+  invoiceId?: string;               // server id after sync
+};
+
+const KEY = 'pos_offline_queue_v1';
+
+function readAll(): QueuedTicket[] {
+  try {
+    const raw = localStorage.getItem(KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+
+function writeAll(list: QueuedTicket[]) {
+  localStorage.setItem(KEY, JSON.stringify(list));
+}
+
+export function addTicket(ticket: Omit<QueuedTicket, 'status' | 'createdAt'>) {
+  const list = readAll();
+  list.unshift({ ...ticket, status: 'pending', createdAt: Date.now() });
+  writeAll(list);
+}
+
+export function listPending(): QueuedTicket[] { return readAll().filter(t => t.status === 'pending'); }
+export function listAll(): QueuedTicket[] { return readAll(); }
+
+export function markSynced(ticketId: string, invoiceNo: number, invoiceId: string) {
+  const list = readAll();
+  const i = list.findIndex(t => t.ticketId === ticketId);
+  if (i >= 0) { list[i].status = 'synced'; list[i].invoiceNo = invoiceNo; list[i].invoiceId = invoiceId; }
+  writeAll(list);
+}
+
+export function markError(ticketId: string, message: string) {
+  const list = readAll();
+  const i = list.findIndex(t => t.ticketId === ticketId);
+  if (i >= 0) { list[i].status = 'error'; list[i].lastError = message; }
+  writeAll(list);
+}
+
+export function generateTicketId() {
+  return `pos-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
+}
+```
+
+---
+
+## 2) Client — Submit Sale (online vs offline) + Sync on Reconnect
+
+Patch your POS submit logic (e.g., **`client/src/instore/submitSale.ts`** or wherever you post `/pos/sale`). If you don’t have a central file, create this helper and call it from your POS component.
+
+```ts
+// client/src/instore/submitSale.ts
+import { addTicket, generateTicketId, listPending, markSynced, markError } from './posQueue';
+
+export async function submitSaleOrQueue(sale: any) {
+  // Attach a client ticketId up front (also used as Idempotency-Key)
+  const ticketId = generateTicketId();
+  const payload = { ...sale, ticketId };
+
+  if (navigator.onLine) {
+    const res = await postSale(payload, ticketId);
+    if (res.ok) return res.data; // { invoice: {...}, ticketId }
+    // if server fails while online, fall back to queue
+  }
+
+  // Offline or server unreachable → queue
+  addTicket({ ticketId, payload });
+  return { queued: true, ticketId };
+}
+
+export async function syncQueuedSales() {
+  const pending = listPending().sort((a, b) => a.createdAt - b.createdAt);
+  for (const t of pending) {
+    const res = await postSale(t.payload, t.ticketId);
+    if (res.ok) {
+      markSynced(t.ticketId, res.data.invoice.invoice_no, res.data.invoice.id);
+    } else {
+      markError(t.ticketId, res.error || 'sync failed');
+      // stop early on network error; next online event will retry
+      if (res.network) break;
+    }
+  }
+}
+
+async function postSale(body: any, ticketId: string): Promise<{ ok: true; data: any } | { ok: false; error?: string; network?: boolean }> {
+  try {
+    const r = await fetch('/pos/sale', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Idempotency-Key': ticketId },
+      body: JSON.stringify(body)
+    });
+    if (!r.ok) return { ok: false, error: await r.text() };
+    const data = await r.json();
+    return { ok: true, data };
+  } catch (e: any) {
+    return { ok: false, error: String(e?.message || e), network: true };
+  }
+}
+
+// auto-resync on connectivity regained
+window.addEventListener('online', () => { syncQueuedSales().catch(console.error); });
+```
+
+---
+
+## 3) Client — Receipt / UI placeholder while offline
+
+Patch your receipt or cart summary component (e.g., **`client/src/instore/components/Receipt.tsx`**):
+
+```tsx
+// When rendering header/number
+const displayNumber = invoice?.invoice_no ? `Invoice #${invoice.invoice_no}` : ticketId ? `Ticket ${ticketId}` : 'Ticket TBD';
+
+// Add a small note when invoice_no is missing
+{!invoice?.invoice_no && (
+  <p className="text-xs text-gray-500">Official invoice number will be assigned upon sync.</p>
+)}
+```
+
+Add a small **Sync Summary** panel (optional) in your POS history: show `Ticket → Invoice` mapping from the queue (`listAll()`), so cashiers can reprint the final invoice after sync.
+
+---
+
+## 4) Server — Echo ticketId in response + log sync mapping
+
+Patch **`server/src/modules/pos/pos.router.ts`** (extend the handler we added earlier in the idempotency pack). Add `ticketId` passthrough and a sync log.
+
+```ts
+// Inside POST /pos/sale after successful tx
+const clientTicketId = (req.body && req.body.ticketId) || null;
+
+// existing out = { invoice }
+const out = await db.transaction(async (tx) => {
+  const invoiceNo = await allocateInvoiceNo(tx);
+  const invoice = await createPosInvoiceWithNo(p.data, invoiceNo, tx);
+  return { invoice };
+});
+
+// Activity log: record mapping Ticket → Invoice
+try {
+  if (clientTicketId) {
+    await logActivity(req, {
+      action: 'pos.sale.synced',
+      subjectType: 'customer',
+      subjectId: out.invoice.customer_id || '00000000-0000-0000-0000-000000000000',
+      targetType: 'invoice',
+      targetId: out.invoice.id,
+      meta: { ticketId: clientTicketId, invoiceNo: out.invoice.invoice_no, totalCents: out.invoice.total_cents }
+    });
+  }
+} catch (e) { console.error('activity log failed', e); }
+
+return res.json({ ...out, ticketId: clientTicketId });
+```
+
+> This keeps the client‑side queue able to map the server response back to its local ticket quickly.
+
+---
+
+## 5) Activity Log — Taxonomy additions (no code change if you already wired logActivity)
+
+Use these keys in addition to your existing ones:
+
+* `pos.sale.created` (server-side once invoice is created)
+* `pos.sale.synced` (ticket mapped to invoice)
+* `pos.sale.refused` (credit limit exceeded at counter)
+
+---
+
+## 6) Acceptance Tests (run exactly these)
+
+1. **Offline capture**: Turn off network → make 2 POS sales. UI shows **Ticket …** and prints with “Assigned upon sync.”
+2. **Main app orders**: While POS is offline, place a few orders online → numbers increment: `#2, #3, #4…`.
+3. **Reconnect**: Turn network on → queue auto‑syncs; both tickets get official **next** numbers (e.g., `#15, #16`).
+4. **Idempotency**: Re‑POST the same ticket (simulate retry) → server returns the **same invoice** (no duplicate).
+5. **Mapping visible**: POS history shows `Ticket → Invoice` mapping; you can reprint the final invoice.
+
+---
+
+## 7) Optional (not implemented here): Pre-allocated ranges
+
+If you later **must** print official numbers while offline, consider per‑device pre‑allocated blocks. That breaks “gapless” guarantees and adds operational complexity. We’re **not** enabling that now.
+
+---
+
+**End of addendum.** This gives you the exact offline → online behavior we agreed on, without risking duplicate numbers and fully aligned with the global, gapless server numbering + idempotency design.
