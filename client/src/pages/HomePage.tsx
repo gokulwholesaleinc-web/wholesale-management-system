@@ -81,7 +81,7 @@ export default function HomePage() {
               reliable supply chains, competitive pricing, and exceptional service.
             </p>
             <div className="text-lg text-blue-200 mb-8 font-medium">
-              🏆 Proudly serving businesses since 2009 • 16 years of wholesale expertise
+              Proudly serving businesses since 2009 • 16 years of wholesale expertise
             </div>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button asChild size="lg" className="bg-white text-blue-600 hover:bg-gray-100">
