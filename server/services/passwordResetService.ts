@@ -4,7 +4,7 @@ import { smsService } from "./smsService";
 import { hashPassword } from "../helpers/bcrypt-helper";
 import { createRawToken, hashToken, DEFAULT_RESET_TTL_MS } from "../utils/resetToken";
 
-const APP_ORIGIN = process.env.APP_ORIGIN || "http://localhost:3000";
+const APP_ORIGIN = process.env.APP_ORIGIN || "https://8b8cb5fa-51c4-4fda-83e4-7f8d0d21bba3-00-2yxlv0v4gqfrf.replit.dev:5000";
 const NEUTRAL_MSG = {
   success: true,
   message: "If an account exists for that identifier, a reset link has been sent.",
@@ -18,9 +18,9 @@ export class PasswordResetService {
     try {
       // Try to resolve a user without leaking which identifier is valid.
       const user =
-        (await storage.getUserByEmail?.(identifier)) ||
-        (await storage.getUserByUsername?.(identifier)) ||
-        (await storage.getUserByPhone?.(normalizePhone(identifier)));
+        (await storage.getUserByEmail(identifier)) ||
+        (await storage.getUserByUsername(identifier)) ||
+        (await storage.getUserByPhone(normalizePhone(identifier)));
 
       if (!user) {
         // Neutral response — do not hint whether identifier exists
@@ -45,14 +45,14 @@ export class PasswordResetService {
       const finalChannel = resolveChannel(channel, { canEmail, canSms });
 
       // Fire-and-forget delivery (but await so errors are caught)
-      if (finalChannel === "email" && canEmail) {
+      if (finalChannel === "email" && canEmail && user.email) {
         await emailService.send({
           to: user.email,
           subject: "Password Reset",
           html: this.buildEmailHtml(user.firstName || user.username || "User", resetLink, expiresAt),
           text: this.buildEmailText(resetLink, expiresAt),
         });
-      } else if (finalChannel === "sms" && canSms) {
+      } else if (finalChannel === "sms" && canSms && user.phone) {
         await smsService.send({
           to: user.phone,
           body: this.buildSmsText(resetLink, expiresAt),
