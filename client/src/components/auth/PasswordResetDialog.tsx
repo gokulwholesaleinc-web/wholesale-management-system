@@ -152,13 +152,20 @@ export function PasswordResetDialog({ open, onOpenChange }: PasswordResetDialogP
     }
   };
 
+  const handleDialogOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen) {
+      handleReset();
+    }
+    onOpenChange(nextOpen);
+  };
+
   const handleClose = () => {
     onOpenChange(false);
     handleReset();
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
+    <Dialog open={open} onOpenChange={handleDialogOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -193,7 +200,7 @@ export function PasswordResetDialog({ open, onOpenChange }: PasswordResetDialogP
                   placeholder="Enter your email or username"
                   value={emailOrUsername}
                   onChange={(e) => setEmailOrUsername(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleRequestReset()}
+                  onKeyDown={(e) => e.key === 'Enter' && handleRequestReset()}
                   disabled={loading}
                 />
               </div>
@@ -232,7 +239,7 @@ export function PasswordResetDialog({ open, onOpenChange }: PasswordResetDialogP
                   placeholder="Confirm new password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleCompleteReset()}
+                  onKeyDown={(e) => e.key === 'Enter' && handleCompleteReset()}
                   disabled={loading}
                 />
               </div>

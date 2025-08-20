@@ -1,45 +1,15 @@
-import OpenAI from "openai";
 import { storage } from "../storage";
 import { emailService } from "./emailService";
 import { hashPassword, comparePassword } from "../helpers/bcrypt-helper";
+import { generateTempPassword } from "../utils/generateTempPassword";
 import sgMail from '@sendgrid/mail';
-
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export class PasswordResetService {
   /**
-   * Generate a secure temporary password using OpenAI
+   * Generate a secure temporary password using CSPRNG
    */
   static async generateTemporaryPassword(): Promise<string> {
-    try {
-      const response = await openai.chat.completions.create({
-        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-        messages: [
-          {
-            role: "system",
-            content: "You are a secure password generator. Generate a strong, memorable temporary password that is 12-16 characters long, contains uppercase letters, lowercase letters, numbers, and at least one special character. The password should be easy to type but secure. Respond with only the password, no additional text."
-          },
-          {
-            role: "user",
-            content: "Generate a secure temporary password for user account reset."
-          }
-        ],
-        max_tokens: 50,
-        temperature: 0.7
-      });
-
-      const tempPassword = response.choices[0].message.content?.trim();
-      if (!tempPassword || tempPassword.length < 8) {
-        // Fallback to a simple secure password if OpenAI fails
-        return `Temp${Date.now().toString().slice(-6)}$${Math.random().toString(36).substring(2, 6)}`;
-      }
-      
-      return tempPassword;
-    } catch (error) {
-      console.error("Failed to generate password with OpenAI:", error);
-      // Fallback password generation
-      return `Temp${Date.now().toString().slice(-6)}$${Math.random().toString(36).substring(2, 6)}`;
-    }
+    return generateTempPassword(14);
   }
 
   /**
@@ -53,18 +23,21 @@ export class PasswordResetService {
         user = await storage.getUserByUsername(emailOrUsername);
       }
 
+      // Always respond neutral to prevent user enumeration
+      const NEUTRAL_RESPONSE = {
+        success: true,
+        message: "If an account exists for that email/username, a reset email has been sent."
+      };
+
       if (!user) {
-        return { 
-          success: false, 
-          message: "No account found with this email or username." 
-        };
+        // Still return neutral; log server-side
+        console.log("Password reset attempted for non-existent user:", emailOrUsername);
+        return NEUTRAL_RESPONSE;
       }
 
       if (!user.email) {
-        return { 
-          success: false, 
-          message: "This account does not have an email address on file. Please contact support." 
-        };
+        console.log("Password reset attempted for user without email:", user.id);
+        return NEUTRAL_RESPONSE;
       }
 
       // Generate temporary password
@@ -91,16 +64,11 @@ export class PasswordResetService {
       );
 
       if (!emailSent) {
-        return {
-          success: false,
-          message: "Failed to send reset email. Please try again or contact support."
-        };
+        console.error("Failed to send password reset email to:", user.email);
+        // Still return neutral to prevent user enumeration
       }
 
-      return {
-        success: true,
-        message: `Password reset email sent to ${user.email}. Please check your inbox.`
-      };
+      return NEUTRAL_RESPONSE;
 
     } catch (error) {
       console.error("Password reset error:", error);
@@ -253,6 +221,50 @@ The Gokul Wholesale Team
     } catch (error) {
       console.error("Temporary password verification error:", error);
       return false;
+    }
+  }
+
+  /**
+   * Complete password reset with username and temp password verification
+   */
+  static async completePasswordResetByUsernameAndTemp(
+    usernameOrEmail: string,
+    tempPassword: string,
+    newPassword: string
+  ): Promise<{ success: boolean; message: string }> {
+    try {
+      // Find user
+      let user = await storage.getUserByEmail(usernameOrEmail);
+      if (!user) {
+        user = await storage.getUserByUsername(usernameOrEmail);
+      }
+
+      if (!user) {
+        return { 
+          success: false, 
+          message: "Invalid temporary password or expired." 
+        };
+      }
+
+      // Validate temp password
+      const isValidTempPassword = await this.verifyTemporaryPassword(user.id, tempPassword);
+      if (!isValidTempPassword) {
+        return {
+          success: false,
+          message: "Invalid temporary password or expired."
+        };
+      }
+
+      // Set new password
+      const result = await this.completePasswordReset(user.id, newPassword);
+      return result;
+
+    } catch (error) {
+      console.error("Password reset completion by username error:", error);
+      return {
+        success: false,
+        message: "Failed to update password. Please try again."
+      };
     }
   }
 

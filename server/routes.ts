@@ -648,7 +648,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Complete password reset (requires temporary password)
+  // Complete password reset (requires temporary password) - Updated to match UI payload
   app.post('/api/auth/complete-password-reset', async (req, res) => {
     try {
       const { username, tempPassword, newPassword, confirmPassword } = req.body;
@@ -674,24 +674,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Find user and verify temporary password
-      const user = await storage.getUserByUsername(username);
-      if (!user) {
-        return res.status(404).json({
-          success: false,
-          message: 'User not found'
-        });
-      }
+      // Use the new unified method that matches UI payload exactly
+      const result = await PasswordResetService.completePasswordResetByUsernameAndTemp(
+        username, 
+        tempPassword, 
+        newPassword
+      );
       
-      const isValidTempPassword = await PasswordResetService.verifyTemporaryPassword(user.id, tempPassword);
-      if (!isValidTempPassword) {
-        return res.status(401).json({
-          success: false,
-          message: 'Invalid or expired temporary password'
-        });
-      }
-      
-      const result = await PasswordResetService.completePasswordReset(user.id, newPassword);
       res.json(result);
       
     } catch (error) {
