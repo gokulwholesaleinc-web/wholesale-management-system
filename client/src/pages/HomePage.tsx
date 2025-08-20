@@ -64,12 +64,7 @@ export default function HomePage() {
                       Login
                     </Link>
                   </Button>
-                  <Button asChild variant="secondary" size="sm" className="flex-1 sm:flex-initial">
-                    <Link href="/staff-login">
-                      <Store className="h-4 w-4 mr-1 sm:mr-2" />
-                      Staff Login
-                    </Link>
-                  </Button>
+
                 </>
               )}
             </div>
@@ -111,12 +106,7 @@ export default function HomePage() {
                       Create Account
                     </Link>
                   </Button>
-                  <Button asChild size="lg" variant="outline" className="border-2 border-yellow-400 text-yellow-400 bg-transparent hover:bg-yellow-400 hover:text-blue-600 transition-colors">
-                    <Link href="/staff-login">
-                      <Store className="h-5 w-5 mr-2" />
-                      Staff Login
-                    </Link>
-                  </Button>
+
                 </>
               )}
             </div>
