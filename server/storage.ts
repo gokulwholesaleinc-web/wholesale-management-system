@@ -58,6 +58,7 @@ export interface IStorage {
   getValidPasswordResetByHash(tokenHash: string): Promise<{ user_id: string } | undefined>;
   markPasswordResetUsed(tokenHash: string): Promise<void>;
   invalidateOtherResetTokensForUser?(userId: string, currentTokenHash: string): Promise<void>;
+  getUserByActiveResetToken(tokenHash: string): Promise<User | undefined>;
 
   // Delivery address operations
   getDeliveryAddresses(userId: string): Promise<DeliveryAddress[]>;
@@ -841,6 +842,30 @@ export class DatabaseStorage implements IStorage {
       tokenHash,
       expiresAt,
     });
+  }
+
+  // Implementation for password reset token lookup
+  async getUserByActiveResetToken(tokenHash: string): Promise<User | undefined> {
+    // Find user with valid (non-expired) reset token
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(
+        and(
+          isNotNull(users.resetTokenHash),
+          isNotNull(users.resetTokenExpiresAt),
+          gt(users.resetTokenExpiresAt, new Date()),
+          isNull(users.resetTokenUsedAt)
+        )
+      );
+    
+    if (user && user.resetTokenHash) {
+      // Compare token hash using bcrypt
+      const isValid = await bcrypt.compare(tokenHash, user.resetTokenHash);
+      return isValid ? user : undefined;
+    }
+    
+    return undefined;
   }
 
   async getValidPasswordResetByHash(tokenHash: string): Promise<{ user_id: string } | undefined> {

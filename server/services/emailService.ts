@@ -9,7 +9,7 @@ export const emailService = {
     html: string; 
     text: string; 
     disableTracking?: boolean;
-  }) {
+  }): Promise<void> {
     try {
       const mailSettings: any = {};
       

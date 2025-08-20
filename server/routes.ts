@@ -5045,6 +5045,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const customerName = req.user.username || req.user.firstName || 'Customer';
           // Temporarily disable notification service to fix deployment
           console.log('Would send notification about customer note');
+          // Temporarily disabled for deployment
           
           // Get all admin and staff users
           const allUsers = await storage.getAllUsers();
