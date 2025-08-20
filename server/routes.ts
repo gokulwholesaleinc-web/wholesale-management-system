@@ -622,28 +622,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Initiate password reset (public endpoint)
   app.post('/api/auth/password-reset', async (req, res) => {
     try {
-      const { emailOrUsername } = req.body;
+      const { identifier, channel } = req.body;
       
-      if (!emailOrUsername) {
+      if (!identifier) {
         return res.status(400).json({ 
           success: false, 
-          message: 'Email or username is required' 
+          message: 'Email, username, or phone number is required' 
         });
       }
       
-      const result = await PasswordResetService.initiatePasswordReset(emailOrUsername);
+      const result = await PasswordResetService.initiatePasswordReset(identifier, channel || "auto");
       
       // Always return success message for security (don't reveal if user exists)
       res.json({
         success: true,
-        message: 'If an account exists with this email or username, a password reset email has been sent.'
+        message: 'If an account exists for that identifier, a reset link has been sent.'
       });
       
     } catch (error) {
       console.error('Password reset initiation error:', error);
-      res.status(500).json({
-        success: false,
-        message: 'An error occurred while processing your request.'
+      res.json({
+        success: true,
+        message: 'If an account exists for that identifier, a reset link has been sent.'
       });
     }
   });
